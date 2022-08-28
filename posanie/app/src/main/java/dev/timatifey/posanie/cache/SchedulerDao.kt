@@ -12,9 +12,9 @@ interface SchedulerDao {
     suspend fun getSchedulersForGroup(groupId: Long): List<Scheduler>
 
     @Upsert(entity = Scheduler::class)
-    suspend fun upsertSchedulers(schedulers: List<Scheduler>)
+    fun upsertSchedulers(schedulers: List<Scheduler>)
 
     @Query("DELETE FROM ${Scheduler.TABLE_NAME}")
-    suspend fun deleteAllUsers()
+    fun deleteAllUsers()
 
 }

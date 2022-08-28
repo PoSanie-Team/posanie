@@ -3,6 +3,9 @@ package dev.timatifey.posanie.model.cache
 import androidx.room.ColumnInfo
 import androidx.room.Entity
 import androidx.room.PrimaryKey
+import androidx.room.TypeConverter
+import com.google.gson.GsonBuilder
+import com.google.gson.reflect.TypeToken
 import dev.timatifey.posanie.model.domain.Lesson
 
 @Entity(tableName = Scheduler.TABLE_NAME)
@@ -39,6 +42,8 @@ data class SchedulerWeek(
 
 @Entity(tableName = SchedulerDay.TABLE_NAME)
 data class SchedulerDay(
+    @PrimaryKey(autoGenerate = true)
+    val id: Int = 0,
     @ColumnInfo(name = "weekday")
     val weekday: Int = 0,
     @ColumnInfo(name = "date")
@@ -49,4 +54,54 @@ data class SchedulerDay(
     companion object {
         const val TABLE_NAME = "scheduler_day_table"
     }
+}
+
+class SchedulerWeekConverter() {
+
+    private val gson by lazy { GsonBuilder().create() }
+
+    @TypeConverter
+    fun fromWeekToString(week: SchedulerWeek): String {
+        return gson.toJson(week)
+    }
+
+    @TypeConverter
+    fun fromStringToWeek(week: String): SchedulerWeek {
+        return gson.fromJson(week, SchedulerWeek::class.java)
+    }
+
+}
+
+class SchedulerDaysConverter() {
+
+    private val gson by lazy { GsonBuilder().create() }
+    private val type = object : TypeToken<List<SchedulerDay>>() {}.type
+
+    @TypeConverter
+    fun fromListToString(days: List<SchedulerDay>): String {
+        return gson.toJson(days, type)
+    }
+
+    @TypeConverter
+    fun fromStringToList(days: String): List<SchedulerDay> {
+        return gson.fromJson(days, type)
+    }
+
+}
+
+class DayLessonsConverter() {
+
+    private val gson by lazy { GsonBuilder().create() }
+    private val type = object : TypeToken<List<Lesson>>() {}.type
+
+    @TypeConverter
+    fun fromListToString(lessons: List<Lesson>): String {
+        return gson.toJson(lessons, type)
+    }
+
+    @TypeConverter
+    fun fromStringToList(lessons: String): List<Lesson> {
+        return gson.fromJson(lessons, type)
+    }
+
 }
