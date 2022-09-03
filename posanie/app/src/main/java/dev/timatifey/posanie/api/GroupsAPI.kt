@@ -1,6 +1,8 @@
 package dev.timatifey.posanie.api
 
-import dev.timatifey.posanie.model.domain.Group
+import android.util.Log
+import dev.timatifey.posanie.model.data.Group
+
 import kotlinx.coroutines.CoroutineDispatcher
 import kotlinx.coroutines.withContext
 import org.json.JSONObject
@@ -15,15 +17,15 @@ class GroupsAPI(private val dispatcher: CoroutineDispatcher) {
         var json = doc.select("footer").next().html()
         json = json.substring(json.indexOf("{"))
         val data = JSONObject(json).getJSONObject("groups").getJSONObject("data")
-        data.getJSONArray(data.keys().next()).let { jsonArray ->
+        data.keys().forEach { key ->
+            val jsonArray = data.optJSONArray(key) ?: return@forEach
             for (ind in 0 until jsonArray.length()) {
                 val jsonObject = jsonArray.optJSONObject(ind)
-                groups.add(
-                    Group(
-                        id = jsonObject.getString("id").toLong(),
-                        title = jsonObject.getString("name"),
-                    )
+                val group = Group(
+                    id = jsonObject.getString("id").toLong(),
+                    title = jsonObject.getString("name"),
                 )
+                groups.add(group)
             }
         }
         return@withContext groups

@@ -4,7 +4,7 @@ import androidx.compose.runtime.Composable
 
 @Composable
 fun SchedulerRoute(
-    homeViewModel: SchedulerViewModel,
+    schedulerViewModel: SchedulerViewModel,
 ) {
     SchedulerScreen()
 }

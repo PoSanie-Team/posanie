@@ -1,3 +1,7 @@
 <resources>
     <string name="app_name">PoSanie</string>
+    <string name="scheduler">Scheduler</string>
+    <string name="groups">Groups</string>
+    <string name="settings">Settings</string>
+    <string name="load_error">Load error</string>
 </resources>

@@ -4,6 +4,12 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import dagger.hilt.android.lifecycle.HiltViewModel
 
+import dev.timatifey.posanie.R
+import dev.timatifey.posanie.model.Result
+import dev.timatifey.posanie.model.domain.Faculty
+import dev.timatifey.posanie.usecases.FacultiesUseCase
+import dev.timatifey.posanie.utils.ErrorMessage
+
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
@@ -11,49 +17,43 @@ import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
+
 import java.util.*
 import javax.inject.Inject
 
-import dev.timatifey.posanie.R
-import dev.timatifey.posanie.model.Result
-import dev.timatifey.posanie.model.domain.Group
-import dev.timatifey.posanie.model.successOr
-import dev.timatifey.posanie.usecases.GroupsUseCase
-import dev.timatifey.posanie.utils.ErrorMessage
-
-sealed interface GroupsUiState {
+sealed interface FacultiesUiState {
 
     val isLoading: Boolean
     val errorMessages: List<ErrorMessage>
 
-    data class GroupList(
-        val groups: List<Group>,
+    data class FacultiesList(
+        val faculties: List<Faculty>,
         override val isLoading: Boolean,
         override val errorMessages: List<ErrorMessage>,
-    ) : GroupsUiState
-
+    ) : FacultiesUiState
 }
 
-private data class GroupsViewModelState(
-    val groups: List<Group>? = null,
+private data class FacultiesViewModelState(
+    val faculties: List<Faculty>? = null,
     val isLoading: Boolean = false,
     val errorMessages: List<ErrorMessage> = emptyList(),
 ) {
-    fun toUiState(): GroupsUiState = GroupsUiState.GroupList(
-        groups = groups.orEmpty(),
-        isLoading = isLoading,
-        errorMessages = errorMessages,
-    )
+    fun toUiState(): FacultiesUiState =
+        FacultiesUiState.FacultiesList(
+            faculties = faculties.orEmpty(),
+            isLoading = isLoading,
+            errorMessages = errorMessages,
+        )
 }
 
 @HiltViewModel
-class GroupsViewModel @Inject constructor(
-    private val groupsUseCase: GroupsUseCase,
+class FacultiesViewModel @Inject constructor(
+    private val facultiesUseCase: FacultiesUseCase
 ) : ViewModel() {
 
-    private val viewModelState = MutableStateFlow(GroupsViewModelState(isLoading = true))
+    private val viewModelState = MutableStateFlow(FacultiesViewModelState(isLoading = true))
 
-    val uiState: StateFlow<GroupsUiState> = viewModelState
+    val uiState: StateFlow<FacultiesUiState> = viewModelState
         .map { it.toUiState() }
         .stateIn(
             viewModelScope,
@@ -61,30 +61,23 @@ class GroupsViewModel @Inject constructor(
             viewModelState.value.toUiState()
         )
 
-    fun getLocalGroups() {
-        viewModelState.update { it.copy(isLoading = true) }
-
-        viewModelScope.launch {
-            val result = groupsUseCase.getLocalGroups()
-            viewModelState.update { state ->
-                return@update state.copy(
-                    groups = result.successOr(emptyList()),
-                    isLoading = false,
-                )
-            }
-        }
+    init {
+        getFaculties()
     }
 
-    fun fetchGroupsBy(facultyId: Long) {
+    fun getFaculties() {
         viewModelState.update { it.copy(isLoading = true) }
 
         viewModelScope.launch {
-            val result = groupsUseCase.fetchGroupsBy(facultyId)
+            var result = facultiesUseCase.fetchFaculties()
+            if (result is Result.Error) {
+                result = facultiesUseCase.getLocalFaculties()
+            }
             viewModelState.update { state ->
                 when (result) {
                     is Result.Success -> {
-                        return@update state.copy(
-                            groups = result.data,
+                        state.copy(
+                            faculties = result.data,
                             isLoading = false
                         )
                     }
@@ -93,20 +86,14 @@ class GroupsViewModel @Inject constructor(
                             id = UUID.randomUUID().mostSignificantBits,
                             messageId = R.string.load_error
                         )
-                        return@update state.copy(
-                            groups = emptyList(),
+                        state.copy(
+                            faculties = null,
                             errorMessages = errorMessages,
                             isLoading = false
                         )
                     }
                 }
             }
-        }
-    }
-
-    fun saveAndPickGroup(group: Group) {
-        viewModelScope.launch {
-            groupsUseCase.saveAndPickGroup(group)
         }
     }
 

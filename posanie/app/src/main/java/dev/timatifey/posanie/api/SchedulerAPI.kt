@@ -1,6 +1,6 @@
 package dev.timatifey.posanie.api
 
-import dev.timatifey.posanie.model.cache.Scheduler
+import dev.timatifey.posanie.model.data.Scheduler
 import retrofit2.http.GET
 import retrofit2.http.Path
 import retrofit2.http.Query

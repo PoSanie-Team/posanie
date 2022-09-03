@@ -1,11 +1,12 @@
 package dev.timatifey.posanie.api
 
-import dev.timatifey.posanie.model.domain.Faculty
+import dev.timatifey.posanie.model.data.Faculty
+
 import kotlinx.coroutines.CoroutineDispatcher
 import kotlinx.coroutines.withContext
 import org.jsoup.Jsoup
 
-class FacultyAPI(private val dispatcher: CoroutineDispatcher) {
+class FacultiesAPI(private val dispatcher: CoroutineDispatcher) {
 
     suspend fun getFacultiesList(): List<Faculty> = withContext(dispatcher) {
         val faculties = mutableListOf<Faculty>()

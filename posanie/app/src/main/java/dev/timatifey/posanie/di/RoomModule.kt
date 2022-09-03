@@ -7,9 +7,12 @@ import dagger.Provides
 import dagger.hilt.InstallIn
 import dagger.hilt.android.qualifiers.ApplicationContext
 import dagger.hilt.components.SingletonComponent
+import javax.inject.Singleton
+
+import dev.timatifey.posanie.cache.FacultiesDao
+import dev.timatifey.posanie.cache.GroupsDao
 import dev.timatifey.posanie.cache.SchedulerDao
 import dev.timatifey.posanie.cache.SchedulerRoomDatabase
-import javax.inject.Singleton
 
 @Module
 @InstallIn(SingletonComponent::class)
@@ -31,5 +34,17 @@ object RoomModule {
     @Provides
     fun provideSchedulerDao(schedulerRoomDatabase: SchedulerRoomDatabase): SchedulerDao {
         return schedulerRoomDatabase.SchedulerDao()
+    }
+
+    @Singleton
+    @Provides
+    fun provideGroupsDao(schedulerRoomDatabase: SchedulerRoomDatabase): GroupsDao {
+        return schedulerRoomDatabase.GroupsDao()
+    }
+
+    @Singleton
+    @Provides
+    fun provideFacultiesDao(schedulerRoomDatabase: SchedulerRoomDatabase): FacultiesDao {
+        return schedulerRoomDatabase.FacultiesDao()
     }
 }

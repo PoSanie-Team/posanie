@@ -1,6 +1,5 @@
 package dev.timatifey.posanie.di
 
-import com.google.gson.Gson
 import com.google.gson.GsonBuilder
 import dagger.Module
 import dagger.Provides
@@ -12,7 +11,7 @@ import retrofit2.converter.gson.GsonConverterFactory
 import javax.inject.Singleton
 
 import dev.timatifey.posanie.api.Constants.Companion.BASE_URL
-import dev.timatifey.posanie.api.FacultyAPI
+import dev.timatifey.posanie.api.FacultiesAPI
 import dev.timatifey.posanie.api.GroupsAPI
 import dev.timatifey.posanie.api.SchedulerAPI
 
@@ -44,8 +43,8 @@ object NetworkModule {
 
     @Singleton
     @Provides
-    fun provideFacultyAPI(): FacultyAPI {
-        return FacultyAPI(Dispatchers.IO)
+    fun provideFacultyAPI(): FacultiesAPI {
+        return FacultiesAPI(Dispatchers.IO)
     }
 
 }
