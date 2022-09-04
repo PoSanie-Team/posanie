@@ -43,11 +43,6 @@ private fun GroupsRoute(
     facultyId: Long?
 ) {
     val uiState by groupsViewModel.uiState.collectAsState()
-    if (facultyId == null) {
-        groupsViewModel.getLocalGroups()
-    } else {
-        groupsViewModel.fetchGroupsBy(facultyId)
-    }
     GroupsRoute(
         uiState = uiState,
         isLocal = facultyId == null,

@@ -5,6 +5,7 @@ import androidx.compose.material3.Text
 import androidx.compose.material3.NavigationBar
 import androidx.compose.material3.NavigationBarItem
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.painterResource
@@ -73,6 +74,9 @@ fun NavGraphBuilder.groupsNavGraph(
     ) {
         composable(GroupsNavItems.LocalGroups.route) {
             val viewModel = hiltViewModel<GroupsViewModel>()
+            LaunchedEffect(true) {
+                viewModel.getLocalGroups()
+            }
             LocalGroupsRoute(
                 groupsViewModel = viewModel,
                 navController = navController
@@ -91,6 +95,9 @@ fun NavGraphBuilder.groupsNavGraph(
         ) {
             val viewModel = hiltViewModel<GroupsViewModel>()
             val facultyId = it.arguments?.getLong(FACULTY_ID_ARG)!!
+            LaunchedEffect(facultyId) {
+                viewModel.fetchGroupsBy(facultyId)
+            }
             FacultyGroupsRoute(
                 groupsViewModel = viewModel,
                 navController = navController,
