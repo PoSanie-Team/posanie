@@ -2,9 +2,7 @@ package dev.timatifey.posanie.ui.groups
 
 import android.graphics.drawable.Icon
 import androidx.compose.foundation.background
-import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.PaddingValues
-import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.material.icons.Icons
@@ -18,11 +16,14 @@ import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import com.google.accompanist.swiperefresh.SwipeRefresh
 import com.google.accompanist.swiperefresh.SwipeRefreshState
 import com.google.accompanist.swiperefresh.rememberSwipeRefreshState
+import dev.timatifey.posanie.model.cache.COURSE_GROUP_DELIMITER
 import dev.timatifey.posanie.model.domain.Faculty
 import dev.timatifey.posanie.model.domain.Group
 
@@ -40,7 +41,7 @@ fun LocalGroupsScreen(
                 if (list.isEmpty()) {
                     Text("You have not groups. Please add.")
                 } else {
-                    GroupsList(list, onGroupClick)
+                    GroupsList(list, 1, onGroupClick)
                 }
             }
             FloatingActionButton(
@@ -88,34 +89,68 @@ fun PickGroupScreen(
         if (list.isEmpty()) {
             Text("Can't to fetch groups from server.")
         } else {
-            GroupsList(list, onGroupPick)
+            GroupsList(list, 2, onGroupPick)
         }
     }
 }
 
 @Composable
-fun GroupsList(list: List<Group>, onGroupClick: (Group) -> Unit) {
+fun GroupsList(list: List<Group>, groupsInRow: Int, onGroupClick: (Group) -> Unit) {
+    val table = groupsListToGroupsTable(list, groupsInRow)
     LazyColumn(
         contentPadding = PaddingValues(horizontal = 16.dp, vertical = 2.dp),
     ) {
-        items(list) { group ->
-            GroupItem(group, onGroupClick)
+        items(table) { row ->
+            Row(modifier = Modifier.fillMaxWidth()) {
+                for (group in row) {
+                    GroupItem(
+                        group = group,
+                        twoLines = groupsInRow > 1,
+                        onGroupClick = onGroupClick,
+                        modifier = Modifier
+                            .weight(1f)
+                            .padding(5.dp)
+                    )
+                }
+            }
         }
     }
+}
+
+private fun groupsListToGroupsTable(list: List<Group>, groupsInRow: Int) : List<List<Group>> {
+    val table = mutableListOf<List<Group>>()
+    for (i in list.indices step groupsInRow) {
+        val row = mutableListOf<Group>()
+        for (j in 0 until groupsInRow) {
+            if (i + j < list.size) row.add(list[i + j])
+            else break
+        }
+        table.add(row)
+    }
+    return table
 }
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun GroupItem(group: Group, onGroupClick: (Group) -> Unit) {
+fun GroupItem(group: Group, twoLines: Boolean, onGroupClick: (Group) -> Unit, modifier: Modifier = Modifier) {
     Card(
-        onClick = { onGroupClick(group) },
+        modifier = modifier,
+        onClick = { onGroupClick(group) }
     ) {
+        val courseString = group.title.substringAfter(COURSE_GROUP_DELIMITER)
+        val groupString = group.title.substringAfter(COURSE_GROUP_DELIMITER)
+        val text =
+            if (twoLines) courseString + COURSE_GROUP_DELIMITER + '\n' + groupString
+            else courseString + COURSE_GROUP_DELIMITER + groupString
         Text(
-            text = group.title,
-            modifier = Modifier.padding(
-                horizontal = 8.dp,
-                vertical = 4.dp
-            )
+            text = text,
+            modifier = Modifier
+                .padding(
+                    horizontal = 8.dp,
+                    vertical = 4.dp
+                )
+                .fillMaxWidth(),
+            textAlign = TextAlign.Center
         )
     }
 }
@@ -156,6 +191,9 @@ fun LocalGroupsScreenPreview(
             Group(title = "3530901/90202"),
             Group(title = "3530901/90202123"),
             Group(title = "3530901/902023424"),
+            Group(title = "3530901/90203"),
+            Group(title = "35309/90201"),
+            Group(title = "35309/90101"),
         ),
         swipeRefreshState = rememberSwipeRefreshState(isRefreshing = false),
         {}, {}, {}
@@ -169,7 +207,10 @@ fun GroupsListPreview() {
         Group(title = "3530901/90202"),
         Group(title = "3530901/90202123"),
         Group(title = "3530901/902023424"),
-    ),
+        Group(title = "3530901/90203"),
+        Group(title = "35309/90201"),
+        Group(title = "35309/90101"),
+    ), 2,
         {}
     )
 }
@@ -178,9 +219,10 @@ fun GroupsListPreview() {
 @Composable
 fun GroupItemPreview() {
     GroupItem(
-        Group(
-            title = "3530901/90202"
+        group = Group(
+            title = "3530901/90202",
         ),
-        {}
+        twoLines = false,
+        onGroupClick = {}
     )
 }

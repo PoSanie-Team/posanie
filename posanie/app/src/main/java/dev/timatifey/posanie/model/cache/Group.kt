@@ -4,6 +4,8 @@ import androidx.room.ColumnInfo
 import androidx.room.Entity
 import androidx.room.PrimaryKey
 
+const val COURSE_GROUP_DELIMITER = "/"
+
 @Entity(tableName = Group.TABLE_NAME)
 data class Group(
     @PrimaryKey

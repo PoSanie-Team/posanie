@@ -50,10 +50,8 @@ private fun GroupsRoute(
             groupsViewModel.saveAndPickGroup(group)
             navController.navigate(GroupsNavItems.LocalGroups.route) {
                 popUpTo(navController.graph.findStartDestination().id) {
-                    //saveState = true
                 }
                 launchSingleTop = true
-                //restoreState = true
             }
         },
         refreshingState = rememberSwipeRefreshState(uiState.isLoading),
