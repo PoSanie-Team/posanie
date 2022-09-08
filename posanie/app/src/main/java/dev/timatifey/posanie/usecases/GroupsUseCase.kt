@@ -15,7 +15,7 @@ import javax.inject.Singleton
 
 interface GroupsUseCase {
     suspend fun getLocalGroups(): Result<List<Group>>
-    suspend fun fetchGroupsBy(facultyId: Long): Result<List<Group>>
+    suspend fun fetchGroupsBy(facultyId: Long, degreeId: Long): Result<List<Group>>
     suspend fun saveAndPickGroup(group: Group): Result<Boolean>
 }
 
@@ -33,10 +33,10 @@ class GroupsUseCaseImpl @Inject constructor(
             )
         }
 
-    override suspend fun fetchGroupsBy(facultyId: Long): Result<List<Group>> =
+    override suspend fun fetchGroupsBy(facultyId: Long, degreeId: Long): Result<List<Group>> =
         withContext(Dispatchers.IO) {
             try {
-                val groups = groupsAPI.getGroupsList(facultyId)
+                val groups = groupsAPI.getGroupsList(facultyId, degreeId)
                 if (groups.isEmpty()) {
                     return@withContext Result.Error(Exception())
                 }

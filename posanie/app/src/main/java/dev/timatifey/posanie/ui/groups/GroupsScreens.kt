@@ -1,22 +1,22 @@
 package dev.timatifey.posanie.ui.groups
 
-import android.graphics.drawable.Icon
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.lazy.LazyListState
 import androidx.compose.foundation.lazy.items
+import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Add
-import androidx.compose.material3.Card
-import androidx.compose.material3.ExperimentalMaterial3Api
-import androidx.compose.material3.FloatingActionButton
-import androidx.compose.material3.Icon
-import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.Text
+import androidx.compose.material3.*
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.CompositionLocalProvider
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.RectangleShape
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
@@ -30,6 +30,7 @@ import dev.timatifey.posanie.model.domain.Group
 @Composable
 fun LocalGroupsScreen(
     list: List<Group>,
+    listState: LazyListState,
     swipeRefreshState: SwipeRefreshState,
     onGroupClick: (Group) -> Unit,
     onRefresh: () -> Unit,
@@ -41,7 +42,7 @@ fun LocalGroupsScreen(
                 if (list.isEmpty()) {
                     Text("You have not groups. Please add.")
                 } else {
-                    GroupsList(list, 1, onGroupClick)
+                    GroupsList(list, 1, listState, onGroupClick)
                 }
             }
             FloatingActionButton(
@@ -54,7 +55,6 @@ fun LocalGroupsScreen(
                 Icon(imageVector = Icons.Filled.Add, contentDescription = null)
             }
         }
-
     }
 }
 
@@ -81,6 +81,7 @@ fun FacultiesScreen(
 @Composable
 fun PickGroupScreen(
     list: List<Group>,
+    listState: LazyListState,
     swipeRefreshState: SwipeRefreshState,
     onGroupPick: (Group) -> Unit,
     onRefresh: () -> Unit,
@@ -88,31 +89,21 @@ fun PickGroupScreen(
     SwipeRefresh(state = swipeRefreshState, onRefresh = onRefresh) {
         if (list.isEmpty()) {
             Text("Can't to fetch groups from server.")
-        } else {
-            GroupsList(list, 2, onGroupPick)
+        } else if (!swipeRefreshState.isRefreshing) {
+            GroupsList(list, 2, listState, onGroupPick)
         }
     }
 }
 
 @Composable
-fun GroupsList(list: List<Group>, groupsInRow: Int, onGroupClick: (Group) -> Unit) {
+fun GroupsList(list: List<Group>, groupsInRow: Int, state: LazyListState, onGroupClick: (Group) -> Unit) {
     val table = groupsListToGroupsTable(list, groupsInRow)
     LazyColumn(
+        state = state,
         contentPadding = PaddingValues(horizontal = 16.dp, vertical = 2.dp),
     ) {
         items(table) { row ->
-            Row(modifier = Modifier.fillMaxWidth()) {
-                for (group in row) {
-                    GroupItem(
-                        group = group,
-                        twoLines = groupsInRow > 1,
-                        onGroupClick = onGroupClick,
-                        modifier = Modifier
-                            .weight(1f)
-                            .padding(5.dp)
-                    )
-                }
-            }
+            GroupsRow(row = row, groupsInRow = groupsInRow, onGroupClick = onGroupClick)
         }
     }
 }
@@ -130,6 +121,26 @@ private fun groupsListToGroupsTable(list: List<Group>, groupsInRow: Int) : List<
     return table
 }
 
+@Composable
+fun GroupsRow(
+    row: List<Group>,
+    groupsInRow: Int,
+    onGroupClick: (Group) -> Unit
+) {
+    Row(modifier = Modifier.fillMaxWidth()) {
+        for (group in row) {
+            GroupItem(
+                group = group,
+                twoLines = groupsInRow > 1,
+                onGroupClick = onGroupClick,
+                modifier = Modifier
+                    .weight(1f)
+                    .padding(4.dp)
+            )
+        }
+    }
+}
+
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun GroupItem(group: Group, twoLines: Boolean, onGroupClick: (Group) -> Unit, modifier: Modifier = Modifier) {
@@ -137,7 +148,7 @@ fun GroupItem(group: Group, twoLines: Boolean, onGroupClick: (Group) -> Unit, mo
         modifier = modifier,
         onClick = { onGroupClick(group) }
     ) {
-        val courseString = group.title.substringAfter(COURSE_GROUP_DELIMITER)
+        val courseString = group.title.substringBefore(COURSE_GROUP_DELIMITER)
         val groupString = group.title.substringAfter(COURSE_GROUP_DELIMITER)
         val text =
             if (twoLines) courseString + COURSE_GROUP_DELIMITER + '\n' + groupString
@@ -158,7 +169,7 @@ fun GroupItem(group: Group, twoLines: Boolean, onGroupClick: (Group) -> Unit, mo
 @Composable
 fun FacultiesList(list: List<Faculty>, onFacultyClick: (Faculty) -> Unit) {
     LazyColumn(
-        contentPadding = PaddingValues(horizontal = 16.dp, vertical = 8.dp),
+        modifier = Modifier.padding(4.dp)
     ) {
         items(list) { faculty ->
             FacultyItem(faculty, onFacultyClick)
@@ -169,16 +180,22 @@ fun FacultiesList(list: List<Faculty>, onFacultyClick: (Faculty) -> Unit) {
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun FacultyItem(faculty: Faculty, onFacultyClick: (Faculty) -> Unit) {
-    Card(
-        onClick = { onFacultyClick(faculty) },
+    CompositionLocalProvider(
+        LocalMinimumTouchTargetEnforcement provides false,
     ) {
-        Text(
-            text = faculty.title,
-            modifier = Modifier.padding(
-                horizontal = 8.dp,
-                vertical = 4.dp
+        Card(
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(horizontal = 4.dp, vertical = 4.dp),
+            onClick = { onFacultyClick(faculty) },
+        ) {
+            Text(
+                text = faculty.title,
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(horizontal = 8.dp, vertical = 4.dp)
             )
-        )
+        }
     }
 }
 
@@ -195,6 +212,7 @@ fun LocalGroupsScreenPreview(
             Group(title = "35309/90201"),
             Group(title = "35309/90101"),
         ),
+        listState = rememberLazyListState(),
         swipeRefreshState = rememberSwipeRefreshState(isRefreshing = false),
         {}, {}, {}
     )
@@ -211,6 +229,7 @@ fun GroupsListPreview() {
         Group(title = "35309/90201"),
         Group(title = "35309/90101"),
     ), 2,
+        rememberLazyListState(),
         {}
     )
 }
@@ -224,5 +243,29 @@ fun GroupItemPreview() {
         ),
         twoLines = false,
         onGroupClick = {}
+    )
+}
+
+@Preview
+@Composable
+fun FacultyListPreview() {
+    FacultiesList(listOf(
+        Faculty(title = "Институт Бибы и Бобы"),
+        Faculty(title = "Высшая школа Похуй"),
+        Faculty(title = "Институт Компьютерных Институт Компьютерных Институт Компьютерных"),
+        Faculty(title = "Институт про который все забыли"),
+        Faculty(title = "Очень классный гуманитарный институт!!!!!"),
+        Faculty(title = "Я устал..."),
+    ),
+        {}
+    )
+}
+
+@Preview
+@Composable
+fun FacultyItemPreview() {
+    FacultyItem(
+        Faculty(title = "Институт Бибы и Бобы"),
+        onFacultyClick = {}
     )
 }
