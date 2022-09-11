@@ -12,6 +12,7 @@ import dev.timatifey.posanie.cache.SchedulerDao
 import dev.timatifey.posanie.cache.SchedulerRoomDatabase
 import dev.timatifey.posanie.model.mappers.FacultyMapper
 import dev.timatifey.posanie.model.mappers.GroupMapper
+import dev.timatifey.posanie.model.mappers.GroupsLevelMapper
 import javax.inject.Singleton
 
 @Module
@@ -22,6 +23,12 @@ object MappersModule {
     @Provides
     fun provideGroupsMapper(): GroupMapper {
         return GroupMapper()
+    }
+
+    @Singleton
+    @Provides
+    fun provideGroupsLevelMapper(): GroupsLevelMapper {
+        return GroupsLevelMapper(GroupMapper())
     }
 
     @Singleton

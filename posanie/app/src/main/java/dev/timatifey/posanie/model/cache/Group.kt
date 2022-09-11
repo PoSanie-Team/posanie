@@ -12,6 +12,8 @@ data class Group(
     val id: Long = 0,
     @ColumnInfo(name = "title")
     val title: String = "",
+    @ColumnInfo(name = "level")
+    val level: Int,
     @ColumnInfo(name = "is_picked")
     val isPicked: Boolean = false,
 ) {

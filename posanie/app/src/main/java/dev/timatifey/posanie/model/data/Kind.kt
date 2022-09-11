@@ -7,6 +7,8 @@ enum class Kind(val id: Long) {
     POSTGRADUATE(3);
 
     companion object {
+        val DEFAULT_KIND = BACHELOR
+
         fun kindBy(id: Long) : Kind {
             when(id) {
                 0L -> return BACHELOR
@@ -14,10 +16,6 @@ enum class Kind(val id: Long) {
                 2L -> return SPECIALIST
                 3L -> return POSTGRADUATE
             }
-            return BACHELOR
-        }
-
-        fun defaultKind() : Kind {
             return BACHELOR
         }
     }

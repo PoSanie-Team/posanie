@@ -24,7 +24,7 @@ sealed class GroupsNavItems(
     object LocalGroups : GroupsNavItems("local_groups")
     object Faculties : GroupsNavItems("faculties")
     object FacultyGroups : GroupsNavItems("faculty_groups/{$FACULTY_ID_ARG}/{$KIND_ID_ARG}") {
-        fun routeBy(facultyId: Long, kindId: Long = Kind.defaultKind().id) = "faculty_groups/$facultyId/$kindId"
+        fun routeBy(facultyId: Long, kindId: Long = Kind.DEFAULT_KIND.id) = "faculty_groups/$facultyId/$kindId"
     }
 }
 

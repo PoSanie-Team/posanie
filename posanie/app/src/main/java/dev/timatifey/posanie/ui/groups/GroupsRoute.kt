@@ -72,7 +72,7 @@ private fun GroupsRoute(
             } else {
                 groupsViewModel.fetchGroupsBy(
                     facultyId = facultyId!!,
-                    kindId = kindId ?: Kind.defaultKind().id
+                    kindId = kindId ?: Kind.DEFAULT_KIND.id
                 )
             }
         },
@@ -140,14 +140,14 @@ private fun GroupsRoute(
 ) {
     when (uiState) {
         is GroupsUiState.GroupList -> if (isLocal) LocalGroupsScreen(
-            list = uiState.groups,
+            levelsToGroups = uiState.groups,
             listState = listState,
             swipeRefreshState = refreshingState,
             onGroupClick = onGroupPick,
             onRefresh = onRefresh,
             onAddGroupButtonClick = onAddGroupButtonClick
         ) else PickGroupScreen(
-            list = uiState.groups,
+            levelsToGroups = uiState.groups,
             listState = listState,
             swipeRefreshState = refreshingState,
             onGroupPick = onGroupPick,
