@@ -1,62 +1,316 @@
 package dev.timatifey.posanie.ui.groups
 
+import androidx.compose.animation.AnimatedVisibility
+import androidx.compose.animation.Crossfade
+import androidx.compose.animation.expandVertically
+import androidx.compose.animation.shrinkVertically
+import androidx.compose.foundation.background
+import androidx.compose.foundation.clickable
+import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyListState
 import androidx.compose.foundation.lazy.rememberLazyListState
-import androidx.compose.material3.ExperimentalMaterial3Api
-import androidx.compose.runtime.Composable
-import androidx.compose.runtime.collectAsState
-import androidx.compose.runtime.getValue
+import androidx.compose.foundation.selection.selectableGroup
+import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.material3.*
+import androidx.compose.runtime.*
+import androidx.compose.ui.Alignment
+import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.semantics.Role
+import androidx.compose.ui.unit.Dp
+import androidx.compose.ui.unit.dp
+import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.navigation.NavController
 import androidx.navigation.NavGraph.Companion.findStartDestination
 import androidx.navigation.NavHostController
 import com.google.accompanist.swiperefresh.SwipeRefreshState
 import com.google.accompanist.swiperefresh.rememberSwipeRefreshState
 import dev.timatifey.posanie.model.data.Kind
+import dev.timatifey.posanie.model.data.Type
 import dev.timatifey.posanie.model.domain.Faculty
 import dev.timatifey.posanie.model.domain.Group
 import dev.timatifey.posanie.ui.*
 import java.lang.IllegalArgumentException
+
+
+enum class FacultyGroupsState {
+    DEFAULT, SEARCH_IN_PROGRESS, SEARCH_DONE
+}
+
+@OptIn(ExperimentalMaterial3Api::class)
+@Composable
+fun FacultyGroupsRoute(
+    facultyGroupsState: MutableState<FacultyGroupsState>,
+    groupsViewModel: GroupsViewModel,
+    navController: NavHostController,
+    facultyId: Long,
+    facultyName: String,
+    kindId: Long,
+    typeId: String
+    ) {
+    val courseSearchState = groupsViewModel.courseSearchState
+    val groupSearchState = groupsViewModel.groupSearchState
+
+    Scaffold(
+        topBar = {
+            Crossfade(targetState = facultyGroupsState.value) { state ->
+                when (state) {
+                    FacultyGroupsState.DEFAULT -> {
+                        DefaultTopAppBar(
+                            navController = navController,
+                            facultyName = facultyName,
+                            openSearch = { facultyGroupsState.value = FacultyGroupsState.SEARCH_IN_PROGRESS }
+                        )
+                    }
+                    else -> {
+                        SearchTopAppBar(
+                            navController = navController,
+                            typeId = typeId,
+                            inProgress = facultyGroupsState.value == FacultyGroupsState.SEARCH_IN_PROGRESS,
+                            courseSearchState = courseSearchState,
+                            groupSearchState = groupSearchState,
+                            openSearch = {
+                                facultyGroupsState.value = FacultyGroupsState.SEARCH_IN_PROGRESS
+                            },
+                            updateSearch = {
+                                groupsViewModel.filterGroups()
+                            },
+                            submitSearch = {
+                                facultyGroupsState.value = FacultyGroupsState.SEARCH_DONE
+                            },
+                            closeSearch = {
+                                facultyGroupsState.value = FacultyGroupsState.DEFAULT
+                                courseSearchState.value = ""
+                                groupSearchState.value = ""
+                                groupsViewModel.filterGroups()
+                                navController.navigate(GroupsNavItems.FacultyGroups.routeBy(facultyId, kindId)) {
+                                    launchSingleTop = true
+                                }
+                            }
+                        )
+                    }
+                }
+
+            }
+        },
+        content = { innerPadding ->
+            FacultyGroupsContent(
+                innerPadding = innerPadding,
+                navController = navController,
+                viewModel = groupsViewModel,
+                facultyId = facultyId,
+                kindId = kindId,
+                typeId = typeId,
+                showTypes = facultyGroupsState.value != FacultyGroupsState.DEFAULT
+            )
+        }
+    )
+}
+
+@Composable
+fun FacultyGroupsContent(
+    innerPadding: PaddingValues,
+    navController: NavHostController,
+    viewModel: GroupsViewModel,
+    showTypes: Boolean,
+    facultyId: Long,
+    kindId: Long,
+    typeId: String
+) {
+    val kindNavItems = listOf(
+        KindNavItems.Bachelor,
+        KindNavItems.Master,
+        KindNavItems.Specialist,
+        KindNavItems.Postgraduate,
+    )
+    val typeNavItems = listOf(
+        TypeNavItems.Common,
+        TypeNavItems.Evening,
+        TypeNavItems.Distance
+    )
+    Column(
+        Modifier.padding(innerPadding)
+    ) {
+        GroupKindNavigationBar(
+            navController = navController,
+            facultyId = facultyId,
+            items = kindNavItems
+        )
+        AnimatedVisibility (
+            visible = showTypes,
+            enter = expandVertically(expandFrom = Alignment.Top),
+            exit = shrinkVertically()
+        ) {
+            GroupTypeNavigationBar(
+                navController = navController,
+                facultyId = facultyId,
+                kindId = kindId,
+                items = typeNavItems
+            )
+        }
+        GroupsContent(
+            groupsViewModel = viewModel,
+            navController = navController,
+            facultyId = facultyId,
+            kindId = kindId,
+            typeId = typeId
+        )
+    }
+}
 
 @Composable
 fun LocalGroupsRoute(
     groupsViewModel: GroupsViewModel,
     navController: NavHostController
 ) {
-    GroupsRoute(
+    GroupsContent(
         groupsViewModel = groupsViewModel,
         navController = navController,
         facultyId = null,
-        kindId = null
+        kindId = null,
+        typeId = null
     )
 }
 
 @Composable
-fun FacultyGroupsRoute(
-    groupsViewModel: GroupsViewModel,
+fun GroupKindNavigationBar(
     navController: NavHostController,
     facultyId: Long,
-    kindId: Long
+    items: List<KindNavItems>,
+    modifier: Modifier = Modifier
 ) {
-    GroupsRoute(
-        groupsViewModel = groupsViewModel,
-        navController = navController,
-        facultyId = facultyId,
-        kindId = kindId
-    )
+    CategoryNavigationBar(
+        modifier = modifier
+    ) {
+        val viewModel = hiltViewModel<GroupsViewModel>()
+        val uiState by viewModel.searchUiState.collectAsState()
+        val selectedKind = uiState.selectedKind
+        items.forEach { tab ->
+            val tabRoute = GroupsNavItems.FacultyGroups.routeBy(facultyId, tab.kind.id)
+            CategoryBarTextItem(
+                text = stringResource(tab.nameId),
+                selected = selectedKind == tab.kind,
+                onClick = {
+                    navController.navigate(tabRoute) {
+                        launchSingleTop = true
+                    }
+                }
+            )
+        }
+    }
 }
 
 @Composable
-private fun GroupsRoute(
+fun GroupTypeNavigationBar(
+    navController: NavHostController,
+    facultyId: Long,
+    kindId: Long,
+    items: List<TypeNavItems>,
+    modifier: Modifier = Modifier
+) {
+    CategoryNavigationBar(
+        modifier = modifier
+    ) {
+        val viewModel = hiltViewModel<GroupsViewModel>()
+        val uiState by viewModel.searchUiState.collectAsState()
+        val selectedType = uiState.selectedType
+        items.forEach { tab ->
+            val tabRoute = if (selectedType != tab.type) {
+                GroupsNavItems.FacultyGroups.routeBy(facultyId, kindId, tab.type.id)
+            } else {
+                GroupsNavItems.FacultyGroups.routeBy(facultyId, kindId, Type.DEFAULT.id)
+            }
+            CategoryBarTextItem(
+                text = stringResource(tab.nameId),
+                selected = selectedType == tab.type,
+                onClick = {
+                    navController.navigate(tabRoute) {
+                        launchSingleTop = true
+                    }
+                }
+            )
+        }
+    }
+}
+
+@Composable
+fun CategoryNavigationBar(
+    modifier: Modifier = Modifier,
+    containerColor: Color = MaterialTheme.colorScheme.surface,
+    contentColor: Color = MaterialTheme.colorScheme.contentColorFor(containerColor),
+    tonalElevation: Dp = NavigationBarDefaults.Elevation,
+    content: @Composable (Modifier) -> Unit
+) {
+    Surface(
+        color = containerColor,
+        contentColor = contentColor,
+        tonalElevation = tonalElevation,
+        modifier = modifier.selectableGroup()
+    ) {
+        Row(
+            modifier = modifier
+                .fillMaxWidth()
+                .padding(8.dp),
+            horizontalArrangement = Arrangement.SpaceEvenly
+        ) {
+            content(Modifier.weight(1f))
+        }
+    }
+}
+
+@Composable
+fun CategoryBarTextItem(
+    text: String,
+    selected: Boolean,
+    onClick: () -> Unit,
+    enabled: Boolean = true,
+    modifier: Modifier = Modifier
+) {
+    Surface(
+        shape = RoundedCornerShape(4.dp),
+    ) {
+        Box(
+            modifier
+                .clickable(
+                    onClick = onClick,
+                    enabled = enabled,
+                    role = Role.Tab,
+                )
+                .background(tabColor(selected))
+                .padding(4.dp),
+            contentAlignment = Alignment.Center
+        ) {
+            Text(text = text)
+        }
+    }
+}
+
+@Composable
+fun tabColor(selected: Boolean): Color {
+    return if (selected) {
+        MaterialTheme.colorScheme.secondaryContainer
+    } else {
+        Color.Transparent
+    }
+}
+
+@Composable
+private fun GroupsContent(
     groupsViewModel: GroupsViewModel,
     navController: NavHostController,
     facultyId: Long?,
-    kindId: Long?
+    kindId: Long?,
+    typeId: String?
 ) {
-    val uiState by groupsViewModel.uiState.collectAsState()
     val isLocal = facultyId == null
-    GroupsRoute(
+    val uiState = if (isLocal) {
+        groupsViewModel.localUiState.collectAsState().value
+    } else {
+        groupsViewModel.searchUiState.collectAsState().value
+    }
+    GroupsContent(
         uiState = uiState,
-        isLocal = isLocal,
         listState = groupListStateForKindId(kindId),
         onGroupPick = { group: Group ->
             groupsViewModel.saveAndPickGroup(group)
@@ -70,10 +324,11 @@ private fun GroupsRoute(
             if (isLocal) {
                 groupsViewModel.getLocalGroups()
             } else {
-                groupsViewModel.fetchGroupsBy(
-                    facultyId = facultyId!!,
-                    kindId = kindId ?: Kind.DEFAULT_KIND.id
+                groupsViewModel.select(
+                    kind = Kind.kindBy(kindId ?: Kind.DEFAULT.id),
+                    type = Type.typeBy(typeId ?: Type.DEFAULT.id)
                 )
+                groupsViewModel.fetchGroupsBy(facultyId!!)
             }
         },
         onAddGroupButtonClick = {
@@ -93,6 +348,38 @@ fun groupListStateForKindId(kindId: Long?): LazyListState {
         throw IllegalArgumentException("Incorrect kind id")
     }
     return if (kindId == null) localGroupState else facultyGroupStates[kindId]!!
+}
+
+@Composable
+private fun GroupsContent(
+    uiState: GroupsUiState,
+    listState: LazyListState,
+    onGroupPick: (Group) -> Unit,
+    refreshingState: SwipeRefreshState,
+    onRefresh: () -> Unit,
+    onAddGroupButtonClick: () -> Unit
+) {
+    when (uiState) {
+        is GroupsUiState.LocalGroupList -> {
+            LocalGroupsScreen(
+                levelsToGroups = uiState.groups,
+                listState = listState,
+                swipeRefreshState = refreshingState,
+                onGroupClick = onGroupPick,
+                onRefresh = onRefresh,
+                onAddGroupButtonClick = onAddGroupButtonClick
+            )
+        }
+        is GroupsUiState.SearchGroupList -> {
+            PickGroupScreen(
+                levelsToGroups = uiState.groups,
+                listState = listState,
+                swipeRefreshState = refreshingState,
+                onGroupPick = onGroupPick,
+                onRefresh = onRefresh
+            )
+        }
+    }
 }
 
 @Composable
@@ -123,34 +410,6 @@ fun FacultiesRoute(
             list = uiState.faculties,
             swipeRefreshState = refreshingState,
             onFacultyPick = onFacultyPick,
-            onRefresh = onRefresh
-        )
-    }
-}
-
-@Composable
-private fun GroupsRoute(
-    uiState: GroupsUiState,
-    isLocal: Boolean,
-    listState: LazyListState,
-    onGroupPick: (Group) -> Unit,
-    refreshingState: SwipeRefreshState,
-    onRefresh: () -> Unit,
-    onAddGroupButtonClick: () -> Unit
-) {
-    when (uiState) {
-        is GroupsUiState.GroupList -> if (isLocal) LocalGroupsScreen(
-            levelsToGroups = uiState.groups,
-            listState = listState,
-            swipeRefreshState = refreshingState,
-            onGroupClick = onGroupPick,
-            onRefresh = onRefresh,
-            onAddGroupButtonClick = onAddGroupButtonClick
-        ) else PickGroupScreen(
-            levelsToGroups = uiState.groups,
-            listState = listState,
-            swipeRefreshState = refreshingState,
-            onGroupPick = onGroupPick,
             onRefresh = onRefresh
         )
     }

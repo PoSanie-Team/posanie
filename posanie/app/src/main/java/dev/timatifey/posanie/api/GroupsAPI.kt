@@ -1,6 +1,5 @@
 package dev.timatifey.posanie.api
 
-import android.util.Log
 import dev.timatifey.posanie.model.data.Group
 import dev.timatifey.posanie.model.data.GroupsLevel
 
@@ -11,7 +10,7 @@ import org.jsoup.Jsoup
 
 class GroupsAPI(private val dispatcher: CoroutineDispatcher) {
 
-    suspend fun getGroups(facultyId: Long, selectedKind: Long) = withContext(dispatcher) {
+    suspend fun getGroups(facultyId: Long) = withContext(dispatcher) {
         val groups = mutableMapOf<Int, GroupsLevel>()
         val url = "https://ruz.spbstu.ru/faculty/$facultyId/groups/"
         val doc = Jsoup.connect(url).get()
@@ -22,11 +21,11 @@ class GroupsAPI(private val dispatcher: CoroutineDispatcher) {
             val jsonArray = data.optJSONArray(key) ?: return@forEach
             for (ind in 0 until jsonArray.length()) {
                 val jsonObject = jsonArray.optJSONObject(ind)
-                val kindId = jsonObject.getString("kind").toLong()
-                if (kindId != selectedKind) continue
                 val group = Group(
                     id = jsonObject.getString("id").toLong(),
                     title = jsonObject.getString("name"),
+                    kindId = jsonObject.getString("kind").toLong(),
+                    typeId = jsonObject.getString("type").toString(),
                     level = jsonObject.getInt("level")
                 )
                 addGroup(groups, group)

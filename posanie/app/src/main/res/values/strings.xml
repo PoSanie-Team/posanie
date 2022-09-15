@@ -8,4 +8,7 @@
     <string name="master">Master</string>
     <string name="specialist">Specialist</string>
     <string name="postgraduate">Postgraduate</string>
+    <string name="common">Common</string>
+    <string name="evening">Evening</string>
+    <string name="distance">Distance</string>
 </resources>

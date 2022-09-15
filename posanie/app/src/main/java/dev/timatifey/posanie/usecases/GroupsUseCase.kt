@@ -14,7 +14,7 @@ import javax.inject.Inject
 
 interface GroupsUseCase {
     suspend fun getLocalGroups(): Result<Map<Int, GroupsLevel>>
-    suspend fun fetchGroupsBy(facultyId: Long, degreeId: Long): Result<Map<Int, GroupsLevel>>
+    suspend fun fetchGroupsBy(facultyId: Long): Result<Map<Int, GroupsLevel>>
     suspend fun saveAndPickGroup(group: Group): Result<Boolean>
 }
 
@@ -37,10 +37,10 @@ class GroupsUseCaseImpl @Inject constructor(
             return@withContext Result.Success(result)
         }
 
-    override suspend fun fetchGroupsBy(facultyId: Long, degreeId: Long): Result<Map<Int, GroupsLevel>> =
+    override suspend fun fetchGroupsBy(facultyId: Long): Result<Map<Int, GroupsLevel>> =
         withContext(Dispatchers.IO) {
             try {
-                val groups = groupsAPI.getGroups(facultyId, degreeId)
+                val groups = groupsAPI.getGroups(facultyId)
                 if (groups.isEmpty()) {
                     return@withContext Result.Error(Exception())
                 }
