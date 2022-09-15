@@ -7,25 +7,25 @@ typealias GroupDomain = dev.timatifey.posanie.model.domain.Group
 class GroupMapper : Mapper<GroupData, GroupCache, GroupDomain>() {
     override fun dataToCache(data: GroupData): GroupCache {
         with(data) {
-            return GroupCache(id, title)
+            return GroupCache(id, title, level)
         }
     }
 
     override fun dataToDomain(data: GroupData): GroupDomain {
         with(data) {
-            return GroupDomain(id, title)
+            return GroupDomain(id, title, level)
         }
     }
 
     override fun cacheToDomain(cache: GroupCache): GroupDomain {
         with(cache) {
-            return GroupDomain(id, title, isPicked)
+            return GroupDomain(id, title, level, isPicked)
         }
     }
 
     override fun domainToCache(domain: GroupDomain): GroupCache {
         with(domain) {
-            return GroupCache(id, title, isPicked)
+            return GroupCache(id, title, level, isPicked)
         }
     }
 }

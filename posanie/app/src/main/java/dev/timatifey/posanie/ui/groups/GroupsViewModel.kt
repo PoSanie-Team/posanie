@@ -16,7 +16,9 @@ import javax.inject.Inject
 
 import dev.timatifey.posanie.R
 import dev.timatifey.posanie.model.Result
+import dev.timatifey.posanie.model.data.Kind
 import dev.timatifey.posanie.model.domain.Group
+import dev.timatifey.posanie.model.domain.GroupsLevel
 import dev.timatifey.posanie.model.successOr
 import dev.timatifey.posanie.usecases.GroupsUseCase
 import dev.timatifey.posanie.utils.ErrorMessage
@@ -27,22 +29,25 @@ sealed interface GroupsUiState {
     val errorMessages: List<ErrorMessage>
 
     data class GroupList(
-        val groups: List<Group>,
+        val groups: Map<Int, GroupsLevel>,
+        val selectedKind: Kind,
         override val isLoading: Boolean,
-        override val errorMessages: List<ErrorMessage>,
+        override val errorMessages: List<ErrorMessage>
     ) : GroupsUiState
 
 }
 
 private data class GroupsViewModelState(
-    val groups: List<Group>? = null,
+    val groups: Map<Int, GroupsLevel>? = null,
+    val selectedKind: Kind,
     val isLoading: Boolean = false,
     val errorMessages: List<ErrorMessage> = emptyList(),
 ) {
     fun toUiState(): GroupsUiState = GroupsUiState.GroupList(
-        groups = groups.orEmpty(),
+        groups = groups ?: emptyMap(),
+        selectedKind = selectedKind,
         isLoading = isLoading,
-        errorMessages = errorMessages,
+        errorMessages = errorMessages
     )
 }
 
@@ -51,7 +56,11 @@ class GroupsViewModel @Inject constructor(
     private val groupsUseCase: GroupsUseCase,
 ) : ViewModel() {
 
-    private val viewModelState = MutableStateFlow(GroupsViewModelState(isLoading = true))
+    private val viewModelState = MutableStateFlow(
+        GroupsViewModelState(
+            isLoading = true, selectedKind = Kind.BACHELOR
+        )
+    )
 
     val uiState: StateFlow<GroupsUiState> = viewModelState
         .map { it.toUiState() }
@@ -68,24 +77,25 @@ class GroupsViewModel @Inject constructor(
             val result = groupsUseCase.getLocalGroups()
             viewModelState.update { state ->
                 return@update state.copy(
-                    groups = result.successOr(emptyList()),
+                    groups = result.successOr(emptyMap()),
                     isLoading = false,
                 )
             }
         }
     }
 
-    fun fetchGroupsBy(facultyId: Long) {
+    fun fetchGroupsBy(facultyId: Long, kindId: Long) {
         viewModelState.update { it.copy(isLoading = true) }
 
         viewModelScope.launch {
-            val result = groupsUseCase.fetchGroupsBy(facultyId)
+            val result = groupsUseCase.fetchGroupsBy(facultyId, kindId)
             viewModelState.update { state ->
                 when (result) {
                     is Result.Success -> {
                         return@update state.copy(
                             groups = result.data,
-                            isLoading = false
+                            isLoading = false,
+                            selectedKind = Kind.kindBy(id = kindId)
                         )
                     }
                     is Result.Error -> {
@@ -94,9 +104,10 @@ class GroupsViewModel @Inject constructor(
                             messageId = R.string.load_error
                         )
                         return@update state.copy(
-                            groups = emptyList(),
+                            groups = emptyMap(),
                             errorMessages = errorMessages,
-                            isLoading = false
+                            isLoading = false,
+                            selectedKind = Kind.kindBy(id = kindId)
                         )
                     }
                 }

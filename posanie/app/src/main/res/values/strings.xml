@@ -4,4 +4,8 @@
     <string name="groups">Groups</string>
     <string name="settings">Settings</string>
     <string name="load_error">Load error</string>
+    <string name="bachelor">Bachelor</string>
+    <string name="master">Master</string>
+    <string name="specialist">Specialist</string>
+    <string name="postgraduate">Postgraduate</string>
 </resources>

@@ -11,14 +11,14 @@ import dev.timatifey.posanie.ui.theme.PoSanieTheme
 fun PoSanieApp() {
     PoSanieTheme {
         val navController = rememberNavController()
-        val navItems = listOf(
+        val bottomNavItems = listOf(
             BottomNavItems.Scheduler,
             BottomNavItems.Groups,
             BottomNavItems.Settings,
         )
         Scaffold(
             bottomBar = {
-                BottomNavigationBar(navController = navController, items = navItems)
+                BottomNavigationBar(navController = navController, items = bottomNavItems)
             },
         ) {
             PoSanieNavGraph(navController = navController)
