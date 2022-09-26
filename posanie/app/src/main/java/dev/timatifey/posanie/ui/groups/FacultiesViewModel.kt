@@ -97,4 +97,10 @@ class FacultiesViewModel @Inject constructor(
         }
     }
 
+    fun getFaculty(id: Long): Faculty? {
+        for (faculty in viewModelState.value.faculties ?: emptyList()) {
+            if (faculty.id == id) return faculty
+        }
+        return null
+    }
 }
