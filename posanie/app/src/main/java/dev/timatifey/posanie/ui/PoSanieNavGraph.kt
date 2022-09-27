@@ -1,46 +1,10 @@
 package dev.timatifey.posanie.ui
 
-import android.provider.Contacts.SettingsColumns.KEY
-import android.view.KeyEvent.KEYCODE_DEL
-import android.view.KeyEvent.KEYCODE_ENTER
-import androidx.compose.animation.AnimatedVisibility
-import androidx.compose.animation.Crossfade
-import androidx.compose.animation.expandVertically
-import androidx.compose.animation.shrinkVertically
-import androidx.compose.foundation.background
-import androidx.compose.foundation.clickable
-import androidx.compose.foundation.layout.*
-import androidx.compose.foundation.selection.selectableGroup
-import androidx.compose.foundation.shape.RoundedCornerShape
-import androidx.compose.foundation.text.BasicTextField
-import androidx.compose.foundation.text.KeyboardActions
-import androidx.compose.foundation.text.KeyboardOptions
-import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.*
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
-import androidx.compose.ui.Alignment
-import androidx.compose.ui.ExperimentalComposeUiApi
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.focus.FocusRequester
-import androidx.compose.ui.focus.focusRequester
-import androidx.compose.ui.focus.onFocusChanged
-import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.input.key.Key
-import androidx.compose.ui.input.key.KeyEvent
-import androidx.compose.ui.input.key.nativeKeyCode
-import androidx.compose.ui.input.key.onKeyEvent
-import androidx.compose.ui.layout.SubcomposeLayout
-import androidx.compose.ui.platform.LocalFocusManager
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
-import androidx.compose.ui.semantics.Role
-import androidx.compose.ui.text.TextStyle
-import androidx.compose.ui.text.input.ImeAction
-import androidx.compose.ui.text.input.KeyboardType
-import androidx.compose.ui.unit.Constraints
-import androidx.compose.ui.unit.Dp
-import androidx.compose.ui.unit.dp
 
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.navigation.*
@@ -54,7 +18,7 @@ import androidx.navigation.compose.currentBackStackEntryAsState
 import androidx.navigation.compose.rememberNavController
 import dev.timatifey.posanie.model.data.Kind
 import dev.timatifey.posanie.model.data.Type
-import dev.timatifey.posanie.ui.groups.*
+import dev.timatifey.posanie.ui.picker.*
 
 import dev.timatifey.posanie.ui.scheduler.SchedulerRoute
 import dev.timatifey.posanie.ui.scheduler.SchedulerViewModel
@@ -75,12 +39,10 @@ fun PoSanieNavGraph(
             val viewModel = hiltViewModel<SchedulerViewModel>()
             SchedulerRoute(schedulerViewModel = viewModel)
         }
-
-        groupsNavGraph(
+        pickerNavGraph(
             navController,
-            route = BottomNavItems.Groups.route
+            route = BottomNavItems.Picker.route
         )
-
         composable(BottomNavItems.Settings.route) {
             val viewModel = hiltViewModel<SettingsViewModel>()
             SettingsRoute(settingsViewModel = viewModel)
@@ -88,25 +50,58 @@ fun PoSanieNavGraph(
     }
 }
 
-fun NavGraphBuilder.groupsNavGraph(
+fun NavGraphBuilder.pickerNavGraph(
     navController: NavHostController,
-    route: String = BottomNavItems.Groups.route,
+    route: String = BottomNavItems.Picker.route
 ) {
     navigation(
-        startDestination = GroupsNavItems.LocalGroups.route,
+        startDestination = PickerNavItems.Local.route,
         route = route
     ) {
-        composable(GroupsNavItems.LocalGroups.route) {
-            val viewModel = hiltViewModel<GroupsViewModel>()
+        composable(PickerNavItems.Local.route) {
+            val groupsViewModel = hiltViewModel<GroupsViewModel>()
+            val teachersViewModel = hiltViewModel<TeachersViewModel>()
             LaunchedEffect(true) {
-                viewModel.getLocalGroups()
+                groupsViewModel.getLocalGroups()
+                teachersViewModel.getLocalTeachers()
             }
-            LocalGroupsRoute(
-                groupsViewModel = viewModel,
+            LocalRoute(
+                groupsViewModel = groupsViewModel,
+                teachersViewModel = teachersViewModel,
                 navController = navController
             )
         }
-        composable(GroupsNavItems.Faculties.route) {
+        remoteNavGraph(
+            route = PickerNavItems.Remote.route,
+            navController = navController
+        )
+    }
+}
+
+fun NavGraphBuilder.remoteNavGraph(
+    navController: NavHostController,
+    route: String = PickerNavItems.Remote.route,
+) {
+    navigation(
+        startDestination = RemoteNavItems.ScheduleTypes.route,
+        route = route
+    ) {
+        composable(RemoteNavItems.ScheduleTypes.route) {
+            ScheduleTypesRoute(navController = navController)
+        }
+        composable(RemoteNavItems.Teachers.route) {
+            val teachersViewModel = hiltViewModel<TeachersViewModel>()
+            val searchState = remember { mutableStateOf(SearchState.NOT_STARTED) }
+            LaunchedEffect(true) {
+                teachersViewModel.fetchTeachersBy("")
+            }
+            TeachersRoute(
+                navController = navController,
+                viewModel = teachersViewModel,
+                searchState = searchState
+            )
+        }
+        composable(RemoteNavItems.Faculties.route) {
             val facultiesViewModel = hiltViewModel<FacultiesViewModel>()
             FacultiesRoute(
                 facultiesViewModel = facultiesViewModel,
@@ -114,7 +109,7 @@ fun NavGraphBuilder.groupsNavGraph(
             )
         }
         composable(
-            GroupsNavItems.FacultyGroups.route,
+            RemoteNavItems.Groups.route,
             arguments = listOf(
                 navArgument(FACULTY_ID_ARG) { type = NavType.LongType },
                 navArgument(KIND_ID_ARG) { type = NavType.LongType },
@@ -135,9 +130,9 @@ fun NavGraphBuilder.groupsNavGraph(
                 groupsViewModel.fetchGroupsBy(facultyId)
             }
 
-            val facultyGroupsState = remember { mutableStateOf(FacultyGroupsState.DEFAULT) }
-            FacultyGroupsRoute(
-                facultyGroupsState = facultyGroupsState,
+            val searchState = remember { mutableStateOf(SearchState.NOT_STARTED) }
+            RemoteGroupsRoute(
+                searchState = searchState,
                 groupsViewModel = groupsViewModel,
                 navController = navController,
                 facultyId = facultyId,

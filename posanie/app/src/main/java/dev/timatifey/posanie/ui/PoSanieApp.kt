@@ -16,7 +16,7 @@ fun PoSanieApp() {
         val navController = rememberNavController()
         val bottomNavItems = listOf(
             BottomNavItems.Scheduler,
-            BottomNavItems.Groups,
+            BottomNavItems.Picker,
             BottomNavItems.Settings,
         )
         Scaffold(

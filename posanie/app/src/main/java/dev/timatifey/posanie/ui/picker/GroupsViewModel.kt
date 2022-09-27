@@ -1,7 +1,6 @@
-package dev.timatifey.posanie.ui.groups
+package dev.timatifey.posanie.ui.picker
 
 import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.remember
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import dagger.hilt.android.lifecycle.HiltViewModel
@@ -32,13 +31,13 @@ sealed interface GroupsUiState {
     val errorMessages: List<ErrorMessage>
 
     data class LocalGroupList(
-        val groups: Map<Int, GroupsLevel>,
+        val levelsToGroups: Map<Int, GroupsLevel>,
         override val isLoading: Boolean,
         override val errorMessages: List<ErrorMessage>
     ) : GroupsUiState
 
-    data class SearchGroupList(
-        val groups: Map<Int, GroupsLevel>,
+    data class RemoteGroupList(
+        val levelsToGroups: Map<Int, GroupsLevel>,
         val selectedKind: Kind,
         val selectedType: Type,
         override val isLoading: Boolean,
@@ -57,13 +56,13 @@ private data class GroupsViewModelState(
 ) {
 
     fun toLocalUiState(): GroupsUiState.LocalGroupList = GroupsUiState.LocalGroupList(
-        groups = localGroups ?: emptyMap(),
+        levelsToGroups = localGroups ?: emptyMap(),
         isLoading = isLoading,
         errorMessages = errorMessages
     )
 
-    fun toSearchUiState(): GroupsUiState.SearchGroupList = GroupsUiState.SearchGroupList(
-        groups = filteredRemoteGroups ?: emptyMap(),
+    fun toSearchUiState(): GroupsUiState.RemoteGroupList = GroupsUiState.RemoteGroupList(
+        levelsToGroups = filteredRemoteGroups ?: emptyMap(),
         selectedKind = selectedKind,
         selectedType = selectedType,
         isLoading = isLoading,
@@ -90,7 +89,7 @@ class GroupsViewModel @Inject constructor(
             viewModelState.value.toLocalUiState()
         )
 
-    val searchUiState: StateFlow<GroupsUiState.SearchGroupList> = viewModelState
+    val searchUiState: StateFlow<GroupsUiState.RemoteGroupList> = viewModelState
         .map { it.toSearchUiState() }
         .stateIn(
             viewModelScope,

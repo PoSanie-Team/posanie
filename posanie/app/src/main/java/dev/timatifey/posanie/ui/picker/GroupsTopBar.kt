@@ -1,8 +1,8 @@
-package dev.timatifey.posanie.ui.groups
+package dev.timatifey.posanie.ui.picker
 
 import android.view.KeyEvent
+import androidx.compose.animation.Crossfade
 import androidx.compose.foundation.background
-import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.BasicTextField
@@ -21,7 +21,6 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.focus.FocusRequester
 import androidx.compose.ui.focus.focusRequester
 import androidx.compose.ui.focus.onFocusChanged
-import androidx.compose.ui.focus.onFocusEvent
 import androidx.compose.ui.input.key.onKeyEvent
 import androidx.compose.ui.layout.SubcomposeLayout
 import androidx.compose.ui.platform.LocalFocusManager
@@ -33,14 +32,69 @@ import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import androidx.navigation.NavHostController
 import dev.timatifey.posanie.model.data.Type
+import dev.timatifey.posanie.ui.RemoteNavItems
 
+enum class SearchState {
+    NOT_STARTED, IN_PROGRESS, DONE
+}
 
 const val COURSE_NAME_LENGTH = 7
 const val GROUP_NAME_LENGTH = 5
 
+@Composable
+fun GroupsTopBar(
+    navController: NavHostController,
+    groupsViewModel: GroupsViewModel,
+    facultyId: Long,
+    facultyName: String,
+    kindId: Long,
+    typeId: String,
+    searchState: MutableState<SearchState>,
+    courseSearchState: MutableState<String>,
+    groupSearchState: MutableState<String>,
+) {
+    Crossfade(targetState = searchState.value) { state ->
+        when (state) {
+            SearchState.NOT_STARTED -> {
+                DefaultGroupsTopBar(
+                    navController = navController,
+                    facultyName = facultyName,
+                    searchState = searchState
+                )
+            }
+            else -> {
+                SearchGroupsTopBar(
+                    navController = navController,
+                    groupsViewModel = groupsViewModel,
+                    facultyId = facultyId,
+                    kindId = kindId,
+                    typeId = typeId,
+                    searchState = searchState,
+                    courseSearchState = courseSearchState,
+                    groupSearchState = groupSearchState
+                )
+            }
+        }
+
+    }
+}
+
+@Composable
+fun DefaultGroupsTopBar(
+    navController: NavHostController,
+    facultyName: String,
+    searchState: MutableState<SearchState>
+) {
+    DefaultGroupsTopBar(
+        navController = navController,
+        facultyName = facultyName,
+        openSearch = { searchState.value = SearchState.IN_PROGRESS }
+    )
+}
+
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun DefaultTopAppBar(
+fun DefaultGroupsTopBar(
     navController: NavHostController,
     facultyName: String,
     openSearch: () -> Unit
@@ -68,9 +122,47 @@ fun DefaultTopAppBar(
     )
 }
 
+@Composable
+fun SearchGroupsTopBar(
+    navController: NavHostController,
+    groupsViewModel: GroupsViewModel,
+    facultyId: Long,
+    kindId: Long,
+    typeId: String,
+    searchState: MutableState<SearchState>,
+    courseSearchState: MutableState<String>,
+    groupSearchState: MutableState<String>,
+) {
+    SearchGroupsTopBar(
+        navController = navController,
+        typeId = typeId,
+        inProgress = searchState.value == SearchState.IN_PROGRESS,
+        courseSearchState = courseSearchState,
+        groupSearchState = groupSearchState,
+        openSearch = {
+            searchState.value = SearchState.IN_PROGRESS
+        },
+        updateSearch = {
+            groupsViewModel.filterGroups()
+        },
+        submitSearch = {
+            searchState.value = SearchState.DONE
+        },
+        closeSearch = {
+            searchState.value = SearchState.NOT_STARTED
+            courseSearchState.value = ""
+            groupSearchState.value = ""
+            groupsViewModel.filterGroups()
+            navController.navigate(RemoteNavItems.Groups.routeBy(facultyId, kindId)) {
+                launchSingleTop = true
+            }
+        }
+    )
+}
+
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun SearchTopAppBar(
+fun SearchGroupsTopBar(
     navController: NavHostController,
     typeId: String,
     inProgress: Boolean,
@@ -81,12 +173,10 @@ fun SearchTopAppBar(
     submitSearch: () -> Unit,
     closeSearch: () -> Unit,
 ) {
-
-
     SmallTopAppBar(
         title = {
             val groupPrefix = Type.typeBy(typeId).prefix
-            SearchField(
+            GroupsSearchField(
                 courseTextState = courseSearchState,
                 groupTextState = groupSearchState,
                 groupPrefix = groupPrefix,
@@ -126,7 +216,7 @@ fun SearchTopAppBar(
 }
 
 @Composable
-fun SearchField(
+fun GroupsSearchField(
     groupPrefix: String,
     courseTextState: MutableState<String>,
     groupTextState: MutableState<String>,
@@ -262,7 +352,6 @@ fun GroupPartTextField(
             },
         )
     }
-
 }
 
 @Composable
