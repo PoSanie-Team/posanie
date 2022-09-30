@@ -1,22 +1,43 @@
 package dev.timatifey.posanie.ui.picker
 
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
-import androidx.compose.material3.Card
-import androidx.compose.material3.ExperimentalMaterial3Api
-import androidx.compose.material3.LocalMinimumTouchTargetEnforcement
-import androidx.compose.material3.Text
+import androidx.compose.material3.*
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
+import androidx.navigation.NavController
+import androidx.navigation.NavHostController
 
+@OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun ScheduleTypeScreen(selectGroups: () -> Unit, selectTeachers: () -> Unit) {
-    Column {
-        ScheduleTypeItem(name = "Groups", onClick = selectGroups)
-        ScheduleTypeItem(name = "Teachers", onClick = selectTeachers)
+fun ScheduleTypeScreen(
+    onBackClick: () -> Unit,
+    selectGroups: () -> Unit,
+    selectTeachers: () -> Unit
+) {
+    Scaffold(
+        topBar = {
+            BasicTopBar(
+                onBackClick = onBackClick,
+                content = {
+                    Text(
+                        text = "What do you want to add?",
+                        style = MaterialTheme.typography.titleMedium
+                    )
+                }
+            )
+        }
+    ) { paddingValues ->
+        Column(
+            modifier = Modifier.padding(paddingValues)
+        ) {
+            ScheduleTypeItem(name = "Groups", onClick = selectGroups)
+            ScheduleTypeItem(name = "Teachers", onClick = selectTeachers)
+        }
     }
 }
 

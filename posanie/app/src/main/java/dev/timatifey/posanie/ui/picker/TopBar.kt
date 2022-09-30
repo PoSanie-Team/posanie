@@ -1,7 +1,10 @@
 package dev.timatifey.posanie.ui.picker
 
 import android.view.KeyEvent
+import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.Crossfade
+import androidx.compose.animation.fadeIn
+import androidx.compose.animation.fadeOut
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.shape.RoundedCornerShape
@@ -21,6 +24,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.focus.FocusRequester
 import androidx.compose.ui.focus.focusRequester
 import androidx.compose.ui.focus.onFocusChanged
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.input.key.onKeyEvent
 import androidx.compose.ui.layout.SubcomposeLayout
 import androidx.compose.ui.platform.LocalFocusManager
@@ -308,48 +312,40 @@ fun GroupPartTextField(
             Text(text = exampleText, style = textStyle)
         }
     ) { measuredWidth ->
-        BasicTextField(
-            modifier = modifier
-                .background(
-                    color = MaterialTheme.colorScheme.secondaryContainer,
-                    shape = RoundedCornerShape(8.dp)
-                )
-                .padding(innerPadding)
-                .width(measuredWidth)
-                .focusRequester(focusRequester)
-                .onFocusChanged { focusState ->
-                    if (focusState.isFocused) {
-                        onSelected()
-                    }
-                }
-                .onKeyEvent {
-                    if (it.nativeKeyEvent.keyCode == KeyEvent.KEYCODE_DEL) {
-                        if (state.value.isEmpty()) {
-                            onMinLength()
-                            return@onKeyEvent true
-                        }
-                    }
-                    return@onKeyEvent false
-                },
-
-            value = state.value,
+        BasicSearchField(
+            modifier = modifier,
+            innerPadding = innerPadding,
+            maxWidth = measuredWidth,
+            searchTextState = state,
             textStyle = textStyle,
             keyboardOptions = KeyboardOptions(
                 keyboardType = KeyboardType.Number,
                 imeAction = ImeAction.Search
             ),
-            keyboardActions = KeyboardActions(
-                onSearch = { submitSearch() }
-            ),
-            onValueChange = {
+            focusRequester = focusRequester,
+            onSelected = onSelected,
+            submitSearch = submitSearch,
+            onKeyEvent = {
+                var result = false
+                if (it.nativeKeyEvent.keyCode == KeyEvent.KEYCODE_DEL) {
+                    if (state.value.isEmpty()) {
+                        onMinLength()
+                        result = true
+                    }
+                }
+                result
+            },
+            changeSideEffects = {
                 if (it.length <= maxLength) {
-                    state.value = it
                     onChanged()
                 }
                 if (it.length == maxLength) {
                     onMaxLength()
                 }
             },
+            canChange = {
+                it.length <= maxLength
+            }
         )
     }
 }
@@ -370,4 +366,157 @@ fun MeasureUnconstrainedViewWidth(
             contentPlaceable.place(0, 0)
         }
     }
+}
+
+@Composable
+fun TeachersTopBar(
+    navController: NavHostController,
+    isDone: Boolean,
+    searchTextState: MutableState<String>,
+    openSearch: () -> Unit,
+    submitSearch: () -> Unit,
+    closeSearch: () -> Unit
+) {
+    val focusRequester = FocusRequester()
+    BasicTopBar(
+        onBackClick = { navController.popBackStack() },
+        content = {
+            TeachersSearchField(
+                searchTextState = searchTextState,
+                textStyle = MaterialTheme.typography.bodyMedium,
+                innerPadding = PaddingValues(6.dp),
+                onSelected = openSearch,
+                submitSearch = submitSearch,
+                focusRequester = focusRequester
+            )
+        },
+        actions = {
+            if (isDone) {
+                IconButton (onClick = closeSearch) {
+                    Icon(
+                        imageVector = Icons.Filled.Close,
+                        contentDescription = "Localized description"
+                    )
+                }
+            } else {
+                IconButton (onClick = submitSearch) {
+                    Icon(
+                        imageVector = Icons.Filled.Search,
+                        contentDescription = "Localized description"
+                    )
+                }
+            }
+        }
+    )
+}
+
+@Composable
+fun TeachersSearchField(
+    searchTextState: MutableState<String>,
+    modifier: Modifier = Modifier,
+    textStyle: TextStyle = TextStyle.Default,
+    innerPadding: PaddingValues = PaddingValues(0.dp),
+    focusRequester: FocusRequester,
+    onSelected: () -> Unit,
+    submitSearch: () -> Unit
+) {
+    BasicSearchField(
+        searchTextState = searchTextState,
+        modifier = modifier,
+        textStyle = textStyle,
+        innerPadding = innerPadding,
+        focusRequester = focusRequester,
+        prompt = "Type teacher name",
+        onSelected = onSelected,
+        submitSearch = submitSearch
+    )
+}
+
+@Composable
+fun BasicSearchField(
+    searchTextState: MutableState<String>,
+    modifier: Modifier = Modifier,
+    innerPadding: PaddingValues = PaddingValues(0.dp),
+    maxWidth: Dp? = null,
+    textStyle: TextStyle = TextStyle.Default,
+    keyboardOptions: KeyboardOptions = KeyboardOptions(imeAction = ImeAction.Search),
+    focusRequester: FocusRequester,
+    prompt: String = "",
+    onSelected: () -> Unit,
+    submitSearch: () -> Unit,
+    onKeyEvent: (androidx.compose.ui.input.key.KeyEvent) -> Boolean = { false },
+    changeSideEffects: (String) -> Unit = {},
+    canChange: (String) -> Boolean = { true }
+) {
+    val modifierWithBackground =  modifier
+        .background(
+            color = MaterialTheme.colorScheme.secondaryContainer,
+            shape = RoundedCornerShape(8.dp)
+        )
+        .padding(innerPadding)
+    val modifierWithWidth = if (maxWidth == null) {
+        modifierWithBackground.fillMaxWidth()
+    } else {
+        modifierWithBackground.width(maxWidth)
+    }
+    val finalModifier = modifierWithWidth
+        .focusRequester(focusRequester)
+        .onFocusChanged { focusState ->
+            if (focusState.isFocused) {
+                onSelected()
+            }
+        }
+        .onKeyEvent {
+            onKeyEvent(it)
+        }
+    BasicTextField(
+        modifier = finalModifier,
+        value = searchTextState.value,
+        textStyle = textStyle,
+        keyboardOptions = keyboardOptions,
+        singleLine = true,
+        keyboardActions = KeyboardActions(
+            onSearch = { submitSearch() }
+        ),
+        onValueChange = {
+            if (canChange(it)) {
+                searchTextState.value = it
+                changeSideEffects(it)
+            }
+        },
+    )
+    val showPrompt = searchTextState.value.isEmpty()
+    AnimatedVisibility(
+        visible = showPrompt,
+        enter = fadeIn(),
+        exit = fadeOut()
+    ) {
+        Text(
+            text = prompt,
+            modifier = modifier.padding(innerPadding),
+            style = textStyle,
+            color = Color.Unspecified.copy(alpha = 0.5f)
+        )
+    }
+}
+
+@OptIn(ExperimentalMaterial3Api::class)
+@Composable
+fun BasicTopBar(
+    onBackClick: () -> Unit,
+    content: @Composable () -> Unit = {},
+    actions: @Composable RowScope.() -> Unit = {}
+) {
+    SmallTopAppBar(
+        title = content,
+        navigationIcon = {
+            IconButton(onClick = onBackClick) {
+                Icon(
+                    imageVector = Icons.Filled.ArrowBack,
+                    contentDescription = "Localized description"
+                )
+            }
+        },
+        actions = actions
+    )
 }

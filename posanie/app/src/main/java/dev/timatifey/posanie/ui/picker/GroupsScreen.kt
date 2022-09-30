@@ -308,7 +308,10 @@ fun RefreshableGroupsList(
     SwipeRefresh(state = swipeRefreshState, onRefresh = onRefresh, modifier = Modifier.fillMaxSize()) {
         if (!swipeRefreshState.isRefreshing) {
             if (levelsToGroups.isEmpty()) {
-                Text("Can't to fetch groups from server.")
+                Text(
+                    text = "Can't to fetch groups from server.",
+                    modifier = Modifier.padding(4.dp)
+                )
             } else {
                 ScrollableGroupsList(
                     levelsToGroups = levelsToGroups,
@@ -352,7 +355,7 @@ fun GroupsList(
         val levels = levelsToGroups.keys.toList().sorted()
         levels.forEach { level ->
             Column {
-                Text("$level курс")
+                Text(text = "$level курс", modifier = Modifier.padding(4.dp))
                 GroupsLevelList(levelsToGroups[level]?.getGroups() ?: emptyList(), groupsInRow, onGroupClick)
             }
         }

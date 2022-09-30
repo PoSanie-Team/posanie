@@ -1,38 +1,59 @@
 package dev.timatifey.posanie.ui.picker
 
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
-import androidx.compose.material3.Card
-import androidx.compose.material3.ExperimentalMaterial3Api
-import androidx.compose.material3.LocalMinimumTouchTargetEnforcement
-import androidx.compose.material3.Text
+import androidx.compose.material3.*
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
+import androidx.navigation.NavController
+import androidx.navigation.NavHostController
 import com.google.accompanist.swiperefresh.SwipeRefresh
 import com.google.accompanist.swiperefresh.SwipeRefreshState
 import dev.timatifey.posanie.model.domain.Faculty
 
+@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun FacultiesScreen(
+    onBackClick: () -> Unit,
     list: List<Faculty>,
     swipeRefreshState: SwipeRefreshState,
     onFacultyPick: (Faculty) -> Unit,
     onRefresh: () -> Unit,
 ) {
-    SwipeRefresh(state = swipeRefreshState, onRefresh = onRefresh) {
-        if (!swipeRefreshState.isRefreshing) {
-            if (list.isEmpty()) {
-                Text("Can't to fetch faculties from server.")
-            } else {
-                FacultiesList(list, onFacultyPick)
+    Scaffold(
+        topBar = {
+            BasicTopBar(
+                onBackClick = onBackClick,
+                content = {
+                    Text(
+                        text = "Faculties",
+                        style = MaterialTheme.typography.titleMedium
+                    )
+                }
+            )
+        }
+    ) { paddingValues ->
+        SwipeRefresh(state = swipeRefreshState, onRefresh = onRefresh) {
+            if (!swipeRefreshState.isRefreshing) {
+                Box(
+                    modifier = Modifier.padding(paddingValues)
+                ) {
+                    if (list.isEmpty()) {
+                        Text( "Can't to fetch faculties from server.")
+                    } else {
+                        FacultiesList(list, onFacultyPick)
+                    }
+                }
             }
         }
     }
+
 }
 
 @Composable

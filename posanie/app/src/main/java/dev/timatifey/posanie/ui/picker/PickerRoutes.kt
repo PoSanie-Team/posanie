@@ -35,6 +35,7 @@ fun ScheduleTypesRoute(
     navController: NavHostController
 ) {
     ScheduleTypeScreen(
+        onBackClick = { navController.popBackStack() },
         selectGroups = { navController.navigate(RemoteNavItems.Faculties.route) },
         selectTeachers = { navController.navigate(RemoteNavItems.Teachers.route) }
     )
@@ -56,10 +57,11 @@ fun TeachersRoute(
 @Composable
 fun FacultiesRoute(
     facultiesViewModel: FacultiesViewModel,
-    navController: NavController
+    navController: NavHostController
 ) {
     val uiState by facultiesViewModel.uiState.collectAsState()
     FacultiesRoute(
+        navController = navController,
         uiState = uiState,
         onFacultyPick = {
             navController.navigate(RemoteNavItems.Groups.routeBy(facultyId = it.id))
@@ -71,6 +73,7 @@ fun FacultiesRoute(
 
 @Composable
 fun FacultiesRoute(
+    navController: NavHostController,
     uiState: FacultiesUiState,
     onFacultyPick: (Faculty) -> Unit,
     refreshingState: SwipeRefreshState,
@@ -78,6 +81,7 @@ fun FacultiesRoute(
 ) {
     when (uiState) {
         is FacultiesUiState.FacultiesList -> FacultiesScreen(
+            onBackClick = { navController.popBackStack() },
             list = uiState.faculties,
             swipeRefreshState = refreshingState,
             onFacultyPick = onFacultyPick,

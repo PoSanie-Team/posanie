@@ -48,6 +48,7 @@ fun TeachersScreen(
                 closeSearch = {
                     searchState.value = SearchState.NOT_STARTED
                     searchTextState.value = ""
+                    viewModel.fetchTeachersBy(searchTextState.value)
                 })
         },
         content = { paddingValues ->
@@ -80,7 +81,10 @@ fun RefreshableTeachersList(
     ) {
         if (!swipeRefreshState.isRefreshing) {
             if (teachersList.isEmpty()) {
-                Text("Can't find any teachers. Please try another search query.")
+                Text(
+                    text ="Can't find any teachers. Please try another search query.",
+                    modifier = Modifier.padding(4.dp)
+                )
             } else {
                 ScrollableTeachersList(
                     teachersList = teachersList,
@@ -147,12 +151,12 @@ fun TeacherItem(teacher: Teacher, onClick: (Teacher) -> Unit) {
 @Composable
 fun TeachersListPreview() {
     TeachersList(listOf(
-        Teacher(name = "3530901/90202"),
-        Teacher(name = "3530901/90202123"),
-        Teacher(name = "3530901/902023424"),
-        Teacher(name = "3530901/90203"),
-        Teacher(name = "35309/90201"),
-        Teacher(name = "35309/90101"),
+        Teacher(name = "Гуляка Николай Андреевич"),
+        Teacher(name = "Сисюк Наталья Владамировна"),
+        Teacher(name = "Заебомбус Ахмед Мустафанович"),
+        Teacher(name = "Абоба Николай Викторович"),
+        Teacher(name = "Трансплантант Зеро Гелиевич"),
+        Teacher(name = "Сус Амог Усович"),
     ), Modifier,
         {}
     )
