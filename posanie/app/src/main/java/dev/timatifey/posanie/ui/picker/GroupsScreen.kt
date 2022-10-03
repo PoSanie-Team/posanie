@@ -1,13 +1,14 @@
-package dev.timatifey.posanie.ui.groups
+package dev.timatifey.posanie.ui.picker
 
 import androidx.compose.animation.AnimatedVisibility
-import androidx.compose.animation.Crossfade
 import androidx.compose.animation.expandVertically
 import androidx.compose.animation.shrinkVertically
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.LazyListState
+import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.foundation.selection.selectableGroup
 import androidx.compose.foundation.shape.RoundedCornerShape
@@ -18,98 +19,71 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.semantics.Role
+import androidx.compose.ui.text.style.TextAlign
+import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
-import androidx.navigation.NavController
 import androidx.navigation.NavGraph.Companion.findStartDestination
 import androidx.navigation.NavHostController
+import com.google.accompanist.swiperefresh.SwipeRefresh
 import com.google.accompanist.swiperefresh.SwipeRefreshState
 import com.google.accompanist.swiperefresh.rememberSwipeRefreshState
+import dev.timatifey.posanie.model.cache.COURSE_GROUP_DELIMITER
 import dev.timatifey.posanie.model.data.Kind
 import dev.timatifey.posanie.model.data.Type
-import dev.timatifey.posanie.model.domain.Faculty
 import dev.timatifey.posanie.model.domain.Group
-import dev.timatifey.posanie.ui.*
+import dev.timatifey.posanie.model.domain.GroupsLevel
+import dev.timatifey.posanie.ui.KindNavItems
+import dev.timatifey.posanie.ui.PickerNavItems
+import dev.timatifey.posanie.ui.RemoteNavItems
+import dev.timatifey.posanie.ui.TypeNavItems
 import java.lang.IllegalArgumentException
-
-
-enum class FacultyGroupsState {
-    DEFAULT, SEARCH_IN_PROGRESS, SEARCH_DONE
-}
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun FacultyGroupsRoute(
-    facultyGroupsState: MutableState<FacultyGroupsState>,
+fun RemoteGroupsScreen(
+    searchState: MutableState<SearchState>,
     groupsViewModel: GroupsViewModel,
     navController: NavHostController,
     facultyId: Long,
     facultyName: String,
     kindId: Long,
     typeId: String
-    ) {
+) {
     val courseSearchState = groupsViewModel.courseSearchState
     val groupSearchState = groupsViewModel.groupSearchState
 
     Scaffold(
         topBar = {
-            Crossfade(targetState = facultyGroupsState.value) { state ->
-                when (state) {
-                    FacultyGroupsState.DEFAULT -> {
-                        DefaultTopAppBar(
-                            navController = navController,
-                            facultyName = facultyName,
-                            openSearch = { facultyGroupsState.value = FacultyGroupsState.SEARCH_IN_PROGRESS }
-                        )
-                    }
-                    else -> {
-                        SearchTopAppBar(
-                            navController = navController,
-                            typeId = typeId,
-                            inProgress = facultyGroupsState.value == FacultyGroupsState.SEARCH_IN_PROGRESS,
-                            courseSearchState = courseSearchState,
-                            groupSearchState = groupSearchState,
-                            openSearch = {
-                                facultyGroupsState.value = FacultyGroupsState.SEARCH_IN_PROGRESS
-                            },
-                            updateSearch = {
-                                groupsViewModel.filterGroups()
-                            },
-                            submitSearch = {
-                                facultyGroupsState.value = FacultyGroupsState.SEARCH_DONE
-                            },
-                            closeSearch = {
-                                facultyGroupsState.value = FacultyGroupsState.DEFAULT
-                                courseSearchState.value = ""
-                                groupSearchState.value = ""
-                                groupsViewModel.filterGroups()
-                                navController.navigate(GroupsNavItems.FacultyGroups.routeBy(facultyId, kindId)) {
-                                    launchSingleTop = true
-                                }
-                            }
-                        )
-                    }
-                }
-
-            }
+            GroupsTopBar(
+                navController = navController,
+                groupsViewModel = groupsViewModel,
+                facultyId = facultyId,
+                facultyName = facultyName,
+                kindId = kindId,
+                typeId = typeId,
+                searchState = searchState,
+                courseSearchState = courseSearchState,
+                groupSearchState = groupSearchState
+            )
         },
         content = { innerPadding ->
-            FacultyGroupsContent(
+            RemoteGroupsContent(
                 innerPadding = innerPadding,
                 navController = navController,
                 viewModel = groupsViewModel,
                 facultyId = facultyId,
                 kindId = kindId,
                 typeId = typeId,
-                showTypes = facultyGroupsState.value != FacultyGroupsState.DEFAULT
+                showTypes = searchState.value != SearchState.NOT_STARTED
             )
         }
     )
 }
 
 @Composable
-fun FacultyGroupsContent(
+fun RemoteGroupsContent(
     innerPadding: PaddingValues,
     navController: NavHostController,
     viewModel: GroupsViewModel,
@@ -149,7 +123,7 @@ fun FacultyGroupsContent(
                 items = typeNavItems
             )
         }
-        GroupsContent(
+        RemoteGroupsList(
             groupsViewModel = viewModel,
             navController = navController,
             facultyId = facultyId,
@@ -157,20 +131,6 @@ fun FacultyGroupsContent(
             typeId = typeId
         )
     }
-}
-
-@Composable
-fun LocalGroupsRoute(
-    groupsViewModel: GroupsViewModel,
-    navController: NavHostController
-) {
-    GroupsContent(
-        groupsViewModel = groupsViewModel,
-        navController = navController,
-        facultyId = null,
-        kindId = null,
-        typeId = null
-    )
 }
 
 @Composable
@@ -187,7 +147,7 @@ fun GroupKindNavigationBar(
         val uiState by viewModel.searchUiState.collectAsState()
         val selectedKind = uiState.selectedKind
         items.forEach { tab ->
-            val tabRoute = GroupsNavItems.FacultyGroups.routeBy(facultyId, tab.kind.id)
+            val tabRoute = RemoteNavItems.Groups.routeBy(facultyId, tab.kind.id)
             CategoryBarTextItem(
                 text = stringResource(tab.nameId),
                 selected = selectedKind == tab.kind,
@@ -217,9 +177,9 @@ fun GroupTypeNavigationBar(
         val selectedType = uiState.selectedType
         items.forEach { tab ->
             val tabRoute = if (selectedType != tab.type) {
-                GroupsNavItems.FacultyGroups.routeBy(facultyId, kindId, tab.type.id)
+                RemoteNavItems.Groups.routeBy(facultyId, kindId, tab.type.id)
             } else {
-                GroupsNavItems.FacultyGroups.routeBy(facultyId, kindId, Type.DEFAULT.id)
+                RemoteNavItems.Groups.routeBy(facultyId, kindId, Type.DEFAULT.id)
             }
             CategoryBarTextItem(
                 text = stringResource(tab.nameId),
@@ -296,121 +256,207 @@ fun tabColor(selected: Boolean): Color {
 }
 
 @Composable
-private fun GroupsContent(
+private fun RemoteGroupsList(
     groupsViewModel: GroupsViewModel,
     navController: NavHostController,
-    facultyId: Long?,
-    kindId: Long?,
-    typeId: String?
+    facultyId: Long,
+    kindId: Long,
+    typeId: String
 ) {
-    val isLocal = facultyId == null
-    val uiState = if (isLocal) {
-        groupsViewModel.localUiState.collectAsState().value
-    } else {
-        groupsViewModel.searchUiState.collectAsState().value
-    }
-    GroupsContent(
-        uiState = uiState,
-        listState = groupListStateForKindId(kindId),
+    val uiState = groupsViewModel.searchUiState.collectAsState().value
+    RefreshableGroupsList(
+        levelsToGroups = uiState.levelsToGroups,
+        listState = groupsListStateForKindId(kindId),
         onGroupPick = { group: Group ->
             groupsViewModel.saveAndPickGroup(group)
-            navController.navigate(GroupsNavItems.LocalGroups.route) {
+            navController.navigate(PickerNavItems.Local.route) {
                 popUpTo(navController.graph.findStartDestination().id)
                 launchSingleTop = true
             }
         },
-        refreshingState = rememberSwipeRefreshState(uiState.isLoading),
+        swipeRefreshState = rememberSwipeRefreshState(uiState.isLoading),
         onRefresh = {
-            if (isLocal) {
-                groupsViewModel.getLocalGroups()
-            } else {
-                groupsViewModel.select(
-                    kind = Kind.kindBy(kindId ?: Kind.DEFAULT.id),
-                    type = Type.typeBy(typeId ?: Type.DEFAULT.id)
-                )
-                groupsViewModel.fetchGroupsBy(facultyId!!)
-            }
-        },
-        onAddGroupButtonClick = {
-            navController.navigate(GroupsNavItems.Faculties.route)
+            groupsViewModel.select(
+                kind = Kind.kindBy(kindId),
+                type = Type.typeBy(typeId)
+            )
+            groupsViewModel.fetchGroupsBy(facultyId)
         }
     )
 }
 
 @Composable
-fun groupListStateForKindId(kindId: Long?): LazyListState {
-    val localGroupState = rememberLazyListState()
+fun groupsListStateForKindId(kindId: Long): LazyListState {
     val facultyGroupStates = mutableMapOf<Long, LazyListState>()
     for (kind in Kind.values()) {
         facultyGroupStates[kind.id] = rememberLazyListState()
     }
-    if (kindId != null && !facultyGroupStates.containsKey(kindId)) {
+    if (!facultyGroupStates.containsKey(kindId)) {
         throw IllegalArgumentException("Incorrect kind id")
     }
-    return if (kindId == null) localGroupState else facultyGroupStates[kindId]!!
+    return facultyGroupStates[kindId]!!
 }
 
 @Composable
-private fun GroupsContent(
-    uiState: GroupsUiState,
+fun RefreshableGroupsList(
+    levelsToGroups: Map<Int, GroupsLevel>,
     listState: LazyListState,
+    swipeRefreshState: SwipeRefreshState,
     onGroupPick: (Group) -> Unit,
-    refreshingState: SwipeRefreshState,
     onRefresh: () -> Unit,
-    onAddGroupButtonClick: () -> Unit
 ) {
-    when (uiState) {
-        is GroupsUiState.LocalGroupList -> {
-            LocalGroupsScreen(
-                levelsToGroups = uiState.groups,
-                listState = listState,
-                swipeRefreshState = refreshingState,
-                onGroupClick = onGroupPick,
-                onRefresh = onRefresh,
-                onAddGroupButtonClick = onAddGroupButtonClick
-            )
-        }
-        is GroupsUiState.SearchGroupList -> {
-            PickGroupScreen(
-                levelsToGroups = uiState.groups,
-                listState = listState,
-                swipeRefreshState = refreshingState,
-                onGroupPick = onGroupPick,
-                onRefresh = onRefresh
-            )
+    SwipeRefresh(state = swipeRefreshState, onRefresh = onRefresh, modifier = Modifier.fillMaxSize()) {
+        if (!swipeRefreshState.isRefreshing) {
+            if (levelsToGroups.isEmpty()) {
+                Text(
+                    text = "Can't to fetch groups from server.",
+                    modifier = Modifier.padding(4.dp)
+                )
+            } else {
+                ScrollableGroupsList(
+                    levelsToGroups = levelsToGroups,
+                    groupsInRow = 2,
+                    state = listState,
+                    onGroupClick = onGroupPick
+                )
+            }
         }
     }
 }
 
 @Composable
-fun FacultiesRoute(
-    facultiesViewModel: FacultiesViewModel,
-    navController: NavController
+fun ScrollableGroupsList(
+    levelsToGroups: Map<Int, GroupsLevel>,
+    groupsInRow: Int,
+    state: LazyListState = rememberLazyListState(),
+    onGroupClick: (Group) -> Unit)
+{
+    LazyColumn(
+        state = state,
+        contentPadding = PaddingValues(horizontal = 16.dp, vertical = 0.dp),
+    ) {
+        val levels = levelsToGroups.keys.toList().sorted()
+        items(levels) { level ->
+            Column {
+                Text("$level курс")
+                GroupsLevelList(levelsToGroups[level]?.getGroups() ?: emptyList(), groupsInRow, onGroupClick)
+            }
+        }
+    }
+}
+
+@Composable
+fun GroupsList(
+    levelsToGroups: Map<Int, GroupsLevel>,
+    groupsInRow: Int,
+    onGroupClick: (Group) -> Unit)
+{
+    Column {
+        val levels = levelsToGroups.keys.toList().sorted()
+        levels.forEach { level ->
+            Column {
+                Text(text = "$level курс", modifier = Modifier.padding(4.dp))
+                GroupsLevelList(levelsToGroups[level]?.getGroups() ?: emptyList(), groupsInRow, onGroupClick)
+            }
+        }
+    }
+}
+
+@Composable
+fun GroupsLevelList(list: List<Group>, groupsInRow: Int, onGroupClick: (Group) -> Unit) {
+    val table = list.toGroupsTable(groupsInRow)
+    Column {
+        table.forEach { row ->
+            GroupsRow(row = row, groupsInRow = groupsInRow, onGroupClick = onGroupClick)
+        }
+    }
+}
+
+private fun List<Group>.toGroupsTable(groupsInRow: Int) : List<List<Group>> {
+    val table = mutableListOf<List<Group>>()
+    for (i in this.indices step groupsInRow) {
+        val row = mutableListOf<Group>()
+        for (j in 0 until groupsInRow) {
+            if (i + j < this.size) row.add(this[i + j])
+            else break
+        }
+        table.add(row)
+    }
+    return table
+}
+
+@Composable
+fun GroupsRow(
+    row: List<Group>,
+    groupsInRow: Int,
+    onGroupClick: (Group) -> Unit
 ) {
-    val uiState by facultiesViewModel.uiState.collectAsState()
-    FacultiesRoute(
-        uiState = uiState,
-        onFacultyPick = {
-            navController.navigate(GroupsNavItems.FacultyGroups.routeBy(facultyId = it.id))
-        },
-        refreshingState = rememberSwipeRefreshState(uiState.isLoading),
-        onRefresh = { facultiesViewModel.getFaculties() }
+    Row(modifier = Modifier.fillMaxWidth()) {
+        for (group in row) {
+            GroupItem(
+                group = group,
+                twoLines = groupsInRow > 1,
+                modifier = Modifier
+                    .weight(1f)
+                    .padding(4.dp),
+                onGroupClick = onGroupClick
+            )
+        }
+    }
+}
+
+@OptIn(ExperimentalMaterial3Api::class)
+@Composable
+fun GroupItem(group: Group, twoLines: Boolean, modifier: Modifier = Modifier, onGroupClick: (Group) -> Unit) {
+    CompositionLocalProvider(
+        LocalMinimumTouchTargetEnforcement provides false,
+    ) {
+        Card(
+            modifier = modifier,
+            onClick = { onGroupClick(group) }
+        ) {
+            val courseString = group.title.substringBefore(COURSE_GROUP_DELIMITER)
+            val groupString = group.title.substringAfter(COURSE_GROUP_DELIMITER)
+            val text =
+                if (twoLines) courseString + COURSE_GROUP_DELIMITER + '\n' + groupString
+                else courseString + COURSE_GROUP_DELIMITER + groupString
+            Text(
+                text = text,
+                modifier = Modifier
+                    .padding(
+                        horizontal = 8.dp,
+                        vertical = 4.dp
+                    )
+                    .fillMaxWidth(),
+                textAlign = TextAlign.Center
+            )
+        }
+    }
+}
+
+@Preview
+@Composable
+fun GroupsListPreview() {
+    GroupsLevelList(listOf(
+        Group(title = "3530901/90202"),
+        Group(title = "3530901/90202123"),
+        Group(title = "3530901/902023424"),
+        Group(title = "3530901/90203"),
+        Group(title = "35309/90201"),
+        Group(title = "35309/90101"),
+    ), 2,
+        {}
     )
 }
 
+@Preview
 @Composable
-fun FacultiesRoute(
-    uiState: FacultiesUiState,
-    onFacultyPick: (Faculty) -> Unit,
-    refreshingState: SwipeRefreshState,
-    onRefresh: () -> Unit
-) {
-    when (uiState) {
-        is FacultiesUiState.FacultiesList -> FacultiesScreen(
-            list = uiState.faculties,
-            swipeRefreshState = refreshingState,
-            onFacultyPick = onFacultyPick,
-            onRefresh = onRefresh
-        )
-    }
+fun GroupItemPreview() {
+    GroupItem(
+        group = Group(
+            title = "3530901/90202",
+        ),
+        twoLines = false,
+        onGroupClick = {}
+    )
 }

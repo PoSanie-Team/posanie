@@ -4,10 +4,7 @@ import dagger.Binds
 import dagger.Module
 import dagger.hilt.InstallIn
 import dagger.hilt.components.SingletonComponent
-import dev.timatifey.posanie.usecases.FacultiesUseCase
-import dev.timatifey.posanie.usecases.FacultiesUseCaseImpl
-import dev.timatifey.posanie.usecases.GroupsUseCase
-import dev.timatifey.posanie.usecases.GroupsUseCaseImpl
+import dev.timatifey.posanie.usecases.*
 import javax.inject.Singleton
 
 
@@ -23,4 +20,7 @@ abstract class UseCaseModule {
     @Binds
     abstract fun bindGroups(impl: GroupsUseCaseImpl): GroupsUseCase
 
+    @Singleton
+    @Binds
+    abstract fun bindTeachers(impl: TeachersUseCaseImpl): TeachersUseCase
 }

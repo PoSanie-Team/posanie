@@ -1,4 +1,4 @@
-package dev.timatifey.posanie.ui.groups
+package dev.timatifey.posanie.ui.picker
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope

@@ -14,6 +14,8 @@ import dev.timatifey.posanie.api.Constants.Companion.BASE_URL
 import dev.timatifey.posanie.api.FacultiesAPI
 import dev.timatifey.posanie.api.GroupsAPI
 import dev.timatifey.posanie.api.SchedulerAPI
+import dev.timatifey.posanie.api.TeachersAPI
+import dev.timatifey.posanie.model.domain.Teacher
 
 
 @Module
@@ -45,6 +47,12 @@ object NetworkModule {
     @Provides
     fun provideFacultyAPI(): FacultiesAPI {
         return FacultiesAPI(Dispatchers.IO)
+    }
+
+    @Singleton
+    @Provides
+    fun provideTeachersAPI(): TeachersAPI {
+        return TeachersAPI(Dispatchers.IO)
     }
 
 }
