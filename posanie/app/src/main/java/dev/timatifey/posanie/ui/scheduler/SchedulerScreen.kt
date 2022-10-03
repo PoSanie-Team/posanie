@@ -9,9 +9,10 @@ import androidx.compose.ui.Modifier
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun SchedulerScreen() {
+fun SchedulerScreen(viewModel: SchedulerViewModel) {
+    val uiState = viewModel.uiState.value
     Scaffold(
-        topBar = { SchedulerBar() }
+        topBar = { SchedulerBar(uiState.calendar) }
     ) { paddingValues ->
         Text(text = "Schedule", modifier = Modifier.padding(paddingValues))
     }

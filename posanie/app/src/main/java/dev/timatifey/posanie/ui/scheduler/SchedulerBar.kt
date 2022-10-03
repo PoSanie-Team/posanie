@@ -12,10 +12,13 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.layout.HorizontalAlignmentLine
 import androidx.compose.ui.semantics.Role
+import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import dev.timatifey.posanie.ui.picker.tabColor
+import java.util.*
 
 enum class WeekDay(val shortName: String) {
     MONDAY("MO"),
@@ -27,17 +30,21 @@ enum class WeekDay(val shortName: String) {
 }
 
 @Composable
-fun SchedulerBar() {
+fun SchedulerBar(calendar: Calendar) {
     Column(
-        modifier = Modifier.fillMaxWidth().background(MaterialTheme.colorScheme.background)
+        modifier = Modifier
+            .fillMaxWidth()
+            .background(MaterialTheme.colorScheme.background)
     ) {
-        DateBar()
+
+
+        DateBar(calendar)
         WeekBar()
     }
 }
 
 @Composable
-fun DateBar() {
+fun DateBar(calendar: Calendar) {
     Row(
         modifier = Modifier.fillMaxWidth(),
         horizontalArrangement = Arrangement.SpaceBetween,
@@ -49,13 +56,27 @@ fun DateBar() {
                 contentDescription = "Localized description"
             )
         }
-        Text("22.22.2022")
+       WeekDate(calendar, true)
         IconButton(onClick = { /*TODO*/ }) {
             Icon(
                 imageVector = Icons.Filled.ArrowForward,
                 contentDescription = "Localized description"
             )
         }
+    }
+}
+
+@Composable
+fun WeekDate(calendar: Calendar, evenWeek: Boolean, modifier: Modifier = Modifier) {
+    val day = calendar.get(Calendar.DAY_OF_MONTH)
+    val formattedDay = if (day < 10) "0$day" else "$day"
+    val month = calendar.get(Calendar.MONTH) + 1
+    val formattedMonth = if (month < 10) "0$month" else "$month"
+    val year = calendar.get(Calendar.YEAR)
+    val week = if (evenWeek) "even" else "odd"
+    Column(modifier = modifier, horizontalAlignment = Alignment.CenterHorizontally) {
+        Text(text= week, textAlign = TextAlign.Center)
+        Text(text = "$formattedDay.$formattedMonth.$year", textAlign = TextAlign.Center)
     }
 }
 
@@ -83,7 +104,7 @@ fun Day(weekDay: WeekDay, modifier: Modifier = Modifier) {
         Box(
             Modifier
                 .clickable(
-                    onClick = {  },
+                    onClick = { },
                     enabled = true,
                     role = Role.Tab,
                 )
@@ -108,5 +129,5 @@ fun dayColor(selected: Boolean): Color {
 @Preview
 @Composable
 fun previewSchedulerBar() {
-    SchedulerBar()
+    SchedulerBar(Calendar.getInstance())
 }
