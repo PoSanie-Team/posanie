@@ -6,7 +6,7 @@ import androidx.compose.runtime.Composable
 fun SchedulerRoute(
     schedulerViewModel: SchedulerViewModel,
 ) {
-    SchedulerScreen()
+    SchedulerScreen(schedulerViewModel)
 }
 
 private enum class SchedulerScreenType {

@@ -5,25 +5,26 @@ import androidx.lifecycle.viewModelScope
 import dagger.hilt.android.lifecycle.HiltViewModel
 import dev.timatifey.posanie.model.domain.Group
 import dev.timatifey.posanie.utils.ErrorMessage
-import kotlinx.coroutines.flow.MutableStateFlow
-import kotlinx.coroutines.flow.SharingStarted
-import kotlinx.coroutines.flow.StateFlow
-import kotlinx.coroutines.flow.map
-import kotlinx.coroutines.flow.stateIn
+import kotlinx.coroutines.flow.*
+import kotlinx.coroutines.launch
+import java.util.*
 import javax.inject.Inject
 
 sealed interface SchedulerUiState {
 
+    val calendar: Calendar
     val isLoading: Boolean
     val errorMessages: List<ErrorMessage>
 
     data class NoGroup(
+        override val calendar: Calendar,
         override val isLoading: Boolean,
         override val errorMessages: List<ErrorMessage>,
     ) : SchedulerUiState
 
     data class HasGroup(
         val group: Group,
+        override val calendar: Calendar,
         override val isLoading: Boolean,
         override val errorMessages: List<ErrorMessage>,
     ) : SchedulerUiState
@@ -31,17 +32,20 @@ sealed interface SchedulerUiState {
 
 private data class SchedulerViewModelState(
     val group: Group? = null,
+    val calendar: Calendar? = null,
     val isLoading: Boolean = false,
     val errorMessages: List<ErrorMessage> = emptyList(),
 ) {
     fun toUiState(): SchedulerUiState =
         if (group == null) {
             SchedulerUiState.NoGroup(
+                calendar = calendar ?: Calendar.getInstance(),
                 isLoading = isLoading,
                 errorMessages = errorMessages,
             )
         } else {
             SchedulerUiState.HasGroup(
+                calendar = calendar ?: Calendar.getInstance(),
                 group = group,
                 isLoading = isLoading,
                 errorMessages = errorMessages,
@@ -63,4 +67,14 @@ class SchedulerViewModel @Inject constructor(
             SharingStarted.Eagerly,
             viewModelState.value.toUiState()
         )
+
+    fun setDate(year: Int, month: Int, day: Int) {
+        viewModelScope.launch {
+            viewModelState.update {
+                val calendar = viewModelState.value.calendar ?: Calendar.getInstance()
+                calendar.set(year, month, day)
+                viewModelState.value.copy(calendar = calendar)
+            }
+        }
+    }
 }
