@@ -8,48 +8,41 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.ArrowBack
 import androidx.compose.material.icons.filled.ArrowForward
 import androidx.compose.material3.*
-import androidx.compose.runtime.Composable
+import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.layout.HorizontalAlignmentLine
 import androidx.compose.ui.semantics.Role
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
-import dev.timatifey.posanie.ui.picker.tabColor
 import java.util.*
 
-enum class WeekDay(val shortName: String) {
-    MONDAY("MO"),
-    TUESDAY("TU"),
-    WEDNESDAY("WE"),
-    THURSDAY("TH"),
-    FRIDAY("FR"),
-    SATURDAY("SA")
-}
-
 @Composable
-fun SchedulerBar(calendar: Calendar, updateDate: (Int, Int, Int) -> Unit) {
+fun SchedulerBar(
+    mondayDate: Calendar,
+    selectedDate: Calendar,
+    selectedDay: WeekDay,
+    selectDay: (WeekDay) -> Unit,
+    goNextWeek: () -> Unit,
+    goPreviousWeek: () -> Unit
+) {
     Column(
         modifier = Modifier
             .fillMaxWidth()
             .background(MaterialTheme.colorScheme.background)
     ) {
-        val day = calendar.get(Calendar.DAY_OF_MONTH)
-        val month = calendar.get(Calendar.MONTH)
-        val year = calendar.get(Calendar.YEAR)
         DateBar(
-            calendar,
-            goNextWeek = { updateDate(year, month, day + 7)},
-            goPreviousWeek = { updateDate(year, month, day - 7)}
+            date = selectedDate,
+            goNextWeek = goNextWeek,
+            goPreviousWeek = goPreviousWeek
         )
-        WeekBar(onDayClick = { })
+        WeekBar(selectedDay = selectedDay, onDayClick = { day -> selectDay(day) })
     }
 }
 
 @Composable
-fun DateBar(calendar: Calendar, goNextWeek: () -> Unit, goPreviousWeek: () -> Unit) {
+fun DateBar(date: Calendar, goNextWeek: () -> Unit, goPreviousWeek: () -> Unit) {
     Row(
         modifier = Modifier.fillMaxWidth(),
         horizontalArrangement = Arrangement.SpaceBetween,
@@ -61,7 +54,7 @@ fun DateBar(calendar: Calendar, goNextWeek: () -> Unit, goPreviousWeek: () -> Un
                 contentDescription = "Localized description"
             )
         }
-       WeekDate(calendar, true)
+       WeekDate(date, true)
         IconButton(onClick = goNextWeek) {
             Icon(
                 imageVector = Icons.Filled.ArrowForward,
@@ -72,12 +65,12 @@ fun DateBar(calendar: Calendar, goNextWeek: () -> Unit, goPreviousWeek: () -> Un
 }
 
 @Composable
-fun WeekDate(calendar: Calendar, evenWeek: Boolean, modifier: Modifier = Modifier) {
-    val day = calendar.get(Calendar.DAY_OF_MONTH)
+fun WeekDate(date: Calendar, evenWeek: Boolean, modifier: Modifier = Modifier) {
+    val day = date.get(Calendar.DAY_OF_MONTH)
     val formattedDay = if (day < 10) "0$day" else "$day"
-    val month = calendar.get(Calendar.MONTH) + 1
+    val month = date.get(Calendar.MONTH) + 1
     val formattedMonth = if (month < 10) "0$month" else "$month"
-    val year = calendar.get(Calendar.YEAR)
+    val year = date.get(Calendar.YEAR)
     val week = if (evenWeek) "even" else "odd"
     Column(modifier = modifier, horizontalAlignment = Alignment.CenterHorizontally) {
         Text(text= week, textAlign = TextAlign.Center)
@@ -86,22 +79,46 @@ fun WeekDate(calendar: Calendar, evenWeek: Boolean, modifier: Modifier = Modifie
 }
 
 @Composable
-fun WeekBar(onDayClick: (WeekDay) -> Unit) {
+fun WeekBar(selectedDay: WeekDay, onDayClick: (WeekDay) -> Unit) {
     Row(
         modifier = Modifier.fillMaxWidth(),
         horizontalArrangement = Arrangement.SpaceAround
     ) {
-        Day(WeekDay.MONDAY, modifier = Modifier.weight(1f)) { onDayClick(WeekDay.MONDAY) }
-        Day(WeekDay.TUESDAY, modifier = Modifier.weight(1f)) { onDayClick(WeekDay.TUESDAY) }
-        Day(WeekDay.WEDNESDAY, modifier = Modifier.weight(1f)) { onDayClick(WeekDay.WEDNESDAY) }
-        Day(WeekDay.THURSDAY, modifier = Modifier.weight(1f)) { onDayClick(WeekDay.THURSDAY) }
-        Day(WeekDay.FRIDAY, modifier = Modifier.weight(1f)) { onDayClick(WeekDay.FRIDAY) }
-        Day(WeekDay.SATURDAY, modifier = Modifier.weight(1f)) { onDayClick(WeekDay.SATURDAY) }
+        Day(
+            weekDay = WeekDay.MONDAY,
+            selected = selectedDay == WeekDay.MONDAY,
+            modifier = Modifier.weight(1f)) { onDayClick(WeekDay.MONDAY)
+        }
+        Day(
+            weekDay = WeekDay.TUESDAY,
+            selected = selectedDay == WeekDay.TUESDAY,
+            modifier = Modifier.weight(1f)) { onDayClick(WeekDay.TUESDAY)
+        }
+        Day(
+            weekDay = WeekDay.WEDNESDAY,
+            selected = selectedDay == WeekDay.WEDNESDAY,
+            modifier = Modifier.weight(1f)) { onDayClick(WeekDay.WEDNESDAY)
+        }
+        Day(
+            weekDay = WeekDay.THURSDAY,
+            selected = selectedDay == WeekDay.THURSDAY,
+            modifier = Modifier.weight(1f)) { onDayClick(WeekDay.THURSDAY)
+        }
+        Day(
+            weekDay = WeekDay.FRIDAY,
+            selected = selectedDay == WeekDay.FRIDAY,
+            modifier = Modifier.weight(1f)) { onDayClick(WeekDay.FRIDAY)
+        }
+        Day(
+            weekDay = WeekDay.SATURDAY,
+            selected = selectedDay == WeekDay.SATURDAY,
+            modifier = Modifier.weight(1f)) { onDayClick(WeekDay.SATURDAY)
+        }
     }
 }
 
 @Composable
-fun Day(weekDay: WeekDay, modifier: Modifier = Modifier, onClick: () -> Unit) {
+fun Day(weekDay: WeekDay, selected: Boolean, modifier: Modifier = Modifier, onClick: () -> Unit) {
     Surface(
         modifier = modifier,
         shape = RoundedCornerShape(4.dp),
@@ -109,11 +126,11 @@ fun Day(weekDay: WeekDay, modifier: Modifier = Modifier, onClick: () -> Unit) {
         Box(
             Modifier
                 .clickable(
-                    onClick = { },
+                    onClick = onClick,
                     enabled = true,
                     role = Role.Tab,
                 )
-                .background(dayColor(false))
+                .background(dayColor(selected))
                 .padding(4.dp),
             contentAlignment = Alignment.Center
         ) {
@@ -134,7 +151,12 @@ fun dayColor(selected: Boolean): Color {
 @Preview
 @Composable
 fun previewSchedulerBar() {
-    SchedulerBar(Calendar.getInstance()) { _, _, _ ->
-
-    }
+    SchedulerBar(
+        mondayDate = Calendar.getInstance(),
+        selectedDate = Calendar.getInstance(),
+        selectedDay = WeekDay.MONDAY,
+        selectDay = {},
+        goNextWeek = {},
+        goPreviousWeek = {}
+    )
 }
