@@ -71,9 +71,9 @@ class SchedulerViewModel @Inject constructor(
     fun setDate(year: Int, month: Int, day: Int) {
         viewModelScope.launch {
             viewModelState.update {
-                val calendar = viewModelState.value.calendar ?: Calendar.getInstance()
+                val calendar = Calendar.getInstance()
                 calendar.set(year, month, day)
-                viewModelState.value.copy(calendar = calendar)
+                return@update it.copy(calendar = calendar)
             }
         }
     }
