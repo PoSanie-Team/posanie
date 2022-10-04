@@ -30,34 +30,39 @@ enum class WeekDay(val shortName: String) {
 }
 
 @Composable
-fun SchedulerBar(calendar: Calendar) {
+fun SchedulerBar(calendar: Calendar, updateDate: (Int, Int, Int) -> Unit) {
     Column(
         modifier = Modifier
             .fillMaxWidth()
             .background(MaterialTheme.colorScheme.background)
     ) {
-
-
-        DateBar(calendar)
-        WeekBar()
+        val day = calendar.get(Calendar.DAY_OF_MONTH)
+        val month = calendar.get(Calendar.MONTH)
+        val year = calendar.get(Calendar.YEAR)
+        DateBar(
+            calendar,
+            goNextWeek = { updateDate(year, month, day + 7)},
+            goPreviousWeek = { updateDate(year, month, day - 7)}
+        )
+        WeekBar(onDayClick = { })
     }
 }
 
 @Composable
-fun DateBar(calendar: Calendar) {
+fun DateBar(calendar: Calendar, goNextWeek: () -> Unit, goPreviousWeek: () -> Unit) {
     Row(
         modifier = Modifier.fillMaxWidth(),
         horizontalArrangement = Arrangement.SpaceBetween,
         verticalAlignment = Alignment.CenterVertically
     ) {
-        IconButton(onClick = { /*TODO*/ }) {
+        IconButton(onClick = goPreviousWeek) {
             Icon(
                 imageVector = Icons.Filled.ArrowBack,
                 contentDescription = "Localized description"
             )
         }
        WeekDate(calendar, true)
-        IconButton(onClick = { /*TODO*/ }) {
+        IconButton(onClick = goNextWeek) {
             Icon(
                 imageVector = Icons.Filled.ArrowForward,
                 contentDescription = "Localized description"
@@ -81,22 +86,22 @@ fun WeekDate(calendar: Calendar, evenWeek: Boolean, modifier: Modifier = Modifie
 }
 
 @Composable
-fun WeekBar() {
+fun WeekBar(onDayClick: (WeekDay) -> Unit) {
     Row(
         modifier = Modifier.fillMaxWidth(),
         horizontalArrangement = Arrangement.SpaceAround
     ) {
-        Day(WeekDay.MONDAY, modifier = Modifier.weight(1f))
-        Day(WeekDay.TUESDAY, modifier = Modifier.weight(1f))
-        Day(WeekDay.WEDNESDAY, modifier = Modifier.weight(1f))
-        Day(WeekDay.THURSDAY, modifier = Modifier.weight(1f))
-        Day(WeekDay.FRIDAY, modifier = Modifier.weight(1f))
-        Day(WeekDay.SATURDAY, modifier = Modifier.weight(1f))
+        Day(WeekDay.MONDAY, modifier = Modifier.weight(1f)) { onDayClick(WeekDay.MONDAY) }
+        Day(WeekDay.TUESDAY, modifier = Modifier.weight(1f)) { onDayClick(WeekDay.TUESDAY) }
+        Day(WeekDay.WEDNESDAY, modifier = Modifier.weight(1f)) { onDayClick(WeekDay.WEDNESDAY) }
+        Day(WeekDay.THURSDAY, modifier = Modifier.weight(1f)) { onDayClick(WeekDay.THURSDAY) }
+        Day(WeekDay.FRIDAY, modifier = Modifier.weight(1f)) { onDayClick(WeekDay.FRIDAY) }
+        Day(WeekDay.SATURDAY, modifier = Modifier.weight(1f)) { onDayClick(WeekDay.SATURDAY) }
     }
 }
 
 @Composable
-fun Day(weekDay: WeekDay, modifier: Modifier = Modifier) {
+fun Day(weekDay: WeekDay, modifier: Modifier = Modifier, onClick: () -> Unit) {
     Surface(
         modifier = modifier,
         shape = RoundedCornerShape(4.dp),
@@ -129,5 +134,7 @@ fun dayColor(selected: Boolean): Color {
 @Preview
 @Composable
 fun previewSchedulerBar() {
-    SchedulerBar(Calendar.getInstance())
+    SchedulerBar(Calendar.getInstance()) { _, _, _ ->
+
+    }
 }
