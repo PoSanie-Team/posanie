@@ -7,16 +7,25 @@ import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
 import androidx.compose.ui.Modifier
+import java.util.*
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun SchedulerScreen(viewModel: SchedulerViewModel) {
     val uiState = viewModel.uiState.collectAsState().value
+    val day = uiState.mondayDate.get(Calendar.DAY_OF_MONTH)
+    val month = uiState.mondayDate.get(Calendar.MONTH)
+    val year = uiState.mondayDate.get(Calendar.YEAR)
     Scaffold(
         topBar = {
-            SchedulerBar(calendar = uiState.calendar, updateDate = { year, month, day ->
-                viewModel.setDate(year, month, day)
-            })
+            SchedulerBar(
+                mondayDate = uiState.mondayDate,
+                selectedDate = uiState.selectedDate,
+                selectedDay = uiState.selectedDay,
+                selectDay = { day -> viewModel.selectWeekDay(day) },
+                goNextWeek = { viewModel.setMonday(year, month, day + 7) },
+                goPreviousWeek = { viewModel.setMonday(year, month, day - 7) }
+            )
         }
     ) { paddingValues ->
         Text(text = "Schedule", modifier = Modifier.padding(paddingValues))
