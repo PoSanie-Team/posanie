@@ -20,9 +20,9 @@ import java.util.*
 
 @Composable
 fun SchedulerBar(
-    mondayDate: Calendar,
     selectedDate: Calendar,
     selectedDay: WeekDay,
+    evenWeek: Boolean,
     selectDay: (WeekDay) -> Unit,
     goNextWeek: () -> Unit,
     goPreviousWeek: () -> Unit
@@ -34,6 +34,7 @@ fun SchedulerBar(
     ) {
         DateBar(
             date = selectedDate,
+            evenWeek = evenWeek,
             goNextWeek = goNextWeek,
             goPreviousWeek = goPreviousWeek
         )
@@ -42,7 +43,7 @@ fun SchedulerBar(
 }
 
 @Composable
-fun DateBar(date: Calendar, goNextWeek: () -> Unit, goPreviousWeek: () -> Unit) {
+fun DateBar(date: Calendar, evenWeek: Boolean, goNextWeek: () -> Unit, goPreviousWeek: () -> Unit) {
     Row(
         modifier = Modifier.fillMaxWidth(),
         horizontalArrangement = Arrangement.SpaceBetween,
@@ -54,7 +55,7 @@ fun DateBar(date: Calendar, goNextWeek: () -> Unit, goPreviousWeek: () -> Unit) 
                 contentDescription = "Localized description"
             )
         }
-       WeekDate(date, true)
+       WeekDate(date, evenWeek)
         IconButton(onClick = goNextWeek) {
             Icon(
                 imageVector = Icons.Filled.ArrowForward,
@@ -152,9 +153,9 @@ fun dayColor(selected: Boolean): Color {
 @Composable
 fun previewSchedulerBar() {
     SchedulerBar(
-        mondayDate = Calendar.getInstance(),
         selectedDate = Calendar.getInstance(),
         selectedDay = WeekDay.MONDAY,
+        evenWeek = false,
         selectDay = {},
         goNextWeek = {},
         goPreviousWeek = {}

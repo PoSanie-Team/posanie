@@ -20,8 +20,8 @@ enum class WeekDay(val shortName: String) {
     SATURDAY("SA");
 
     companion object {
-        fun getByOrdinal(order: Int): WeekDay {
-            when(order) {
+        fun getByOrdinal(ordinal: Int): WeekDay {
+            when(ordinal) {
                 2 -> return MONDAY
                 3 -> return TUESDAY
                 4 -> return WEDNESDAY
@@ -62,12 +62,34 @@ sealed interface SchedulerUiState {
 
 private data class SchedulerViewModelState(
     val group: Group? = null,
-    val mondayDate: Calendar = Calendar.getInstance(),
-    val selectedDate: Calendar = Calendar.getInstance(),
-    val selectedDay: WeekDay = WeekDay.getByOrdinal(Calendar.getInstance().get(Calendar.DAY_OF_WEEK)),
+    val mondayDate: Calendar,
+    val selectedDate: Calendar,
+    val selectedDay: WeekDay,
     val isLoading: Boolean = false,
     val errorMessages: List<ErrorMessage> = emptyList(),
 ) {
+    companion object {
+        fun getInstance(isLoading: Boolean): SchedulerViewModelState {
+            val todayDate: Calendar = Calendar.getInstance()
+
+            val today =  WeekDay.getByOrdinal(todayDate.get(Calendar.DAY_OF_WEEK))
+
+            val todayYear = todayDate.get(Calendar.YEAR)
+            val todayMonth = todayDate.get(Calendar.MONTH)
+            val todayDay = todayDate.get(Calendar.DAY_OF_MONTH)
+            val mondayDay = todayDay - today.ordinal
+            val mondayDate = Calendar.getInstance()
+            mondayDate.set(todayYear, todayMonth, mondayDay)
+
+            return SchedulerViewModelState(
+                mondayDate = mondayDate,
+                selectedDate = todayDate,
+                selectedDay = today,
+                isLoading = isLoading
+            )
+        }
+    }
+
     fun toUiState(): SchedulerUiState =
         if (group == null) {
             SchedulerUiState.NoGroup(
@@ -90,11 +112,9 @@ private data class SchedulerViewModelState(
 }
 
 @HiltViewModel
-class SchedulerViewModel @Inject constructor(
+class SchedulerViewModel @Inject constructor() : ViewModel() {
 
-) : ViewModel() {
-
-    private val viewModelState = MutableStateFlow(SchedulerViewModelState(isLoading = true))
+    private val viewModelState = MutableStateFlow(SchedulerViewModelState.getInstance(isLoading = true))
 
     val uiState: StateFlow<SchedulerUiState> = viewModelState
         .map { it.toUiState() }
@@ -121,12 +141,12 @@ class SchedulerViewModel @Inject constructor(
     fun selectWeekDay(weekDay: WeekDay) {
         viewModelScope.launch {
             viewModelState.update {
-                val newSelectedDay = Calendar.getInstance()
+                val newSelectedDate = Calendar.getInstance()
                 val year = it.mondayDate.get(Calendar.YEAR)
                 val month = it.mondayDate.get(Calendar.MONTH)
                 val day = it.mondayDate.get(Calendar.DAY_OF_MONTH) + weekDay.ordinal
-                newSelectedDay.set(year, month, day)
-                return@update it.copy(selectedDate = newSelectedDay, selectedDay = weekDay)
+                newSelectedDate.set(year, month, day)
+                return@update it.copy(selectedDate = newSelectedDate, selectedDay = weekDay)
             }
         }
     }

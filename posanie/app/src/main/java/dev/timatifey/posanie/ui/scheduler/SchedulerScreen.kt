@@ -19,9 +19,9 @@ fun SchedulerScreen(viewModel: SchedulerViewModel) {
     Scaffold(
         topBar = {
             SchedulerBar(
-                mondayDate = uiState.mondayDate,
                 selectedDate = uiState.selectedDate,
                 selectedDay = uiState.selectedDay,
+                evenWeek = true,
                 selectDay = { day -> viewModel.selectWeekDay(day) },
                 goNextWeek = { viewModel.setMonday(year, month, day + 7) },
                 goPreviousWeek = { viewModel.setMonday(year, month, day - 7) }
