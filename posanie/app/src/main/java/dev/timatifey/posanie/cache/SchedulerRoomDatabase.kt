@@ -29,6 +29,7 @@ abstract class SchedulerRoomDatabase : RoomDatabase() {
     abstract fun GroupsDao(): GroupsDao
     abstract fun FacultiesDao(): FacultiesDao
     abstract fun TeachersDao(): TeachersDao
+    abstract fun LessonsDao(): LessonsDao
 
     companion object {
         const val DATABASE_NAME = "scheduler_db"

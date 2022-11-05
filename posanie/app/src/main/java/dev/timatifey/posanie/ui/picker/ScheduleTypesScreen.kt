@@ -1,9 +1,6 @@
 package dev.timatifey.posanie.ui.picker
 
-import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.PaddingValues
-import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.*
 import androidx.compose.material3.*
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.CompositionLocalProvider
@@ -32,11 +29,13 @@ fun ScheduleTypeScreen(
             )
         }
     ) { paddingValues ->
-        Column(
-            modifier = Modifier.padding(paddingValues)
-        ) {
-            ScheduleTypeItem(name = "Groups", onClick = selectGroups)
-            ScheduleTypeItem(name = "Teachers", onClick = selectTeachers)
+        Box (modifier = Modifier.padding(paddingValues)) {
+            Column(
+                modifier = Modifier.padding(horizontal = 8.dp)
+            ) {
+                ScheduleTypeItem(name = "Groups", onClick = selectGroups)
+                ScheduleTypeItem(name = "Teachers", onClick = selectTeachers)
+            }
         }
     }
 }

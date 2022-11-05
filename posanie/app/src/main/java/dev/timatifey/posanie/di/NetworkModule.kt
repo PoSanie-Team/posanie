@@ -5,16 +5,13 @@ import dagger.Module
 import dagger.Provides
 import dagger.hilt.InstallIn
 import dagger.hilt.components.SingletonComponent
+import dev.timatifey.posanie.api.*
 import kotlinx.coroutines.Dispatchers
 import retrofit2.Retrofit
 import retrofit2.converter.gson.GsonConverterFactory
 import javax.inject.Singleton
 
 import dev.timatifey.posanie.api.Constants.Companion.BASE_URL
-import dev.timatifey.posanie.api.FacultiesAPI
-import dev.timatifey.posanie.api.GroupsAPI
-import dev.timatifey.posanie.api.SchedulerAPI
-import dev.timatifey.posanie.api.TeachersAPI
 import dev.timatifey.posanie.model.domain.Teacher
 
 
@@ -55,4 +52,9 @@ object NetworkModule {
         return TeachersAPI(Dispatchers.IO)
     }
 
+    @Singleton
+    @Provides
+    fun provideLessonsAPI(): LessonsAPI {
+        return LessonsAPI(Dispatchers.IO)
+    }
 }

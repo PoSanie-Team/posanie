@@ -36,8 +36,11 @@ fun PoSanieNavGraph(
         modifier = modifier
     ) {
         composable(BottomNavItems.Scheduler.route) {
-            val viewModel = hiltViewModel<SchedulerViewModel>()
-            SchedulerRoute(schedulerViewModel = viewModel)
+            val schedulerViewModel = hiltViewModel<SchedulerViewModel>()
+            LaunchedEffect(true) {
+                schedulerViewModel.fetchLessons()
+            }
+            SchedulerRoute(schedulerViewModel = schedulerViewModel)
         }
         pickerNavGraph(
             navController,
@@ -59,15 +62,13 @@ fun NavGraphBuilder.pickerNavGraph(
         route = route
     ) {
         composable(PickerNavItems.Local.route) {
-            val groupsViewModel = hiltViewModel<GroupsViewModel>()
-            val teachersViewModel = hiltViewModel<TeachersViewModel>()
+            val viewModel = hiltViewModel<PickerViewModel>()
             LaunchedEffect(true) {
-                groupsViewModel.getLocalGroups()
-                teachersViewModel.getLocalTeachers()
+                viewModel.getLocalGroups()
+                viewModel.getLocalTeachers()
             }
             LocalRoute(
-                groupsViewModel = groupsViewModel,
-                teachersViewModel = teachersViewModel,
+                viewModel = viewModel,
                 navController = navController
             )
         }
@@ -90,7 +91,7 @@ fun NavGraphBuilder.remoteNavGraph(
             ScheduleTypesRoute(navController = navController)
         }
         composable(RemoteNavItems.Teachers.route) {
-            val teachersViewModel = hiltViewModel<TeachersViewModel>()
+            val teachersViewModel = hiltViewModel<PickerViewModel>()
             val searchState = remember { mutableStateOf(SearchState.NOT_STARTED) }
             LaunchedEffect(true) {
                 teachersViewModel.fetchTeachersBy("")
@@ -123,17 +124,17 @@ fun NavGraphBuilder.remoteNavGraph(
             val facultiesViewModel = hiltViewModel<FacultiesViewModel>()
             val facultyName = facultiesViewModel.getFaculty(facultyId)?.title ?: ""
 
-            val groupsViewModel = hiltViewModel<GroupsViewModel>()
+            val viewModel = hiltViewModel<PickerViewModel>()
 
             LaunchedEffect(facultyId, kindId, typeId) {
-                groupsViewModel.select(kind = Kind.kindBy(kindId), type = Type.typeBy(typeId))
-                groupsViewModel.fetchGroupsBy(facultyId)
+                viewModel.selectFilters(kind = Kind.kindBy(kindId), type = Type.typeBy(typeId))
+                viewModel.fetchGroupsBy(facultyId)
             }
 
             val searchState = remember { mutableStateOf(SearchState.NOT_STARTED) }
             RemoteGroupsRoute(
                 searchState = searchState,
-                groupsViewModel = groupsViewModel,
+                groupsViewModel = viewModel,
                 navController = navController,
                 facultyId = facultyId,
                 facultyName = facultyName,
