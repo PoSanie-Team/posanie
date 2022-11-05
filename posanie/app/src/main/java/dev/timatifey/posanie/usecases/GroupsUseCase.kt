@@ -1,5 +1,6 @@
 package dev.timatifey.posanie.usecases
 
+import android.content.res.Resources.NotFoundException
 import dev.timatifey.posanie.api.GroupsAPI
 import dev.timatifey.posanie.cache.GroupsDao
 import dev.timatifey.posanie.model.Result
@@ -14,8 +15,10 @@ import javax.inject.Inject
 
 interface GroupsUseCase {
     suspend fun getLocalGroups(): Result<Map<Int, GroupsLevel>>
+    suspend fun getPickedGroup(): Result<Group>
     suspend fun fetchGroupsBy(facultyId: Long): Result<Map<Int, GroupsLevel>>
     suspend fun saveAndPickGroup(group: Group): Result<Boolean>
+    suspend fun pickGroup(group: Group?): Result<Boolean>
 }
 
 class GroupsUseCaseImpl @Inject constructor(
@@ -35,6 +38,16 @@ class GroupsUseCaseImpl @Inject constructor(
                 result[it.level]?.add(groupMapper.cacheToDomain(it))
             }
             return@withContext Result.Success(result)
+        }
+
+    override suspend fun getPickedGroup(): Result<Group> =
+        withContext(Dispatchers.IO) {
+            groupsDao.getGroups().forEach {
+                if (it.isPicked) {
+                    return@withContext Result.Success(groupMapper.cacheToDomain(it))
+                }
+            }
+            return@withContext Result.Error(Exception("No picked groups"))
         }
 
     override suspend fun fetchGroupsBy(facultyId: Long): Result<Map<Int, GroupsLevel>> =
@@ -66,4 +79,16 @@ class GroupsUseCaseImpl @Inject constructor(
             }
         }
 
+    override suspend fun pickGroup(group: Group?): Result<Boolean> =
+        withContext(Dispatchers.IO) {
+            try {
+                val newGroups = groupsDao.getGroups()
+                    .map { it.copy(isPicked = it.id == group?.id) }
+                    .toMutableList()
+                groupsDao.upsertGroups(newGroups)
+                return@withContext Result.Success(true)
+            } catch (e: Exception) {
+                return@withContext Result.Error(e)
+            }
+        }
 }

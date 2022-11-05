@@ -49,4 +49,10 @@ object RoomModule {
     fun provideTeachersDao(schedulerRoomDatabase: SchedulerRoomDatabase): TeachersDao {
         return schedulerRoomDatabase.TeachersDao()
     }
+
+    @Singleton
+    @Provides
+    fun provideLessonsDao(schedulerRoomDatabase: SchedulerRoomDatabase): LessonsDao {
+        return schedulerRoomDatabase.LessonsDao()
+    }
 }

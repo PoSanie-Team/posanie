@@ -48,7 +48,7 @@ const val GROUP_NAME_LENGTH = 5
 @Composable
 fun GroupsTopBar(
     navController: NavHostController,
-    groupsViewModel: GroupsViewModel,
+    groupsViewModel: PickerViewModel,
     facultyId: Long,
     facultyName: String,
     kindId: Long,
@@ -129,7 +129,7 @@ fun DefaultGroupsTopBar(
 @Composable
 fun SearchGroupsTopBar(
     navController: NavHostController,
-    groupsViewModel: GroupsViewModel,
+    groupsViewModel: PickerViewModel,
     facultyId: Long,
     kindId: Long,
     typeId: String,
@@ -309,7 +309,7 @@ fun GroupPartTextField(
     val exampleText = "0".repeat(maxLength)
     MeasureUnconstrainedViewWidth(
         viewToMeasure = {
-            Text(text = exampleText, style = textStyle)
+            Text(text = exampleText, style = textStyle, modifier = modifier.padding(horizontal = 1.dp))
         }
     ) { measuredWidth ->
         BasicSearchField(
@@ -451,7 +451,7 @@ fun BasicSearchField(
     val modifierWithBackground =  modifier
         .background(
             color = MaterialTheme.colorScheme.secondaryContainer,
-            shape = RoundedCornerShape(8.dp)
+            shape = RoundedCornerShape(6.dp)
         )
         .padding(innerPadding)
     val modifierWithWidth = if (maxWidth == null) {

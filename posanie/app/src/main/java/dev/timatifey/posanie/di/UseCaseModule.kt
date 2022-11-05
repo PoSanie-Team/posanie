@@ -23,4 +23,8 @@ abstract class UseCaseModule {
     @Singleton
     @Binds
     abstract fun bindTeachers(impl: TeachersUseCaseImpl): TeachersUseCase
+
+    @Singleton
+    @Binds
+    abstract fun bindLessons(impl: LessonsUseCaseImpl): LessonsUseCase
 }

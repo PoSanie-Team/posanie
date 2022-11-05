@@ -25,10 +25,10 @@ import dev.timatifey.posanie.ui.BottomNavItems
 @Composable
 fun TeachersScreen(
     navController: NavHostController,
-    viewModel: TeachersViewModel,
+    viewModel: PickerViewModel,
     searchState: MutableState<SearchState>,
 ) {
-    val uiState = viewModel.searchUiState.collectAsState().value
+    val uiState = viewModel.teacherSearchUiState.collectAsState().value
     val teachersList = uiState.teachers
     val focusManager = LocalFocusManager.current
     val searchTextState = viewModel.teacherNameSearchState
@@ -131,10 +131,14 @@ fun TeacherItem(teacher: Teacher, onClick: (Teacher) -> Unit) {
     CompositionLocalProvider(
         LocalMinimumTouchTargetEnforcement provides false,
     ) {
+        val cardColors = if (teacher.isPicked) {
+            CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.secondaryContainer)
+        } else CardDefaults.cardColors()
         Card(
             modifier = Modifier
                 .fillMaxWidth()
                 .padding(horizontal = 4.dp, vertical = 4.dp),
+            colors = cardColors,
             onClick = { onClick(teacher) },
         ) {
             Text(

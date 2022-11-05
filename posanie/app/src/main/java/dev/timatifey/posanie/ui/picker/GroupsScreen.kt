@@ -44,7 +44,7 @@ import java.lang.IllegalArgumentException
 @Composable
 fun RemoteGroupsScreen(
     searchState: MutableState<SearchState>,
-    groupsViewModel: GroupsViewModel,
+    groupsViewModel: PickerViewModel,
     navController: NavHostController,
     facultyId: Long,
     facultyName: String,
@@ -86,7 +86,7 @@ fun RemoteGroupsScreen(
 fun RemoteGroupsContent(
     innerPadding: PaddingValues,
     navController: NavHostController,
-    viewModel: GroupsViewModel,
+    viewModel: PickerViewModel,
     showTypes: Boolean,
     facultyId: Long,
     kindId: Long,
@@ -143,8 +143,8 @@ fun GroupKindNavigationBar(
     CategoryNavigationBar(
         modifier = modifier
     ) {
-        val viewModel = hiltViewModel<GroupsViewModel>()
-        val uiState by viewModel.searchUiState.collectAsState()
+        val viewModel = hiltViewModel<PickerViewModel>()
+        val uiState by viewModel.groupSearchUiState.collectAsState()
         val selectedKind = uiState.selectedKind
         items.forEach { tab ->
             val tabRoute = RemoteNavItems.Groups.routeBy(facultyId, tab.kind.id)
@@ -172,8 +172,8 @@ fun GroupTypeNavigationBar(
     CategoryNavigationBar(
         modifier = modifier
     ) {
-        val viewModel = hiltViewModel<GroupsViewModel>()
-        val uiState by viewModel.searchUiState.collectAsState()
+        val viewModel = hiltViewModel<PickerViewModel>()
+        val uiState by viewModel.groupSearchUiState.collectAsState()
         val selectedType = uiState.selectedType
         items.forEach { tab ->
             val tabRoute = if (selectedType != tab.type) {
@@ -257,13 +257,13 @@ fun tabColor(selected: Boolean): Color {
 
 @Composable
 private fun RemoteGroupsList(
-    groupsViewModel: GroupsViewModel,
+    groupsViewModel: PickerViewModel,
     navController: NavHostController,
     facultyId: Long,
     kindId: Long,
     typeId: String
 ) {
-    val uiState = groupsViewModel.searchUiState.collectAsState().value
+    val uiState = groupsViewModel.groupSearchUiState.collectAsState().value
     RefreshableGroupsList(
         levelsToGroups = uiState.levelsToGroups,
         listState = groupsListStateForKindId(kindId),
@@ -276,7 +276,7 @@ private fun RemoteGroupsList(
         },
         swipeRefreshState = rememberSwipeRefreshState(uiState.isLoading),
         onRefresh = {
-            groupsViewModel.select(
+            groupsViewModel.selectFilters(
                 kind = Kind.kindBy(kindId),
                 type = Type.typeBy(typeId)
             )
@@ -411,8 +411,12 @@ fun GroupItem(group: Group, twoLines: Boolean, modifier: Modifier = Modifier, on
     CompositionLocalProvider(
         LocalMinimumTouchTargetEnforcement provides false,
     ) {
+        val cardColors = if (group.isPicked) {
+            CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.secondaryContainer)
+        } else CardDefaults.cardColors()
         Card(
             modifier = modifier,
+            colors = cardColors,
             onClick = { onGroupClick(group) }
         ) {
             val courseString = group.title.substringBefore(COURSE_GROUP_DELIMITER)
