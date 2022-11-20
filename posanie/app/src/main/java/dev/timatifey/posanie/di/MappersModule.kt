@@ -10,10 +10,7 @@ import dagger.hilt.components.SingletonComponent
 import dev.timatifey.posanie.cache.GroupsDao
 import dev.timatifey.posanie.cache.SchedulerDao
 import dev.timatifey.posanie.cache.SchedulerRoomDatabase
-import dev.timatifey.posanie.model.mappers.FacultyMapper
-import dev.timatifey.posanie.model.mappers.GroupMapper
-import dev.timatifey.posanie.model.mappers.GroupsLevelMapper
-import dev.timatifey.posanie.model.mappers.TeacherMapper
+import dev.timatifey.posanie.model.mappers.*
 import javax.inject.Singleton
 
 @Module
@@ -44,4 +41,9 @@ object MappersModule {
         return TeacherMapper()
     }
 
+    @Singleton
+    @Provides
+    fun provideLessonsMapper(): LessonMapper {
+        return LessonMapper()
+    }
 }

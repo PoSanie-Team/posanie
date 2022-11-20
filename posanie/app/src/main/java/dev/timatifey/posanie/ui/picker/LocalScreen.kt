@@ -10,35 +10,43 @@ import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.collectAsState
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import com.google.accompanist.swiperefresh.SwipeRefresh
 import com.google.accompanist.swiperefresh.SwipeRefreshState
+import com.google.accompanist.swiperefresh.rememberSwipeRefreshState
 import dev.timatifey.posanie.model.domain.Group
 import dev.timatifey.posanie.model.domain.GroupsLevel
 import dev.timatifey.posanie.model.domain.Teacher
 
 @Composable
 fun LocalScreen(
-    levelsToGroups: Map<Int, GroupsLevel>,
-    teachers: List<Teacher>,
-    swipeRefreshState: SwipeRefreshState,
+    viewModel: PickerViewModel,
     onGroupClick: (Group) -> Unit,
     onTeacherClick: (Teacher) -> Unit,
     onRefresh: () -> Unit,
     goToRemote: () -> Unit
 ) {
+    val uiState = viewModel.localUiState.collectAsState().value
+
+    val levelsToGroups = uiState.levelsToGroups
+    val teachers = uiState.teachers
+    val swipeRefreshState = rememberSwipeRefreshState(uiState.isLoading)
+
     SwipeRefresh(state = swipeRefreshState, onRefresh = onRefresh) {
             if (!swipeRefreshState.isRefreshing) {
                 Column(
-                    modifier = Modifier.verticalScroll(rememberScrollState())
+                    modifier = Modifier
+                        .verticalScroll(rememberScrollState())
+                        .padding(horizontal = 8.dp)
                 ) {
                     ScheduleTypeTitle("Groups")
                     if (levelsToGroups.isEmpty()) {
-                        Text(
-                            text = "You have not groups. Please add.",
-                            modifier = Modifier.padding(4.dp)
+                        MessageText(
+                            text = "You have not groups. Please add."
                         )
                     } else {
                         GroupsList(
@@ -49,9 +57,8 @@ fun LocalScreen(
                     }
                     ScheduleTypeTitle("Teachers")
                     if (teachers.isEmpty()) {
-                        Text(
-                            text ="You have not teachers. Please add.",
-                            modifier = Modifier.padding(4.dp)
+                        MessageText(
+                            text ="You have no teachers. Please add."
                         )
                     } else {
                         TeachersList(
@@ -81,9 +88,17 @@ fun ScheduleTypeTitle(text: String) {
     Text(
         text = text,
         style = MaterialTheme.typography.titleLarge,
-        modifier = Modifier.padding(PaddingValues(
-            horizontal = 4.dp,
-            vertical = 4.dp
-        ))
+        modifier = Modifier.padding(horizontal = 4.dp, vertical = 4.dp).fillMaxWidth()
+    )
+}
+
+@Composable
+fun MessageText(
+    modifier: Modifier = Modifier.padding(4.dp).fillMaxWidth(),
+    text: String = ""
+) {
+    Text(
+        text = text,
+        modifier = modifier
     )
 }

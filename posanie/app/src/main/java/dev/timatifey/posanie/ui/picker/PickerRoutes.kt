@@ -10,21 +10,20 @@ import dev.timatifey.posanie.ui.*
 
 @Composable
 fun LocalRoute(
-    groupsViewModel: GroupsViewModel,
-    teachersViewModel: TeachersViewModel,
+    viewModel: PickerViewModel,
     navController: NavHostController
 ) {
-    val groupsUiState = groupsViewModel.localUiState.value
-    val teachersUiState = teachersViewModel.localUiState.value
     LocalScreen(
-        levelsToGroups = groupsUiState.levelsToGroups,
-        teachers = teachersUiState.teachers,
-        swipeRefreshState = rememberSwipeRefreshState(groupsUiState.isLoading || teachersUiState.isLoading),
-        onGroupClick = {},
-        onTeacherClick = {},
+        viewModel = viewModel,
+        onGroupClick = { group ->
+            viewModel.pickGroup(group)
+        },
+        onTeacherClick = { teacher ->
+            viewModel.pickTeacher(teacher)
+        },
         onRefresh = {
-            groupsViewModel.getLocalGroups()
-            teachersViewModel.getLocalTeachers()
+            viewModel.getLocalGroups()
+            viewModel.getLocalTeachers()
         },
         goToRemote = { navController.navigate(PickerNavItems.Remote.route) }
     )
@@ -44,7 +43,7 @@ fun ScheduleTypesRoute(
 @Composable
 fun TeachersRoute(
     navController: NavHostController,
-    viewModel: TeachersViewModel,
+    viewModel: PickerViewModel,
     searchState: MutableState<SearchState>
 ) {
     TeachersScreen(
@@ -92,7 +91,7 @@ fun FacultiesRoute(
 @Composable
 fun RemoteGroupsRoute(
     searchState: MutableState<SearchState>,
-    groupsViewModel: GroupsViewModel,
+    groupsViewModel: PickerViewModel,
     navController: NavHostController,
     facultyId: Long,
     facultyName: String,

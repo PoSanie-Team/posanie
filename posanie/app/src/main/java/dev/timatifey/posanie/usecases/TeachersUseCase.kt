@@ -11,8 +11,10 @@ import javax.inject.Inject
 
 interface TeachersUseCase {
     suspend fun getLocalTeachers(): Result<List<Teacher>>
+    suspend fun getPickedTeacher(): Result<Teacher>
     suspend fun fetchTeachersBy(name: String): Result<List<Teacher>>
     suspend fun saveAndPickTeacher(teacher: Teacher): Result<Boolean>
+    suspend fun pickTeacher(teacher: Teacher?): Result<Boolean>
 }
 
 class TeachersUseCaseImpl @Inject constructor(
@@ -26,6 +28,16 @@ class TeachersUseCaseImpl @Inject constructor(
             return@withContext Result.Success(
                 teachersDao.getTeachers().map { teacher -> teacherMapper.cacheToDomain(teacher) }
             )
+        }
+
+    override suspend fun getPickedTeacher(): Result<Teacher> =
+        withContext(Dispatchers.IO) {
+            teachersDao.getTeachers().forEach {
+                if (it.isPicked) {
+                    return@withContext Result.Success(teacherMapper.cacheToDomain(it))
+                }
+            }
+            return@withContext Result.Error(Exception("No picked groups"))
         }
 
     override suspend fun fetchTeachersBy(name: String): Result<List<Teacher>> =
@@ -51,6 +63,19 @@ class TeachersUseCaseImpl @Inject constructor(
                     .toMutableList()
                 newGroups.add(teacherMapper.domainToCache(teacher.copy(isPicked = true)))
                 teachersDao.upsertTeachers(newGroups)
+                return@withContext Result.Success(true)
+            } catch (e: Exception) {
+                return@withContext Result.Error(e)
+            }
+        }
+
+    override suspend fun pickTeacher(teacher: Teacher?): Result<Boolean> =
+        withContext(Dispatchers.IO) {
+            try {
+                val newTeachers = teachersDao.getTeachers()
+                    .map { it.copy(isPicked = it.id == teacher?.id) }
+                    .toMutableList()
+                teachersDao.upsertTeachers(newTeachers)
                 return@withContext Result.Success(true)
             } catch (e: Exception) {
                 return@withContext Result.Error(e)

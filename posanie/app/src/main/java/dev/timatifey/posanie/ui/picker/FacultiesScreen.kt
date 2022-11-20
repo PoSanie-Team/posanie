@@ -45,7 +45,7 @@ fun FacultiesScreen(
                     modifier = Modifier.padding(paddingValues)
                 ) {
                     if (list.isEmpty()) {
-                        Text( "Can't to fetch faculties from server.")
+                        Text( "Can't to fetch faculties from server.", modifier = Modifier.padding(8.dp))
                     } else {
                         FacultiesList(list, onFacultyPick)
                     }
@@ -59,7 +59,7 @@ fun FacultiesScreen(
 @Composable
 fun FacultiesList(list: List<Faculty>, onFacultyClick: (Faculty) -> Unit) {
     LazyColumn(
-        modifier = Modifier.padding(4.dp)
+        modifier = Modifier.padding(horizontal = 8.dp, vertical = 4.dp)
     ) {
         items(list) { faculty ->
             FacultyItem(faculty, onFacultyClick)

@@ -22,7 +22,8 @@ import java.util.*
 fun SchedulerBar(
     selectedDate: Calendar,
     selectedDay: WeekDay,
-    evenWeek: Boolean,
+    oddWeek: Boolean,
+    hasSchedule: Boolean,
     selectDay: (WeekDay) -> Unit,
     goNextWeek: () -> Unit,
     goPreviousWeek: () -> Unit
@@ -31,10 +32,12 @@ fun SchedulerBar(
         modifier = Modifier
             .fillMaxWidth()
             .background(MaterialTheme.colorScheme.background)
+            .padding(vertical = 8.dp)
     ) {
         DateBar(
             date = selectedDate,
-            evenWeek = evenWeek,
+            oddWeek = oddWeek,
+            hasSchedule = hasSchedule,
             goNextWeek = goNextWeek,
             goPreviousWeek = goPreviousWeek
         )
@@ -43,7 +46,7 @@ fun SchedulerBar(
 }
 
 @Composable
-fun DateBar(date: Calendar, evenWeek: Boolean, goNextWeek: () -> Unit, goPreviousWeek: () -> Unit) {
+fun DateBar(date: Calendar, oddWeek: Boolean, hasSchedule: Boolean, goNextWeek: () -> Unit, goPreviousWeek: () -> Unit) {
     Row(
         modifier = Modifier.fillMaxWidth(),
         horizontalArrangement = Arrangement.SpaceBetween,
@@ -55,7 +58,7 @@ fun DateBar(date: Calendar, evenWeek: Boolean, goNextWeek: () -> Unit, goPreviou
                 contentDescription = "Localized description"
             )
         }
-       WeekDate(date, evenWeek)
+       WeekDate(date, oddWeek, hasSchedule)
         IconButton(onClick = goNextWeek) {
             Icon(
                 imageVector = Icons.Filled.ArrowForward,
@@ -66,16 +69,16 @@ fun DateBar(date: Calendar, evenWeek: Boolean, goNextWeek: () -> Unit, goPreviou
 }
 
 @Composable
-fun WeekDate(date: Calendar, evenWeek: Boolean, modifier: Modifier = Modifier) {
+fun WeekDate(date: Calendar, oddWeek: Boolean, hasSchedule: Boolean, modifier: Modifier = Modifier) {
     val day = date.get(Calendar.DAY_OF_MONTH)
     val formattedDay = if (day < 10) "0$day" else "$day"
     val month = date.get(Calendar.MONTH) + 1
     val formattedMonth = if (month < 10) "0$month" else "$month"
     val year = date.get(Calendar.YEAR)
-    val week = if (evenWeek) "even" else "odd"
+    val week = if (oddWeek) "odd" else "even"
     Column(modifier = modifier, horizontalAlignment = Alignment.CenterHorizontally) {
-        Text(text= week, textAlign = TextAlign.Center)
         Text(text = "$formattedDay.$formattedMonth.$year", textAlign = TextAlign.Center)
+        Text(text= if (hasSchedule) week else "", textAlign = TextAlign.Center)
     }
 }
 
@@ -155,7 +158,8 @@ fun previewSchedulerBar() {
     SchedulerBar(
         selectedDate = Calendar.getInstance(),
         selectedDay = WeekDay.MONDAY,
-        evenWeek = false,
+        oddWeek = false,
+        hasSchedule = true,
         selectDay = {},
         goNextWeek = {},
         goPreviousWeek = {}
