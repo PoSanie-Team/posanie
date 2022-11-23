@@ -13,10 +13,9 @@ import dev.timatifey.posanie.usecases.TeachersUseCase
 import dev.timatifey.posanie.utils.ErrorMessage
 import kotlinx.coroutines.flow.*
 import kotlinx.coroutines.launch
-import okhttp3.internal.wait
-import java.lang.IllegalArgumentException
 import java.util.*
 import javax.inject.Inject
+import kotlin.IllegalArgumentException
 
 enum class WeekDay(val shortName: String) {
     MONDAY("MO"),
@@ -54,7 +53,6 @@ sealed interface SchedulerUiState {
         val hasSchedule: Boolean = false,
         val weekIsOdd: Boolean = false,
         val lessonsToDays: Map<WeekDay, List<Lesson>>,
-        val selectedLessons: List<Lesson>,
         override val mondayDate: Calendar,
         override val selectedDate: Calendar,
         override val selectedDay: WeekDay,
@@ -78,13 +76,17 @@ private data class SchedulerViewModelState(
         fun getInstance(): SchedulerViewModelState {
             val todayDate: Calendar = Calendar.getInstance()
 
-            val today =  WeekDay.getByOrdinal(todayDate.get(Calendar.DAY_OF_WEEK))
+            val today = WeekDay.getByOrdinal(todayDate.get(Calendar.DAY_OF_WEEK))
 
             val todayYear = todayDate.get(Calendar.YEAR)
             val todayMonth = todayDate.get(Calendar.MONTH)
+
             val todayDay = todayDate.get(Calendar.DAY_OF_MONTH)
-            val mondayDay = todayDay - today.ordinal
+            val correctedTodayDay = if (isSunday(todayDate)) todayDay - 1 else todayDay
+
+            val mondayDay = correctedTodayDay - today.ordinal
             val mondayDate = Calendar.getInstance()
+
             mondayDate.set(todayYear, todayMonth, mondayDay)
 
             return SchedulerViewModelState(
@@ -95,6 +97,10 @@ private data class SchedulerViewModelState(
                 hasSchedule = false
             )
         }
+
+        fun isSunday(date: Calendar): Boolean {
+            return date.get(Calendar.DAY_OF_WEEK) == 1
+        }
     }
 
     fun toUiState(): SchedulerUiState =
@@ -102,7 +108,6 @@ private data class SchedulerViewModelState(
             hasSchedule = hasSchedule,
             weekIsOdd = weekIsOdd,
             lessonsToDays = lessonsToDays ?: emptyMap(),
-            selectedLessons = selectedLessons ?: emptyList(),
             mondayDate = mondayDate,
             selectedDate = selectedDate,
             selectedDay = selectedDay,
@@ -128,20 +133,45 @@ class SchedulerViewModel @Inject constructor(
             viewModelState.value.toUiState()
         )
 
-    fun setMonday(year: Int, month: Int, day: Int) {
-        viewModelScope.launch {
-            viewModelState.update {
-                val newWeekMonday = Calendar.getInstance()
-                newWeekMonday.set(year, month, day)
-                return@update it.copy(
-                    mondayDate = newWeekMonday,
-                    selectedDate = newWeekMonday,
-                    selectedDay = WeekDay.MONDAY,
-                    selectedLessons = emptyList()
-                )
-            }
-            fetchLessons()
+    fun selectNextWeekDay() {
+        val newDay = getNextWeekDay()
+        if (newDay == WeekDay.MONDAY) {
+            setNextMonday()
         }
+        selectWeekDay(newDay)
+    }
+
+    private fun getNextWeekDay(): WeekDay {
+        val result = when (viewModelState.value.selectedDay) {
+            WeekDay.MONDAY -> WeekDay.TUESDAY
+            WeekDay.TUESDAY -> WeekDay.WEDNESDAY
+            WeekDay.WEDNESDAY -> WeekDay.THURSDAY
+            WeekDay.THURSDAY -> WeekDay.FRIDAY
+            WeekDay.FRIDAY -> WeekDay.SATURDAY
+            else -> WeekDay.MONDAY
+        }
+        return result
+    }
+
+    fun selectPreviousWeekDay() {
+        val newDay = getPreviousWeekDay()
+        if (newDay == WeekDay.SATURDAY) {
+            setPreviousMonday()
+        }
+        selectWeekDay(newDay)
+    }
+
+    private fun getPreviousWeekDay(): WeekDay {
+        val result = when (viewModelState.value.selectedDay) {
+            WeekDay.SATURDAY -> WeekDay.FRIDAY
+            WeekDay.FRIDAY -> WeekDay.THURSDAY
+            WeekDay.THURSDAY -> WeekDay.WEDNESDAY
+            WeekDay.WEDNESDAY -> WeekDay.TUESDAY
+            WeekDay.TUESDAY -> WeekDay.MONDAY
+            else -> WeekDay.SATURDAY
+        }
+
+        return result
     }
 
     fun selectWeekDay(weekDay: WeekDay) {
@@ -152,8 +182,44 @@ class SchedulerViewModel @Inject constructor(
                 val month = it.mondayDate.get(Calendar.MONTH)
                 val day = it.mondayDate.get(Calendar.DAY_OF_MONTH) + weekDay.ordinal
                 newSelectedDate.set(year, month, day)
-                return@update it.copy(selectedDate = newSelectedDate, selectedDay = weekDay, selectedLessons = it.lessonsToDays?.get(weekDay))
+                return@update it.copy(
+                    selectedDate = newSelectedDate,
+                    selectedDay = weekDay,
+                    selectedLessons = it.lessonsToDays?.get(weekDay)
+                )
             }
+        }
+    }
+
+    fun setNextMonday() {
+        val d = viewModelState.value.mondayDate.get(Calendar.DAY_OF_MONTH)
+        val m = viewModelState.value.mondayDate.get(Calendar.MONTH)
+        val y = viewModelState.value.mondayDate.get(Calendar.YEAR)
+        setMonday(y, m, d + 7)
+    }
+
+    fun setPreviousMonday() {
+        val d = viewModelState.value.mondayDate.get(Calendar.DAY_OF_MONTH)
+        val m = viewModelState.value.mondayDate.get(Calendar.MONTH)
+        val y = viewModelState.value.mondayDate.get(Calendar.YEAR)
+        setMonday(y, m, d - 7)
+    }
+
+    private fun setMonday(year: Int, month: Int, day: Int) {
+        viewModelScope.launch {
+            viewModelState.update {
+                val newWeekMonday = Calendar.getInstance()
+                newWeekMonday.set(year, month, day)
+                check(newWeekMonday.get(Calendar.DAY_OF_WEEK) == Calendar.MONDAY) {
+                    "Provided day is not monday."
+                }
+                return@update it.copy(
+                    mondayDate = newWeekMonday,
+                    selectedDate = newWeekMonday,
+                    selectedLessons = emptyList()
+                )
+            }
+            fetchLessons()
         }
     }
 
