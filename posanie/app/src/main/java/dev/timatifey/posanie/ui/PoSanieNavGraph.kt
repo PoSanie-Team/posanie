@@ -28,6 +28,7 @@ import dev.timatifey.posanie.ui.settings.SettingsViewModel
 @Composable
 fun PoSanieNavGraph(
     modifier: Modifier = Modifier,
+    createPopup: (MutableState<Boolean>, @Composable () -> Unit) -> Unit,
     navController: NavHostController = rememberNavController()
 ) {
     NavHost(
@@ -40,7 +41,7 @@ fun PoSanieNavGraph(
             LaunchedEffect(true) {
                 schedulerViewModel.fetchLessons()
             }
-            SchedulerRoute(schedulerViewModel = schedulerViewModel)
+            SchedulerRoute(schedulerViewModel = schedulerViewModel, createPopup = createPopup)
         }
         pickerNavGraph(
             navController,

@@ -20,13 +20,38 @@ import java.util.*
 
 @Composable
 fun SchedulerBar(
+    schedulerViewModel: SchedulerViewModel,
+    schedulerUiState: SchedulerUiState.UiState,
+    openCalendar: () -> Unit
+) {
+    SchedulerBar(
+        selectedDate = schedulerUiState.selectedDate,
+        selectedDay = schedulerUiState.selectedDay,
+        oddWeek = schedulerUiState.weekIsOdd,
+        hasSchedule = schedulerUiState.hasSchedule && !schedulerUiState.isLoading,
+        selectDay = schedulerViewModel::selectWeekDay,
+        goNextWeek = {
+            schedulerViewModel.setNextMonday()
+            schedulerViewModel.selectWeekDay(WeekDay.MONDAY)
+        },
+        goPreviousWeek = {
+            schedulerViewModel.setPreviousMonday()
+            schedulerViewModel.selectWeekDay(WeekDay.MONDAY)
+        },
+        openCalendar = openCalendar
+    )
+}
+
+@Composable
+fun SchedulerBar(
     selectedDate: Calendar,
     selectedDay: WeekDay,
     oddWeek: Boolean,
     hasSchedule: Boolean,
     selectDay: (WeekDay) -> Unit,
     goNextWeek: () -> Unit,
-    goPreviousWeek: () -> Unit
+    goPreviousWeek: () -> Unit,
+    openCalendar: () -> Unit
 ) {
     Column(
         modifier = Modifier
@@ -39,14 +64,22 @@ fun SchedulerBar(
             oddWeek = oddWeek,
             hasSchedule = hasSchedule,
             goNextWeek = goNextWeek,
-            goPreviousWeek = goPreviousWeek
+            goPreviousWeek = goPreviousWeek,
+            openCalendar = openCalendar
         )
         WeekBar(selectedDay = selectedDay, onDayClick = { day -> selectDay(day) })
     }
 }
 
 @Composable
-fun DateBar(date: Calendar, oddWeek: Boolean, hasSchedule: Boolean, goNextWeek: () -> Unit, goPreviousWeek: () -> Unit) {
+fun DateBar(
+    date: Calendar,
+    oddWeek: Boolean,
+    hasSchedule: Boolean,
+    goNextWeek: () -> Unit,
+    goPreviousWeek: () -> Unit,
+    openCalendar: () -> Unit
+) {
     Row(
         modifier = Modifier.fillMaxWidth(),
         horizontalArrangement = Arrangement.SpaceBetween,
@@ -58,7 +91,7 @@ fun DateBar(date: Calendar, oddWeek: Boolean, hasSchedule: Boolean, goNextWeek: 
                 contentDescription = "Localized description"
             )
         }
-       WeekDate(date, oddWeek, hasSchedule)
+        WeekDate(date = date, oddWeek = oddWeek, hasSchedule = hasSchedule, modifier = Modifier.clickable { openCalendar() })
         IconButton(onClick = goNextWeek) {
             Icon(
                 imageVector = Icons.Filled.ArrowForward,
@@ -162,6 +195,7 @@ fun previewSchedulerBar() {
         hasSchedule = true,
         selectDay = {},
         goNextWeek = {},
-        goPreviousWeek = {}
+        goPreviousWeek = {},
+        openCalendar = {}
     )
 }
