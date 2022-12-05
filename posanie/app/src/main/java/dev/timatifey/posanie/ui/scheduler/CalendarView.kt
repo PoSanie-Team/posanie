@@ -1,10 +1,10 @@
 package dev.timatifey.posanie.ui.scheduler
 
-import android.icu.util.Calendar
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.gestures.scrollBy
 import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.lazy.LazyListState
 import androidx.compose.foundation.lazy.LazyRow
 import androidx.compose.foundation.lazy.grid.GridCells
 import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
@@ -22,15 +22,17 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.text.style.TextAlign
+import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import kotlinx.coroutines.launch
+import java.util.*
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun CalendarView(
     modifier: Modifier = Modifier
         .width(300.dp)
-        .height(450.dp),
+        .height(300.dp),
     schedulerViewModel: SchedulerViewModel
 ) {
     val schedulerUiState = schedulerViewModel.uiState.collectAsState().value
@@ -95,62 +97,46 @@ fun CalendarView(
                 )
             }
         ) { paddingValues ->
-            Box(modifier = Modifier
-                .padding(paddingValues)
+            Column(modifier = Modifier
                 .fillMaxSize()
-                .pointerInput(true) {
-                    this.handleSwipe(
-                        minSwipeLength = 25f,
-                        scrollToNextItem = monthScroller.scrollToNextItem,
-                        scrollToPreviousItem = monthScroller.scrollToPreviousItem,
-                        scrollToCurrentItem = monthScroller.scrollToCurrentItem,
-                        scrollBy = monthScroller.scrollBy
-                    )
-                }
-            ) {
-                LazyRow(state = monthListState, userScrollEnabled = false) {
-                    items(Int.MAX_VALUE) { i ->
-                        val itemMonthIndex = i % 12
-                        val itemMonth = Month.getByOrdinal(itemMonthIndex)
-                        val itemYear = if (itemMonthIndex == 11 && visibleMonth == 0) {
-                            visibleYear - 1
-                        } else if (itemMonthIndex == 0 && visibleMonth == 11) {
-                            visibleYear + 1
-                        } else visibleYear
-
-                        val selectedDayOld = if (
-                            monthHasSelectedDay(year = itemYear, month = itemMonthIndex, selectedDate = oldSelectedDate)
-                        ) {
-                            newSelectedDate.get(Calendar.DAY_OF_MONTH)
-                        } else null
-                        val selectedDayNew = if (
-                            monthHasSelectedDay(year = itemYear, month = itemMonthIndex, selectedDate = newSelectedDate)
-                        ) {
-                            newSelectedDate.get(Calendar.DAY_OF_MONTH)
-                        } else null
-
-                        //Text(text = month.fullName, modifier = modifier)
-                        MonthDays(
-                            modifier = modifier.fillMaxHeight(),
-                            daysInMonth = Month.getDaysCount(visibleYear, itemMonth),
-                            selectedDayOld = selectedDayOld,
-                            selectedDayNew = selectedDayNew
-                        )
-                    }
+                .padding(paddingValues)) {
+                ScrollableMonthList(
+                    modifier = Modifier
+                        .height(200.dp)
+                        .then(modifier),
+                    monthScroller = monthScroller,
+                    monthListState = monthListState,
+                    visibleYear = visibleYear,
+                    visibleMonth = visibleMonth,
+                    oldSelectedDate = oldSelectedDate,
+                    newSelectedDate = newSelectedDate
+                )
+                Row(
+                    modifier = Modifier
+                        .fillMaxSize()
+                        .padding(8.dp),
+                    verticalAlignment = Alignment.Bottom,
+                    horizontalArrangement = Arrangement.SpaceEvenly
+                ) {
+                    DialogButton(text = "Cancel", onClick = {})
+                    DialogButton(text = "Ok", onClick = {})
                 }
             }
         }
     }
 }
 
-fun monthHasSelectedDay(month: Int, year: Int, selectedDate: java.util.Calendar): Boolean {
-    val selectedDateYear = selectedDate.get(Calendar.YEAR)
-    val yearHasSelectedDay = selectedDateYear == year
-
-    val selectedDateMonth = selectedDate.get(Calendar.MONTH)
-    val monthHasSelectedDay = selectedDateMonth == month
-
-    return yearHasSelectedDay && monthHasSelectedDay
+@Composable
+fun DialogButton(
+    modifier: Modifier = Modifier.padding(horizontal = 8.dp, vertical = 4.dp),
+    text: String,
+    onClick: () -> Unit
+) {
+    Box(
+        modifier = Modifier.clickable { onClick() }.then(modifier)
+    ) {
+        Text(text = text, textAlign = TextAlign.Center)
+    }
 }
 
 @Composable
@@ -187,20 +173,133 @@ fun CalendarDate(modifier: Modifier = Modifier, month: Int, year: Int) {
 }
 
 @Composable
-fun MonthDays(modifier: Modifier = Modifier, daysInMonth: Int, selectedDayOld: Int?, selectedDayNew: Int?) {
+fun ScrollableMonthList(
+    modifier: Modifier,
+    monthScroller: LazyListScroller,
+    monthListState: LazyListState,
+    visibleYear: Int,
+    visibleMonth: Int,
+    oldSelectedDate: Calendar,
+    newSelectedDate: Calendar
+) {
+    Box(modifier = modifier
+        .height(0.dp)
+        .pointerInput(true) {
+            this.handleSwipe(
+                minSwipeLength = 25f,
+                scrollToNextItem = monthScroller.scrollToNextItem,
+                scrollToPreviousItem = monthScroller.scrollToPreviousItem,
+                scrollToCurrentItem = monthScroller.scrollToCurrentItem,
+                scrollBy = monthScroller.scrollBy
+            )
+        }
+    ) {
+        MonthList(
+            modifier = modifier,
+            monthListState = monthListState,
+            visibleYear = visibleYear,
+            visibleMonth = visibleMonth,
+            oldSelectedDate = oldSelectedDate,
+            newSelectedDate = newSelectedDate
+        )
+    }
+}
+
+@Composable
+fun MonthList(
+    modifier: Modifier = Modifier,
+    monthListState: LazyListState,
+    visibleYear: Int,
+    visibleMonth: Int,
+    oldSelectedDate: Calendar,
+    newSelectedDate: Calendar
+) {
+    Box(
+        modifier = modifier
+    ) {
+        LazyRow(modifier = modifier, state = monthListState, userScrollEnabled = false) {
+            items(Int.MAX_VALUE) { i ->
+                val itemMonthIndex = i % 12
+                val itemMonth = Month.getByOrdinal(itemMonthIndex)
+                val itemYear = calculateItemYear(
+                    visibleYear = visibleYear,
+                    visibleMonth = visibleMonth,
+                    itemMonth = itemMonthIndex
+                )
+
+                val monthHasOldSelectedDay = monthHasSelectedDay(
+                    year = itemYear,
+                    month = itemMonthIndex,
+                    selectedDate = oldSelectedDate
+                )
+                val selectedDayOld =
+                    if (monthHasOldSelectedDay) newSelectedDate.get(Calendar.DAY_OF_MONTH) else null
+
+                val monthHasNewSelectedDay = monthHasSelectedDay(
+                    year = itemYear,
+                    month = itemMonthIndex,
+                    selectedDate = newSelectedDate
+                )
+                val selectedDayNew =
+                    if (monthHasNewSelectedDay) newSelectedDate.get(Calendar.DAY_OF_MONTH) else null
+
+                MonthItem(
+                    modifier = modifier,
+                    daysInMonth = Month.getDaysCount(visibleYear, itemMonth),
+                    selectedDayOld = selectedDayOld,
+                    selectedDayNew = selectedDayNew
+                )
+            }
+        }
+    }
+}
+
+fun monthHasSelectedDay(month: Int, year: Int, selectedDate: Calendar): Boolean {
+    val selectedDateYear = selectedDate.get(Calendar.YEAR)
+    val yearHasSelectedDay = selectedDateYear == year
+
+    val selectedDateMonth = selectedDate.get(Calendar.MONTH)
+    val monthHasSelectedDay = selectedDateMonth == month
+
+    return yearHasSelectedDay && monthHasSelectedDay
+}
+
+fun calculateItemYear(visibleYear: Int, visibleMonth: Int, itemMonth: Int): Int {
+    return if (itemMonth == 11 && visibleMonth == 0) {
+        visibleYear - 1
+    } else if (itemMonth == 0 && visibleMonth == 11) {
+        visibleYear + 1
+    } else visibleYear
+}
+
+@Composable
+fun MonthItem(
+    modifier: Modifier = Modifier.fillMaxWidth(),
+    daysInMonth: Int,
+    selectedDayOld: Int?,
+    selectedDayNew: Int?
+) {
     LazyVerticalGrid(
         modifier = modifier,
         columns = GridCells.Fixed(7)
     ) {
         items(daysInMonth) { i ->
             val day = dayToHumanFormat(i)
-            CalendarDay(day = day, selectedOld = day == selectedDayOld, selectedNew = day == selectedDayNew, onClick = {})
+            CalendarDay(
+                day = day,
+                selectedOld = day == selectedDayOld,
+                selectedNew = day == selectedDayNew
+            )
         }
     }
 }
 
 @Composable
-fun CalendarDay(day: Int, selectedOld: Boolean, selectedNew: Boolean, onClick: (Int) -> Unit) {
+fun CalendarDay(
+    day: Int,
+    selectedOld: Boolean,
+    selectedNew: Boolean
+) {
     Text(
         text = day.toString(),
         textAlign = TextAlign.Center,
