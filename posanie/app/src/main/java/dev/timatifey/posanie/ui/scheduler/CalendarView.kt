@@ -1,10 +1,13 @@
 package dev.timatifey.posanie.ui.scheduler
 
 import android.icu.util.Calendar
+import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.gestures.scrollBy
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyRow
+import androidx.compose.foundation.lazy.grid.GridCells
+import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
 import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.ArrowBack
@@ -16,6 +19,7 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
@@ -31,13 +35,14 @@ fun CalendarView(
 ) {
     val schedulerUiState = schedulerViewModel.uiState.collectAsState().value
 
-    var currentItem by remember { mutableStateOf(Int.MAX_VALUE / 2) }
-    val monthListState = rememberLazyListState(currentItem)
-    val coroutineScope = rememberCoroutineScope()
-
     var newSelectedDate by remember { mutableStateOf(schedulerUiState.selectedDate) }
     var visibleMonth by remember { mutableStateOf(schedulerUiState.selectedDate.get(Calendar.MONTH)) }
     var visibleYear by remember { mutableStateOf(schedulerUiState.selectedDate.get(Calendar.YEAR)) }
+
+    var currentItem by remember { mutableStateOf(Int.MAX_VALUE / 2) }
+    currentItem += visibleMonth - currentItem % 12
+    val monthListState = rememberLazyListState(currentItem)
+    val coroutineScope = rememberCoroutineScope()
 
     LaunchedEffect(true) {
         monthListState.scrollToItem(currentItem)
@@ -106,7 +111,8 @@ fun CalendarView(
                     items(Int.MAX_VALUE) { i ->
                         val index = i % 12
                         val month = Month.getByOrdinal(index)
-                        Text(text = month.fullName, modifier = modifier.wrapContentHeight(), textAlign = TextAlign.Center)
+                        //Text(text = month.fullName, modifier = modifier)
+                        MonthDays(daysInMonth = Month.getDaysCount(visibleYear, month), modifier = modifier.fillMaxHeight())
                     }
                 }
             }
@@ -148,6 +154,22 @@ fun CalendarDate(modifier: Modifier = Modifier, month: Int, year: Int) {
 }
 
 @Composable
-fun CalendarDay() {
+fun MonthDays(modifier: Modifier = Modifier, daysInMonth: Int) {
+    LazyVerticalGrid(
+        modifier = modifier,
+        columns = GridCells.Fixed(7)
+    ) {
+        items(daysInMonth) { i ->
+            CalendarDay(i + 1)
+        }
+    }
+}
 
+@Composable
+fun CalendarDay(day: Int) {
+    Text(
+        text = day.toString(),
+        textAlign = TextAlign.Center,
+        modifier = Modifier
+    )
 }

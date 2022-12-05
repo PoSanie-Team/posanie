@@ -73,6 +73,23 @@ enum class Month(val fullName: String) {
             }
             throw IllegalArgumentException("Illegal ordinal")
         }
+
+        fun getDaysCount(year: Int, month: Month): Int {
+            return when (month) {
+                JANUARY -> 31
+                FEBRUARY -> if (year % 4 == 0) 29 else 28
+                MARCH -> 30
+                APRIL -> 31
+                MAY -> 30
+                JUNE -> 31
+                JULY -> 31
+                AUGUST -> 31
+                SEPTEMBER -> 30
+                OCTOBER -> 31
+                NOVEMBER -> 30
+                DECEMBER -> 31
+            }
+        }
     }
 }
 
