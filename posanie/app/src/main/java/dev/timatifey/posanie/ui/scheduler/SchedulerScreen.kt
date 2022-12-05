@@ -1,6 +1,5 @@
 package dev.timatifey.posanie.ui.scheduler
 
-import androidx.compose.foundation.background
 import androidx.compose.foundation.gestures.detectDragGestures
 import androidx.compose.foundation.gestures.scrollBy
 import androidx.compose.foundation.layout.*
@@ -11,16 +10,13 @@ import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
-import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.input.pointer.PointerInputScope
 import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.platform.LocalConfiguration
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
-import androidx.compose.ui.window.Popup
 import com.google.accompanist.swiperefresh.SwipeRefresh
 import com.google.accompanist.swiperefresh.rememberSwipeRefreshState
 import dev.timatifey.posanie.model.domain.Lesson
@@ -36,7 +32,7 @@ fun SchedulerScreen(
 ) {
     val schedulerUiState = schedulerViewModel.uiState.collectAsState().value
 
-    val lessonsToDays = (schedulerUiState as SchedulerUiState.UiState).lessonsToDays
+    val lessonsToDays = schedulerUiState.lessonsToDays
 
     val weekDayListState = rememberLazyListState()
     val currentWeekDayOrdinal = schedulerUiState.selectedDay.ordinal
@@ -88,7 +84,7 @@ fun SchedulerScreen(
 
         LaunchedEffect(true) {
             createPopup(calendarVisibilityState) {
-                Calendar()
+                CalendarView(schedulerViewModel = schedulerViewModel)
             }
         }
     }
@@ -99,19 +95,21 @@ fun ScrollableWeek(
     modifier: Modifier = Modifier,
     state: WeekState,
     lessonsToDays: Map<WeekDay, List<Lesson>>,
-    weekScroller: WeekScroller,
+    weekScroller: LazyListScroller,
     fetchLessons: () -> Unit
 ) {
     Box(modifier = modifier
         .fillMaxSize()
         .pointerInput(true) {
-            this.handleWeekDaySwipe(
-                scrollToNextWeekDay = weekScroller.scrollToNextWeekDay,
-                scrollToPreviousWeekDay = weekScroller.scrollToPreviousWeekDay,
-                scrollToCurrentWeekDay = weekScroller.scrollToCurrentWeekDay,
+            this.handleSwipe(
+                minSwipeLength = 50f,
+                scrollToNextItem = weekScroller.scrollToNextItem,
+                scrollToPreviousItem = weekScroller.scrollToPreviousItem,
+                scrollToCurrentItem = weekScroller.scrollToCurrentItem,
                 scrollBy = weekScroller.scrollBy
             )
-        }) {
+        }
+    ) {
         RefreshableWeek(
             state = state,
             lessonsToDays = lessonsToDays,
@@ -125,10 +123,10 @@ class WeekState(
     val isLoading: Boolean,
 )
 
-class WeekScroller(
-    val scrollToNextWeekDay: () -> Unit,
-    val scrollToPreviousWeekDay: () -> Unit,
-    val scrollToCurrentWeekDay: () -> Unit,
+class LazyListScroller(
+    val scrollToNextItem: () -> Unit,
+    val scrollToPreviousItem: () -> Unit,
+    val scrollToCurrentItem: () -> Unit,
     val scrollBy: (Float) -> Unit
 )
 
@@ -136,11 +134,11 @@ fun createWeekScroller(
     schedulerViewModel: SchedulerViewModel,
     coroutineScope: CoroutineScope,
     weekDayListState: LazyListState
-): WeekScroller {
-    return WeekScroller(
-        scrollToPreviousWeekDay = schedulerViewModel::selectPreviousWeekDay,
-        scrollToNextWeekDay = schedulerViewModel::selectNextWeekDay,
-        scrollToCurrentWeekDay = {
+): LazyListScroller {
+    return LazyListScroller(
+        scrollToNextItem = schedulerViewModel::selectNextWeekDay,
+        scrollToPreviousItem = schedulerViewModel::selectPreviousWeekDay,
+        scrollToCurrentItem = {
             coroutineScope.launch {
                 weekDayListState.animateScrollToItem(schedulerViewModel.uiState.value.selectedDay.ordinal)
             }
@@ -165,12 +163,12 @@ fun RefreshableWeek(
         state = rememberSwipeRefreshState(state.isLoading),
         onRefresh = fetchLessons
     ) {
-        Week(state = state, lessonsToDays = lessonsToDays)
+        WeekView(state = state, lessonsToDays = lessonsToDays)
     }
 }
 
 @Composable
-fun Week(
+fun WeekView(
     state: WeekState,
     lessonsToDays: Map<WeekDay, List<Lesson>>
 ) {
@@ -201,13 +199,13 @@ fun weekdayOrdinalToCalendarFormat(ordinal: Int): Int {
     return ordinal + formatDiff
 }
 
-suspend fun PointerInputScope.handleWeekDaySwipe(
-    scrollToNextWeekDay: () -> Unit,
-    scrollToPreviousWeekDay: () -> Unit,
-    scrollToCurrentWeekDay: () -> Unit,
+suspend fun PointerInputScope.handleSwipe(
+    minSwipeLength: Float = 50f,
+    scrollToNextItem: () -> Unit,
+    scrollToPreviousItem: () -> Unit,
+    scrollToCurrentItem: () -> Unit,
     scrollBy: (Float) -> Unit
 ) {
-    val minSwipeLength = 50f
     var swipeToNextDay = false
     var swipeToPreviousDay = false
     detectDragGestures(
@@ -223,11 +221,11 @@ suspend fun PointerInputScope.handleWeekDaySwipe(
         },
         onDragEnd = {
             if (swipeToNextDay) {
-                scrollToNextWeekDay()
+                scrollToNextItem()
             } else if (swipeToPreviousDay) {
-                scrollToPreviousWeekDay()
+                scrollToPreviousItem()
             } else {
-                scrollToCurrentWeekDay()
+                scrollToCurrentItem()
             }
             swipeToNextDay = false
             swipeToPreviousDay = false
@@ -287,17 +285,6 @@ fun LessonItem(modifier: Modifier = Modifier, lesson: Lesson) {
         }
     }
 
-}
-
-@Composable
-fun Calendar(
-    modifier: Modifier = Modifier
-        .width(200.dp)
-        .height(300.dp),
-) {
-    Box(
-        modifier = modifier.background(Color.Green),
-    )
 }
 
 @Preview

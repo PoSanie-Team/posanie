@@ -41,11 +41,43 @@ enum class WeekDay(val shortName: String) {
     }
 }
 
+enum class Month(val fullName: String) {
+    JANUARY("January"),
+    FEBRUARY("February"),
+    MARCH("March"),
+    APRIL("April"),
+    MAY("May"),
+    JUNE("June"),
+    JULY("July"),
+    AUGUST("August"),
+    SEPTEMBER("September"),
+    OCTOBER("October"),
+    NOVEMBER("November"),
+    DECEMBER("December");
+
+    companion object {
+        fun getByOrdinal(ordinal: Int): Month {
+            when(ordinal) {
+                0 -> return JANUARY
+                1 -> return FEBRUARY
+                2 -> return MARCH
+                3 -> return APRIL
+                4 -> return MAY
+                5 -> return JUNE
+                6 -> return JULY
+                7 -> return AUGUST
+                8 -> return SEPTEMBER
+                9 -> return OCTOBER
+                10 -> return NOVEMBER
+                11 -> return DECEMBER
+            }
+            throw IllegalArgumentException("Illegal ordinal")
+        }
+    }
+}
+
 sealed interface SchedulerUiState {
 
-    val mondayDate: Calendar
-    val selectedDate: Calendar
-    val selectedDay: WeekDay
     val isLoading: Boolean
     val errorMessages: List<ErrorMessage>
 
@@ -53,9 +85,9 @@ sealed interface SchedulerUiState {
         val hasSchedule: Boolean = false,
         val weekIsOdd: Boolean = false,
         val lessonsToDays: Map<WeekDay, List<Lesson>>,
-        override val mondayDate: Calendar,
-        override val selectedDate: Calendar,
-        override val selectedDay: WeekDay,
+        val mondayDate: Calendar,
+        val selectedDate: Calendar,
+        val selectedDay: WeekDay,
         override val isLoading: Boolean,
         override val errorMessages: List<ErrorMessage>,
     ) : SchedulerUiState
@@ -77,6 +109,7 @@ private data class SchedulerViewModelState(
             val todayDate: Calendar = Calendar.getInstance()
 
             val today = WeekDay.getByOrdinal(todayDate.get(Calendar.DAY_OF_WEEK))
+            val monthOnCalendar = Month.getByOrdinal(todayDate.get(Calendar.MONTH))
 
             val todayYear = todayDate.get(Calendar.YEAR)
             val todayMonth = todayDate.get(Calendar.MONTH)
@@ -103,7 +136,7 @@ private data class SchedulerViewModelState(
         }
     }
 
-    fun toUiState(): SchedulerUiState =
+    fun toUiState(): SchedulerUiState.UiState =
         SchedulerUiState.UiState(
             hasSchedule = hasSchedule,
             weekIsOdd = weekIsOdd,
@@ -125,7 +158,7 @@ class SchedulerViewModel @Inject constructor(
 
     private val viewModelState = MutableStateFlow(SchedulerViewModelState.getInstance())
 
-    val uiState: StateFlow<SchedulerUiState> = viewModelState
+    val uiState: StateFlow<SchedulerUiState.UiState> = viewModelState
         .map { it.toUiState() }
         .stateIn(
             viewModelScope,

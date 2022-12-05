@@ -68,7 +68,7 @@ fun AppPopup(
 ) {
     if (!isVisible) return
 
-    val shadowColor = Color.Black.copy(alpha = 0.2f)
+    val shadowColor = Color.Black.copy(alpha = 0.4f)
     Box(modifier = Modifier
         .fillMaxSize()
         .background(shadowColor)
