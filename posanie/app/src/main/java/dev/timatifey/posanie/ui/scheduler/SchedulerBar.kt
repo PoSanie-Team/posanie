@@ -177,7 +177,7 @@ fun Day(weekDay: WeekDay, selected: Boolean, modifier: Modifier = Modifier, onCl
 }
 
 @Composable
-fun dayColor(selected: Boolean): Color {
+private fun dayColor(selected: Boolean): Color {
     return if (selected) {
         MaterialTheme.colorScheme.secondaryContainer
     } else {
