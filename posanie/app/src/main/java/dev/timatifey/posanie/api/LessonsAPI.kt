@@ -1,7 +1,7 @@
 package dev.timatifey.posanie.api
 
 import dev.timatifey.posanie.model.data.Lesson
-import dev.timatifey.posanie.ui.scheduler.WeekDay
+import dev.timatifey.posanie.ui.scheduler.WeekWorkDay
 import kotlinx.coroutines.CoroutineDispatcher
 import kotlinx.coroutines.withContext
 import org.json.JSONObject
@@ -36,7 +36,7 @@ class LessonsAPI(private val dispatcher: CoroutineDispatcher)  {
     }
 
     private suspend fun getLessons(url: String) = withContext(dispatcher) {
-        val lessonsToDays = mutableMapOf<WeekDay, List<Lesson>>()
+        val lessonsToDays = mutableMapOf<WeekWorkDay, List<Lesson>>()
         val doc = Jsoup.connect(url).ignoreContentType(true).get()
         var json = doc.select("body").html()
         json = json.substring(json.indexOf("{"))
@@ -67,7 +67,7 @@ class LessonsAPI(private val dispatcher: CoroutineDispatcher)  {
                 lessonId++
             }
 
-            lessonsToDays[WeekDay.getByOrdinal(adjustWeekDayOrdinal(weekDay))] = lessons;
+            lessonsToDays[WeekWorkDay.getByOrdinal(adjustWeekDayOrdinal(weekDay))] = lessons;
         }
         return@withContext lessonsToDays
     }

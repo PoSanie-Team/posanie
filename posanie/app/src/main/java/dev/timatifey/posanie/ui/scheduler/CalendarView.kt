@@ -34,7 +34,8 @@ import java.util.*
 fun CalendarView(
     modifier: Modifier = Modifier
         .width(300.dp)
-        .height(350.dp),
+        .height(400.dp),
+    contentHeight: Dp = 300.dp,
     schedulerViewModel: SchedulerViewModel,
     close: () -> Unit
 ) {
@@ -105,7 +106,7 @@ fun CalendarView(
                 .padding(paddingValues)) {
                 ScrollableMonthList(
                     modifier = Modifier
-                        .height(250.dp)
+                        .height(contentHeight)
                         .then(modifier),
                     monthScroller = monthScroller,
                     monthListState = monthListState,
@@ -309,17 +310,24 @@ fun MonthItem(
         modifier = modifier,
         columns = GridCells.Fixed(7)
     ) {
-        items(daysInMonth) { i ->
-            val day = dayToHumanFormat(i)
-            val date = Calendar.getInstance()
-            date.set(year, month.ordinal, day)
-            CalendarDay(
-                day = day,
-                isSunday = date.get(Calendar.DAY_OF_WEEK) == Calendar.SUNDAY,
-                selectedOld = day == selectedDayOld,
-                selectedNew = day == selectedDayNew,
-                onClick = onDayClick
-            )
+        val firstDayDate = Calendar.getInstance()
+        firstDayDate.set(year, month.ordinal, 1)
+        val emptyDaysCount = weekdayOrdinalFromCalendarFormat(firstDayDate.get(Calendar.DAY_OF_WEEK))
+        items(daysInMonth + emptyDaysCount) { i ->
+            if (i < emptyDaysCount) {
+                EmptyCalendarDay()
+            } else {
+                val day = dayToHumanFormat(i - emptyDaysCount)
+                val date = Calendar.getInstance()
+                date.set(year, month.ordinal, day)
+                CalendarDay(
+                    day = day,
+                    isSunday = date.get(Calendar.DAY_OF_WEEK) == Calendar.SUNDAY,
+                    selectedOld = day == selectedDayOld,
+                    selectedNew = day == selectedDayNew,
+                    onClick = onDayClick
+                )
+            }
         }
     }
 }
@@ -351,6 +359,15 @@ fun CalendarDay(
             color = dayTextColor(isSunday = isSunday),
             textAlign = TextAlign.Center
         )
+    }
+}
+
+@Composable
+fun EmptyCalendarDay() {
+    Box(
+        modifier = Modifier.aspectRatio(1f),
+        contentAlignment = Alignment.Center
+    ) {
     }
 }
 
