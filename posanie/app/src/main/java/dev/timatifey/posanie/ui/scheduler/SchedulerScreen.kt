@@ -84,7 +84,10 @@ fun SchedulerScreen(
 
         LaunchedEffect(true) {
             createPopup(calendarVisibilityState) {
-                CalendarView(schedulerViewModel = schedulerViewModel)
+                CalendarView(
+                    schedulerViewModel = schedulerViewModel,
+                    close = { calendarVisibilityState.value = false }
+                )
             }
         }
     }

@@ -241,6 +241,22 @@ class SchedulerViewModel @Inject constructor(
         }
     }
 
+    fun selectDate(newDate: Calendar) {
+        val dayOrdinal = newDate.get(Calendar.DAY_OF_WEEK)
+        val newWeekDay = WeekDay.getByOrdinal(dayOrdinal)
+
+        val newYear = newDate.get(Calendar.YEAR)
+        val newMonth = newDate.get(Calendar.MONTH)
+
+        val newDay = newDate.get(Calendar.DAY_OF_MONTH)
+        val correctedNewDay = if (SchedulerViewModelState.isSunday(newDate)) newDay - 1 else newDay
+
+        val mondayDay = correctedNewDay - newWeekDay.ordinal
+
+        setMonday(newYear, newMonth, mondayDay)
+        selectWeekDay(newWeekDay)
+    }
+
     fun setNextMonday() {
         val d = viewModelState.value.mondayDate.get(Calendar.DAY_OF_MONTH)
         val m = viewModelState.value.mondayDate.get(Calendar.MONTH)
@@ -274,7 +290,6 @@ class SchedulerViewModel @Inject constructor(
     }
 
     fun fetchLessons() {
-
         viewModelState.update { it.copy(isLoading = true) }
 
         viewModelScope.launch {

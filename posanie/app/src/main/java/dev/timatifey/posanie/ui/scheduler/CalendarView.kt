@@ -9,6 +9,7 @@ import androidx.compose.foundation.lazy.LazyRow
 import androidx.compose.foundation.lazy.grid.GridCells
 import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
 import androidx.compose.foundation.lazy.rememberLazyListState
+import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.ArrowBack
 import androidx.compose.material.icons.filled.ArrowForward
@@ -19,6 +20,7 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.text.style.TextAlign
@@ -32,8 +34,9 @@ import java.util.*
 fun CalendarView(
     modifier: Modifier = Modifier
         .width(300.dp)
-        .height(300.dp),
-    schedulerViewModel: SchedulerViewModel
+        .height(350.dp),
+    schedulerViewModel: SchedulerViewModel,
+    close: () -> Unit
 ) {
     val schedulerUiState = schedulerViewModel.uiState.collectAsState().value
     val oldSelectedDate = schedulerUiState.selectedDate
@@ -102,14 +105,19 @@ fun CalendarView(
                 .padding(paddingValues)) {
                 ScrollableMonthList(
                     modifier = Modifier
-                        .height(200.dp)
+                        .height(250.dp)
                         .then(modifier),
                     monthScroller = monthScroller,
                     monthListState = monthListState,
                     visibleYear = visibleYear,
                     visibleMonth = visibleMonth,
                     oldSelectedDate = oldSelectedDate,
-                    newSelectedDate = newSelectedDate
+                    newSelectedDate = newSelectedDate,
+                    onDayClick = { day ->
+                        val newDate = Calendar.getInstance()
+                        newDate.set(visibleYear, visibleMonth, day)
+                        newSelectedDate = newDate
+                    }
                 )
                 Row(
                     modifier = Modifier
@@ -118,8 +126,11 @@ fun CalendarView(
                     verticalAlignment = Alignment.Bottom,
                     horizontalArrangement = Arrangement.SpaceEvenly
                 ) {
-                    DialogButton(text = "Cancel", onClick = {})
-                    DialogButton(text = "Ok", onClick = {})
+                    DialogButton(text = "Cancel", onClick = close)
+                    DialogButton(text = "Ok", onClick = {
+                        schedulerViewModel.selectDate(newSelectedDate)
+                        close()
+                    })
                 }
             }
         }
@@ -133,7 +144,10 @@ fun DialogButton(
     onClick: () -> Unit
 ) {
     Box(
-        modifier = Modifier.clickable { onClick() }.then(modifier)
+        modifier = Modifier
+            .clip(CircleShape)
+            .clickable { onClick() }
+            .then(modifier)
     ) {
         Text(text = text, textAlign = TextAlign.Center)
     }
@@ -169,7 +183,11 @@ fun CalendarBar(
 
 @Composable
 fun CalendarDate(modifier: Modifier = Modifier, month: Int, year: Int) {
-    Text(text = "${Month.getByOrdinal(month).fullName} $year", textAlign = TextAlign.Center, modifier = modifier)
+    Text(
+        text = "${Month.getByOrdinal(month).fullName} $year",
+        textAlign = TextAlign.Center,
+        modifier = modifier
+    )
 }
 
 @Composable
@@ -180,7 +198,8 @@ fun ScrollableMonthList(
     visibleYear: Int,
     visibleMonth: Int,
     oldSelectedDate: Calendar,
-    newSelectedDate: Calendar
+    newSelectedDate: Calendar,
+    onDayClick: (Int) -> Unit
 ) {
     Box(modifier = modifier
         .height(0.dp)
@@ -200,7 +219,8 @@ fun ScrollableMonthList(
             visibleYear = visibleYear,
             visibleMonth = visibleMonth,
             oldSelectedDate = oldSelectedDate,
-            newSelectedDate = newSelectedDate
+            newSelectedDate = newSelectedDate,
+            onDayClick = onDayClick
         )
     }
 }
@@ -212,7 +232,8 @@ fun MonthList(
     visibleYear: Int,
     visibleMonth: Int,
     oldSelectedDate: Calendar,
-    newSelectedDate: Calendar
+    newSelectedDate: Calendar,
+    onDayClick: (Int) -> Unit
 ) {
     Box(
         modifier = modifier
@@ -233,7 +254,7 @@ fun MonthList(
                     selectedDate = oldSelectedDate
                 )
                 val selectedDayOld =
-                    if (monthHasOldSelectedDay) newSelectedDate.get(Calendar.DAY_OF_MONTH) else null
+                    if (monthHasOldSelectedDay) oldSelectedDate.get(Calendar.DAY_OF_MONTH) else null
 
                 val monthHasNewSelectedDay = monthHasSelectedDay(
                     year = itemYear,
@@ -245,9 +266,11 @@ fun MonthList(
 
                 MonthItem(
                     modifier = modifier,
-                    daysInMonth = Month.getDaysCount(visibleYear, itemMonth),
+                    year = itemYear,
+                    month = itemMonth,
                     selectedDayOld = selectedDayOld,
-                    selectedDayNew = selectedDayNew
+                    selectedDayNew = selectedDayNew,
+                    onDayClick = onDayClick
                 )
             }
         }
@@ -275,20 +298,27 @@ fun calculateItemYear(visibleYear: Int, visibleMonth: Int, itemMonth: Int): Int 
 @Composable
 fun MonthItem(
     modifier: Modifier = Modifier.fillMaxWidth(),
-    daysInMonth: Int,
+    year: Int,
+    month: Month,
     selectedDayOld: Int?,
-    selectedDayNew: Int?
+    selectedDayNew: Int?,
+    onDayClick: (Int) -> Unit
 ) {
+    val daysInMonth = Month.getDaysCount(year, month)
     LazyVerticalGrid(
         modifier = modifier,
         columns = GridCells.Fixed(7)
     ) {
         items(daysInMonth) { i ->
             val day = dayToHumanFormat(i)
+            val date = Calendar.getInstance()
+            date.set(year, month.ordinal, day)
             CalendarDay(
                 day = day,
+                isSunday = date.get(Calendar.DAY_OF_WEEK) == Calendar.SUNDAY,
                 selectedOld = day == selectedDayOld,
-                selectedNew = day == selectedDayNew
+                selectedNew = day == selectedDayNew,
+                onClick = onDayClick
             )
         }
     }
@@ -297,14 +327,31 @@ fun MonthItem(
 @Composable
 fun CalendarDay(
     day: Int,
+    isSunday: Boolean,
     selectedOld: Boolean,
-    selectedNew: Boolean
+    selectedNew: Boolean,
+    onClick: (Int) -> Unit
 ) {
-    Text(
-        text = day.toString(),
-        textAlign = TextAlign.Center,
-        modifier = Modifier.background(dayColor(selectedOld = selectedOld, selectedNew = selectedNew))
-    )
+    val backgroundModifier = Modifier
+        .aspectRatio(1f)
+        .background(
+            color = dayColor(selectedOld = selectedOld, selectedNew = selectedNew),
+            shape = CircleShape
+        )
+    val clickableModifier =
+        if (isSunday) backgroundModifier else backgroundModifier
+            .clip(CircleShape)
+            .clickable { onClick(day) }
+    Box(
+        modifier = clickableModifier,
+        contentAlignment = Alignment.Center
+    ) {
+        Text(
+            text = day.toString(),
+            color = dayTextColor(isSunday = isSunday),
+            textAlign = TextAlign.Center
+        )
+    }
 }
 
 @Composable
@@ -315,6 +362,15 @@ private fun dayColor(selectedOld: Boolean, selectedNew: Boolean): Color {
         MaterialTheme.colorScheme.secondaryContainer
     }  else {
         Color.Transparent
+    }
+}
+
+@Composable
+private fun dayTextColor(isSunday: Boolean): Color {
+    return if (isSunday) {
+        MaterialTheme.colorScheme.error
+    } else {
+        Color.Unspecified
     }
 }
 
