@@ -17,16 +17,30 @@ import java.util.*
 import javax.inject.Inject
 import kotlin.IllegalArgumentException
 
-enum class WeekWorkDay(val shortName: String) {
+enum class WeekDay(val shortName: String) {
     MONDAY("MO"),
     TUESDAY("TU"),
     WEDNESDAY("WE"),
     THURSDAY("TH"),
     FRIDAY("FR"),
-    SATURDAY("SA");
+    SATURDAY("SA"),
+    SUNDAY("SU");
 
     companion object {
-        fun getByOrdinal(ordinal: Int): WeekWorkDay {
+        fun getDayByOrdinal(ordinal: Int): WeekDay {
+            when(ordinal) {
+                2 -> return MONDAY
+                3 -> return TUESDAY
+                4 -> return WEDNESDAY
+                5 -> return THURSDAY
+                6 -> return FRIDAY
+                7 -> return SATURDAY
+                1 -> return SUNDAY
+            }
+            throw IllegalArgumentException("Illegal ordinal")
+        }
+
+        fun getWorkDayByOrdinal(ordinal: Int): WeekDay {
             when(ordinal) {
                 2 -> return MONDAY
                 3 -> return TUESDAY
@@ -101,10 +115,10 @@ sealed interface SchedulerUiState {
     data class UiState(
         val hasSchedule: Boolean = false,
         val weekIsOdd: Boolean = false,
-        val lessonsToDays: Map<WeekWorkDay, List<Lesson>>,
+        val lessonsToDays: Map<WeekDay, List<Lesson>>,
         val mondayDate: Calendar,
         val selectedDate: Calendar,
-        val selectedDay: WeekWorkDay,
+        val selectedDay: WeekDay,
         override val isLoading: Boolean,
         override val errorMessages: List<ErrorMessage>,
     ) : SchedulerUiState
@@ -113,11 +127,11 @@ sealed interface SchedulerUiState {
 private data class SchedulerViewModelState(
     val hasSchedule: Boolean = false,
     val weekIsOdd: Boolean = false,
-    val lessonsToDays: Map<WeekWorkDay, List<Lesson>>? = null,
+    val lessonsToDays: Map<WeekDay, List<Lesson>>? = null,
     val selectedLessons: List<Lesson>? = null,
     val mondayDate: Calendar,
     val selectedDate: Calendar,
-    val selectedDay: WeekWorkDay,
+    val selectedDay: WeekDay,
     val isLoading: Boolean = false,
     val errorMessages: List<ErrorMessage> = emptyList(),
 ) {
@@ -125,7 +139,7 @@ private data class SchedulerViewModelState(
         fun getInstance(): SchedulerViewModelState {
             val todayDate: Calendar = Calendar.getInstance()
 
-            val today = WeekWorkDay.getByOrdinal(todayDate.get(Calendar.DAY_OF_WEEK))
+            val today = WeekDay.getWorkDayByOrdinal(todayDate.get(Calendar.DAY_OF_WEEK))
             val monthOnCalendar = Month.getByOrdinal(todayDate.get(Calendar.MONTH))
 
             val todayYear = todayDate.get(Calendar.YEAR)
@@ -185,46 +199,46 @@ class SchedulerViewModel @Inject constructor(
 
     fun selectNextWeekDay() {
         val newDay = getNextWeekDay()
-        if (newDay == WeekWorkDay.MONDAY) {
+        if (newDay == WeekDay.MONDAY) {
             setNextMonday()
         }
         selectWeekDay(newDay)
     }
 
-    private fun getNextWeekDay(): WeekWorkDay {
+    private fun getNextWeekDay(): WeekDay {
         val result = when (viewModelState.value.selectedDay) {
-            WeekWorkDay.MONDAY -> WeekWorkDay.TUESDAY
-            WeekWorkDay.TUESDAY -> WeekWorkDay.WEDNESDAY
-            WeekWorkDay.WEDNESDAY -> WeekWorkDay.THURSDAY
-            WeekWorkDay.THURSDAY -> WeekWorkDay.FRIDAY
-            WeekWorkDay.FRIDAY -> WeekWorkDay.SATURDAY
-            else -> WeekWorkDay.MONDAY
+            WeekDay.MONDAY -> WeekDay.TUESDAY
+            WeekDay.TUESDAY -> WeekDay.WEDNESDAY
+            WeekDay.WEDNESDAY -> WeekDay.THURSDAY
+            WeekDay.THURSDAY -> WeekDay.FRIDAY
+            WeekDay.FRIDAY -> WeekDay.SATURDAY
+            else -> WeekDay.MONDAY
         }
         return result
     }
 
     fun selectPreviousWeekDay() {
         val newDay = getPreviousWeekDay()
-        if (newDay == WeekWorkDay.SATURDAY) {
+        if (newDay == WeekDay.SATURDAY) {
             setPreviousMonday()
         }
         selectWeekDay(newDay)
     }
 
-    private fun getPreviousWeekDay(): WeekWorkDay {
+    private fun getPreviousWeekDay(): WeekDay {
         val result = when (viewModelState.value.selectedDay) {
-            WeekWorkDay.SATURDAY -> WeekWorkDay.FRIDAY
-            WeekWorkDay.FRIDAY -> WeekWorkDay.THURSDAY
-            WeekWorkDay.THURSDAY -> WeekWorkDay.WEDNESDAY
-            WeekWorkDay.WEDNESDAY -> WeekWorkDay.TUESDAY
-            WeekWorkDay.TUESDAY -> WeekWorkDay.MONDAY
-            else -> WeekWorkDay.SATURDAY
+            WeekDay.SATURDAY -> WeekDay.FRIDAY
+            WeekDay.FRIDAY -> WeekDay.THURSDAY
+            WeekDay.THURSDAY -> WeekDay.WEDNESDAY
+            WeekDay.WEDNESDAY -> WeekDay.TUESDAY
+            WeekDay.TUESDAY -> WeekDay.MONDAY
+            else -> WeekDay.SATURDAY
         }
 
         return result
     }
 
-    fun selectWeekDay(weekDay: WeekWorkDay) {
+    fun selectWeekDay(weekDay: WeekDay) {
         viewModelScope.launch {
             viewModelState.update {
                 val newSelectedDate = Calendar.getInstance()
@@ -243,7 +257,7 @@ class SchedulerViewModel @Inject constructor(
 
     fun selectDate(newDate: Calendar) {
         val dayOrdinal = newDate.get(Calendar.DAY_OF_WEEK)
-        val newWeekDay = WeekWorkDay.getByOrdinal(dayOrdinal)
+        val newWeekDay = WeekDay.getWorkDayByOrdinal(dayOrdinal)
 
         val newYear = newDate.get(Calendar.YEAR)
         val newMonth = newDate.get(Calendar.MONTH)
@@ -300,7 +314,7 @@ class SchedulerViewModel @Inject constructor(
             val month = uiState.value.mondayDate.get(Calendar.MONTH) + 1
             val year = uiState.value.mondayDate.get(Calendar.YEAR)
             val mondayDateString = "$year-$month-$day"
-            val lessonsResult: dev.timatifey.posanie.model.Result<Map<WeekWorkDay, List<Lesson>>>
+            val lessonsResult: dev.timatifey.posanie.model.Result<Map<WeekDay, List<Lesson>>>
             val isOddResult: dev.timatifey.posanie.model.Result<Boolean>
             if (group != null) {
                 lessonsResult = lessonsUseCase.fetchLessonsByGroupId(group.id, mondayDateString)

@@ -32,11 +32,11 @@ fun SchedulerBar(
         selectDay = schedulerViewModel::selectWeekDay,
         goNextWeek = {
             schedulerViewModel.setNextMonday()
-            schedulerViewModel.selectWeekDay(WeekWorkDay.MONDAY)
+            schedulerViewModel.selectWeekDay(WeekDay.MONDAY)
         },
         goPreviousWeek = {
             schedulerViewModel.setPreviousMonday()
-            schedulerViewModel.selectWeekDay(WeekWorkDay.MONDAY)
+            schedulerViewModel.selectWeekDay(WeekDay.MONDAY)
         },
         openCalendar = openCalendar
     )
@@ -45,10 +45,10 @@ fun SchedulerBar(
 @Composable
 fun SchedulerBar(
     selectedDate: Calendar,
-    selectedDay: WeekWorkDay,
+    selectedDay: WeekDay,
     oddWeek: Boolean,
     hasSchedule: Boolean,
-    selectDay: (WeekWorkDay) -> Unit,
+    selectDay: (WeekDay) -> Unit,
     goNextWeek: () -> Unit,
     goPreviousWeek: () -> Unit,
     openCalendar: () -> Unit
@@ -116,46 +116,46 @@ fun WeekDate(date: Calendar, oddWeek: Boolean, hasSchedule: Boolean, modifier: M
 }
 
 @Composable
-fun WeekBar(selectedDay: WeekWorkDay, onDayClick: (WeekWorkDay) -> Unit) {
+fun WeekBar(selectedDay: WeekDay, onDayClick: (WeekDay) -> Unit) {
     Row(
         modifier = Modifier.fillMaxWidth(),
         horizontalArrangement = Arrangement.SpaceAround
     ) {
         Day(
-            weekDay = WeekWorkDay.MONDAY,
-            selected = selectedDay == WeekWorkDay.MONDAY,
-            modifier = Modifier.weight(1f)) { onDayClick(WeekWorkDay.MONDAY)
+            weekDay = WeekDay.MONDAY,
+            selected = selectedDay == WeekDay.MONDAY,
+            modifier = Modifier.weight(1f)) { onDayClick(WeekDay.MONDAY)
         }
         Day(
-            weekDay = WeekWorkDay.TUESDAY,
-            selected = selectedDay == WeekWorkDay.TUESDAY,
-            modifier = Modifier.weight(1f)) { onDayClick(WeekWorkDay.TUESDAY)
+            weekDay = WeekDay.TUESDAY,
+            selected = selectedDay == WeekDay.TUESDAY,
+            modifier = Modifier.weight(1f)) { onDayClick(WeekDay.TUESDAY)
         }
         Day(
-            weekDay = WeekWorkDay.WEDNESDAY,
-            selected = selectedDay == WeekWorkDay.WEDNESDAY,
-            modifier = Modifier.weight(1f)) { onDayClick(WeekWorkDay.WEDNESDAY)
+            weekDay = WeekDay.WEDNESDAY,
+            selected = selectedDay == WeekDay.WEDNESDAY,
+            modifier = Modifier.weight(1f)) { onDayClick(WeekDay.WEDNESDAY)
         }
         Day(
-            weekDay = WeekWorkDay.THURSDAY,
-            selected = selectedDay == WeekWorkDay.THURSDAY,
-            modifier = Modifier.weight(1f)) { onDayClick(WeekWorkDay.THURSDAY)
+            weekDay = WeekDay.THURSDAY,
+            selected = selectedDay == WeekDay.THURSDAY,
+            modifier = Modifier.weight(1f)) { onDayClick(WeekDay.THURSDAY)
         }
         Day(
-            weekDay = WeekWorkDay.FRIDAY,
-            selected = selectedDay == WeekWorkDay.FRIDAY,
-            modifier = Modifier.weight(1f)) { onDayClick(WeekWorkDay.FRIDAY)
+            weekDay = WeekDay.FRIDAY,
+            selected = selectedDay == WeekDay.FRIDAY,
+            modifier = Modifier.weight(1f)) { onDayClick(WeekDay.FRIDAY)
         }
         Day(
-            weekDay = WeekWorkDay.SATURDAY,
-            selected = selectedDay == WeekWorkDay.SATURDAY,
-            modifier = Modifier.weight(1f)) { onDayClick(WeekWorkDay.SATURDAY)
+            weekDay = WeekDay.SATURDAY,
+            selected = selectedDay == WeekDay.SATURDAY,
+            modifier = Modifier.weight(1f)) { onDayClick(WeekDay.SATURDAY)
         }
     }
 }
 
 @Composable
-fun Day(weekDay: WeekWorkDay, selected: Boolean, modifier: Modifier = Modifier, onClick: () -> Unit) {
+fun Day(weekDay: WeekDay, selected: Boolean, modifier: Modifier = Modifier, onClick: () -> Unit) {
     Surface(
         modifier = modifier,
         shape = RoundedCornerShape(4.dp),
@@ -190,7 +190,7 @@ private fun dayColor(selected: Boolean): Color {
 fun previewSchedulerBar() {
     SchedulerBar(
         selectedDate = Calendar.getInstance(),
-        selectedDay = WeekWorkDay.MONDAY,
+        selectedDay = WeekDay.MONDAY,
         oddWeek = false,
         hasSchedule = true,
         selectDay = {},

@@ -10,6 +10,7 @@ import androidx.compose.foundation.lazy.grid.GridCells
 import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
 import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.foundation.shape.CircleShape
+import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.ArrowBack
 import androidx.compose.material.icons.filled.ArrowForward
@@ -23,6 +24,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.input.pointer.pointerInput
+import androidx.compose.ui.semantics.Role
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
@@ -117,7 +119,13 @@ fun CalendarView(
                     onDayClick = { day ->
                         val newDate = Calendar.getInstance()
                         newDate.set(visibleYear, visibleMonth, day)
-                        newSelectedDate = newDate
+
+                        val sameYear = newDate.get(Calendar.YEAR) == newSelectedDate.get(Calendar.YEAR)
+                        val sameMonth = newDate.get(Calendar.MONTH) == newSelectedDate.get(Calendar.MONTH)
+                        val sameDay = newDate.get(Calendar.DAY_OF_MONTH) == newSelectedDate.get(Calendar.DAY_OF_MONTH)
+                        val sameDate = sameYear && sameMonth && sameDay
+                        newSelectedDate = if (sameDate) oldSelectedDate else newDate
+
                     }
                 )
                 Row(
@@ -266,7 +274,7 @@ fun MonthList(
                     if (monthHasNewSelectedDay) newSelectedDate.get(Calendar.DAY_OF_MONTH) else null
 
                 MonthItem(
-                    modifier = modifier,
+                    modifier = modifier.padding(horizontal = 16.dp, vertical = 0.dp),
                     year = itemYear,
                     month = itemMonth,
                     selectedDayOld = selectedDayOld,
@@ -306,28 +314,54 @@ fun MonthItem(
     onDayClick: (Int) -> Unit
 ) {
     val daysInMonth = Month.getDaysCount(year, month)
-    LazyVerticalGrid(
-        modifier = modifier,
-        columns = GridCells.Fixed(7)
-    ) {
-        val firstDayDate = Calendar.getInstance()
-        firstDayDate.set(year, month.ordinal, 1)
-        val emptyDaysCount = weekdayOrdinalFromCalendarFormat(firstDayDate.get(Calendar.DAY_OF_WEEK))
-        items(daysInMonth + emptyDaysCount) { i ->
-            if (i < emptyDaysCount) {
-                EmptyCalendarDay()
-            } else {
-                val day = dayToHumanFormat(i - emptyDaysCount)
-                val date = Calendar.getInstance()
-                date.set(year, month.ordinal, day)
-                CalendarDay(
-                    day = day,
-                    isSunday = date.get(Calendar.DAY_OF_WEEK) == Calendar.SUNDAY,
-                    selectedOld = day == selectedDayOld,
-                    selectedNew = day == selectedDayNew,
-                    onClick = onDayClick
-                )
+    Column() {
+        LazyVerticalGrid(
+            modifier = Modifier.height(30.dp).then(modifier),
+            columns = GridCells.Fixed(7)
+        ) {
+            items(7) { i ->
+                WeekDayTab(weekDay = WeekDay.getDayByOrdinal(weekdayOrdinalToCalendarFormat(i)))
             }
+        }
+        LazyVerticalGrid(
+            modifier = modifier,
+            columns = GridCells.Fixed(7)
+        ) {
+            val firstDayDate = Calendar.getInstance()
+            firstDayDate.set(year, month.ordinal, 1)
+            val emptyDaysCount = weekdayOrdinalFromCalendarFormat(firstDayDate.get(Calendar.DAY_OF_WEEK))
+            items(daysInMonth + emptyDaysCount) { i ->
+                if (i < emptyDaysCount) {
+                    EmptyCalendarDay()
+                } else {
+                    val day = dayToHumanFormat(i - emptyDaysCount)
+                    val date = Calendar.getInstance()
+                    date.set(year, month.ordinal, day)
+                    CalendarDay(
+                        day = day,
+                        isSunday = date.get(Calendar.DAY_OF_WEEK) == Calendar.SUNDAY,
+                        selectedOld = day == selectedDayOld,
+                        selectedNew = day == selectedDayNew,
+                        onClick = onDayClick
+                    )
+                }
+            }
+        }
+    }
+}
+
+@Composable
+fun WeekDayTab(weekDay: WeekDay, modifier: Modifier = Modifier) {
+    Surface(
+        modifier = modifier,
+        shape = RoundedCornerShape(4.dp),
+    ) {
+        Box(
+            Modifier
+                .padding(4.dp),
+            contentAlignment = Alignment.Center
+        ) {
+            Text(text = weekDay.shortName, color = Color.Unspecified.copy(alpha = 0.5f))
         }
     }
 }

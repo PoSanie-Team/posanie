@@ -97,7 +97,7 @@ fun SchedulerScreen(
 fun ScrollableWeek(
     modifier: Modifier = Modifier,
     state: WeekState,
-    lessonsToDays: Map<WeekWorkDay, List<Lesson>>,
+    lessonsToDays: Map<WeekDay, List<Lesson>>,
     weekScroller: LazyListScroller,
     fetchLessons: () -> Unit
 ) {
@@ -157,7 +157,7 @@ fun createWeekScroller(
 @Composable
 fun RefreshableWeek(
     state: WeekState,
-    lessonsToDays: Map<WeekWorkDay, List<Lesson>>,
+    lessonsToDays: Map<WeekDay, List<Lesson>>,
     fetchLessons: () -> Unit
 ) {
     SwipeRefresh(
@@ -173,7 +173,7 @@ fun RefreshableWeek(
 @Composable
 fun WeekView(
     state: WeekState,
-    lessonsToDays: Map<WeekWorkDay, List<Lesson>>
+    lessonsToDays: Map<WeekDay, List<Lesson>>
 ) {
     if (state.isLoading) return
 
@@ -183,7 +183,7 @@ fun WeekView(
         state = state.dayListState
     ) {
         items(6) { i ->
-            val weekDay = WeekWorkDay.getByOrdinal(weekdayOrdinalToCalendarFormat(i))
+            val weekDay = WeekDay.getWorkDayByOrdinal(weekdayOrdinalToCalendarFormat(i))
             val lessons = lessonsToDays[weekDay] ?: emptyList()
             if (lessons.isEmpty()) {
                 MessageText(text = "No lessons today.")
