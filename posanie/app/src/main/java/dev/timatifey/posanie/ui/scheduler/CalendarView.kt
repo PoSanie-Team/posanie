@@ -28,6 +28,7 @@ import androidx.compose.ui.semantics.Role
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
+import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.launch
 import java.util.*
 
@@ -42,47 +43,89 @@ fun CalendarView(
     close: () -> Unit
 ) {
     val schedulerUiState = schedulerViewModel.uiState.collectAsState().value
+
     val oldSelectedDate = schedulerUiState.selectedDate
+    val newSelectedDateState = remember { mutableStateOf(oldSelectedDate) }
 
-    var newSelectedDate by remember { mutableStateOf(oldSelectedDate) }
-    var visibleMonth by remember { mutableStateOf(oldSelectedDate.get(Calendar.MONTH)) }
-    var visibleYear by remember { mutableStateOf(oldSelectedDate.get(Calendar.YEAR)) }
+    val visibleMonthState = remember { mutableStateOf(oldSelectedDate.get(Calendar.MONTH)) }
+    val visibleYearState = remember { mutableStateOf(oldSelectedDate.get(Calendar.YEAR)) }
 
-    var currentItem by remember { mutableStateOf(Int.MAX_VALUE / 2) }
-    currentItem += visibleMonth - currentItem % 12
-    val monthListState = rememberLazyListState(currentItem)
+    val currentItemState = remember { mutableStateOf(Int.MAX_VALUE / 2 + (visibleMonthState.value - (Int.MAX_VALUE / 2) % 12)) }
+    val monthListState = rememberLazyListState(currentItemState.value)
     val coroutineScope = rememberCoroutineScope()
 
     LaunchedEffect(true) {
-        monthListState.scrollToItem(currentItem)
+        monthListState.scrollToItem(currentItemState.value)
     }
 
-    LaunchedEffect(currentItem) {
-        monthListState.animateScrollToItem(currentItem)
+    LaunchedEffect(currentItemState.value) {
+        monthListState.animateScrollToItem(currentItemState.value)
     }
 
-    val monthScroller = LazyListScroller(
-        scrollToNextItem = {
-            if (visibleMonth == 11) {
-                visibleYear++
-                visibleMonth = 0
-            } else {
-                visibleMonth++
+    val monthScroller = createMonthScroller(
+        coroutineScope = coroutineScope,
+        monthListState = monthListState,
+        visibleYearState = visibleYearState,
+        visibleMonthState = visibleMonthState,
+        currentItemState = currentItemState
+    )
+
+    Card(modifier = modifier) {
+        Scaffold(
+            topBar = {
+                CalendarBar(
+                    year = visibleYearState.value,
+                    month = visibleMonthState.value,
+                    goNextMonth = monthScroller.scrollToNextItem,
+                    goPreviousMonth = monthScroller.scrollToPreviousItem
+                )
             }
-            currentItem++
+        ) { paddingValues ->
+            CalendarDialog(
+                modifier = modifier,
+                paddingValues = paddingValues,
+                contentHeight = contentHeight,
+                monthScroller = monthScroller,
+                monthListState = monthListState,
+                visibleData = CalendarVisibleData(year = visibleYearState.value, month = visibleMonthState.value),
+                oldSelectedDate = oldSelectedDate,
+                newSelectedDateState = newSelectedDateState,
+                selectDate = schedulerViewModel::selectDate,
+                close = close
+            )
+        }
+    }
+}
+
+fun createMonthScroller(
+    coroutineScope: CoroutineScope,
+    monthListState: LazyListState,
+    visibleYearState: MutableState<Int>,
+    visibleMonthState: MutableState<Int>,
+    currentItemState: MutableState<Int>
+): LazyListScroller {
+    return LazyListScroller(
+        scrollToNextItem = {
+            if (visibleMonthState.value == 11) {
+                visibleYearState.value++
+                visibleMonthState.value = 0
+            } else {
+                visibleMonthState.value++
+            }
+            currentItemState.value++
         },
         scrollToPreviousItem = {
-            if (visibleMonth == 0) {
-                visibleYear--
-                visibleMonth = 11
+            if (visibleMonthState.value == 0) {
+                visibleYearState.value--
+                visibleMonthState.value = 11
             } else {
-                visibleMonth--
+                visibleMonthState.value--
             }
-            currentItem--
+            currentItemState.value--
         },
         scrollToCurrentItem = {
             coroutineScope.launch {
-                monthListState.animateScrollToItem(currentItem)
+                monthListState.animateScrollToItem(currentItemState.value)
             }
         },
         scrollBy = { x ->
@@ -91,63 +134,93 @@ fun CalendarView(
             }
         }
     )
+}
 
-    Card(modifier = modifier) {
-        Scaffold(
-            topBar = {
-                CalendarBar(
-                    month = visibleMonth,
-                    year = visibleYear,
-                    goNextMonth = monthScroller.scrollToNextItem,
-                    goPreviousMonth = monthScroller.scrollToPreviousItem
-                )
-            }
-        ) { paddingValues ->
-            Column(modifier = Modifier
-                .fillMaxSize()
-                .padding(paddingValues)) {
-                ScrollableMonthList(
-                    modifier = Modifier
-                        .height(contentHeight)
-                        .then(modifier),
-                    monthScroller = monthScroller,
-                    monthListState = monthListState,
-                    visibleYear = visibleYear,
-                    visibleMonth = visibleMonth,
+private class CalendarVisibleData(
+    val year: Int,
+    val month: Int
+)
+
+@Composable
+private fun CalendarDialog(
+    modifier: Modifier,
+    paddingValues: PaddingValues,
+    contentHeight: Dp,
+    monthScroller: LazyListScroller,
+    monthListState: LazyListState,
+    visibleData: CalendarVisibleData,
+    oldSelectedDate: Calendar,
+    newSelectedDateState: MutableState<Calendar>,
+    selectDate: (Calendar) -> Unit,
+    close: () -> Unit,
+) {
+    Column(modifier = modifier.padding(paddingValues)) {
+        ScrollableMonthList(
+            modifier = Modifier
+                .height(contentHeight)
+                .then(modifier),
+            monthScroller = monthScroller,
+            monthListState = monthListState,
+            visibleData = visibleData,
+            oldSelectedDate = oldSelectedDate,
+            newSelectedDate = newSelectedDateState.value,
+            onDayClick = { day ->
+                selectDay(
+                    day = day,
+                    visibleData = visibleData,
                     oldSelectedDate = oldSelectedDate,
-                    newSelectedDate = newSelectedDate,
-                    onDayClick = { day ->
-                        val newDate = Calendar.getInstance()
-                        newDate.set(visibleYear, visibleMonth, day)
-
-                        val sameYear = newDate.get(Calendar.YEAR) == newSelectedDate.get(Calendar.YEAR)
-                        val sameMonth = newDate.get(Calendar.MONTH) == newSelectedDate.get(Calendar.MONTH)
-                        val sameDay = newDate.get(Calendar.DAY_OF_MONTH) == newSelectedDate.get(Calendar.DAY_OF_MONTH)
-                        val sameDate = sameYear && sameMonth && sameDay
-                        newSelectedDate = if (sameDate) oldSelectedDate else newDate
-
-                    }
+                    newSelectedDateState = newSelectedDateState
                 )
-                Row(
-                    modifier = Modifier
-                        .fillMaxSize()
-                        .padding(8.dp),
-                    verticalAlignment = Alignment.Bottom,
-                    horizontalArrangement = Arrangement.SpaceEvenly
-                ) {
-                    DialogButton(text = "Cancel", onClick = close)
-                    DialogButton(text = "Ok", onClick = {
-                        schedulerViewModel.selectDate(newSelectedDate)
-                        close()
-                    })
-                }
             }
-        }
+        )
+        DialogBar(
+            newSelectedDate = newSelectedDateState.value,
+            selectDate = selectDate,
+            close = close
+        )
+    }
+}
+
+private fun selectDay(
+    day: Int,
+    visibleData: CalendarVisibleData,
+    oldSelectedDate: Calendar,
+    newSelectedDateState: MutableState<Calendar>
+) {
+    val newDate = Calendar.getInstance()
+    newDate.set(visibleData.year, visibleData.month, day)
+
+    val newSelectedDate = newSelectedDateState.value
+    val sameYear = newDate.get(Calendar.YEAR) == newSelectedDate.get(Calendar.YEAR)
+    val sameMonth = newDate.get(Calendar.MONTH) == newSelectedDate.get(Calendar.MONTH)
+    val sameDay = newDate.get(Calendar.DAY_OF_MONTH) == newSelectedDate.get(Calendar.DAY_OF_MONTH)
+    val sameDate = sameYear && sameMonth && sameDay
+    newSelectedDateState.value = if (sameDate) oldSelectedDate else newDate
+}
+
+@Composable
+fun DialogBar(
+    newSelectedDate: Calendar,
+    selectDate: (Calendar) -> Unit,
+    close: () -> Unit
+) {
+    Row(
+        modifier = Modifier
+            .fillMaxSize()
+            .padding(8.dp),
+        verticalAlignment = Alignment.Bottom,
+        horizontalArrangement = Arrangement.SpaceEvenly
+    ) {
+        DialogButton(text = "Cancel", onClick = close)
+        DialogButton(text = "Ok", onClick = {
+            selectDate(newSelectedDate)
+            close()
+        })
     }
 }
 
 @Composable
-fun DialogButton(
+private fun DialogButton(
     modifier: Modifier = Modifier.padding(horizontal = 8.dp, vertical = 4.dp),
     text: String,
     onClick: () -> Unit
@@ -163,9 +236,9 @@ fun DialogButton(
 }
 
 @Composable
-fun CalendarBar(
-    month: Int,
+private fun CalendarBar(
     year: Int,
+    month: Int,
     goNextMonth: () -> Unit,
     goPreviousMonth: () -> Unit
 ) {
@@ -191,7 +264,7 @@ fun CalendarBar(
 }
 
 @Composable
-fun CalendarDate(modifier: Modifier = Modifier, month: Int, year: Int) {
+private fun CalendarDate(modifier: Modifier = Modifier, month: Int, year: Int) {
     Text(
         text = "${Month.getByOrdinal(month).fullName} $year",
         textAlign = TextAlign.Center,
@@ -200,12 +273,11 @@ fun CalendarDate(modifier: Modifier = Modifier, month: Int, year: Int) {
 }
 
 @Composable
-fun ScrollableMonthList(
+private fun ScrollableMonthList(
     modifier: Modifier,
     monthScroller: LazyListScroller,
     monthListState: LazyListState,
-    visibleYear: Int,
-    visibleMonth: Int,
+    visibleData: CalendarVisibleData,
     oldSelectedDate: Calendar,
     newSelectedDate: Calendar,
     onDayClick: (Int) -> Unit
@@ -225,8 +297,7 @@ fun ScrollableMonthList(
         MonthList(
             modifier = modifier,
             monthListState = monthListState,
-            visibleYear = visibleYear,
-            visibleMonth = visibleMonth,
+            visibleData = visibleData,
             oldSelectedDate = oldSelectedDate,
             newSelectedDate = newSelectedDate,
             onDayClick = onDayClick
@@ -235,11 +306,10 @@ fun ScrollableMonthList(
 }
 
 @Composable
-fun MonthList(
+private fun MonthList(
     modifier: Modifier = Modifier,
     monthListState: LazyListState,
-    visibleYear: Int,
-    visibleMonth: Int,
+    visibleData: CalendarVisibleData,
     oldSelectedDate: Calendar,
     newSelectedDate: Calendar,
     onDayClick: (Int) -> Unit
@@ -252,8 +322,7 @@ fun MonthList(
                 val itemMonthIndex = i % 12
                 val itemMonth = Month.getByOrdinal(itemMonthIndex)
                 val itemYear = calculateItemYear(
-                    visibleYear = visibleYear,
-                    visibleMonth = visibleMonth,
+                    visibleData = visibleData,
                     itemMonth = itemMonthIndex
                 )
 
@@ -286,7 +355,7 @@ fun MonthList(
     }
 }
 
-fun monthHasSelectedDay(month: Int, year: Int, selectedDate: Calendar): Boolean {
+private fun monthHasSelectedDay(month: Int, year: Int, selectedDate: Calendar): Boolean {
     val selectedDateYear = selectedDate.get(Calendar.YEAR)
     val yearHasSelectedDay = selectedDateYear == year
 
@@ -296,16 +365,16 @@ fun monthHasSelectedDay(month: Int, year: Int, selectedDate: Calendar): Boolean 
     return yearHasSelectedDay && monthHasSelectedDay
 }
 
-fun calculateItemYear(visibleYear: Int, visibleMonth: Int, itemMonth: Int): Int {
-    return if (itemMonth == 11 && visibleMonth == 0) {
-        visibleYear - 1
-    } else if (itemMonth == 0 && visibleMonth == 11) {
-        visibleYear + 1
-    } else visibleYear
+private fun calculateItemYear(visibleData: CalendarVisibleData, itemMonth: Int): Int {
+    return if (itemMonth == 11 && visibleData.month == 0) {
+        visibleData.year - 1
+    } else if (itemMonth == 0 && visibleData.month == 11) {
+        visibleData.year + 1
+    } else visibleData.year
 }
 
 @Composable
-fun MonthItem(
+private fun MonthItem(
     modifier: Modifier = Modifier.fillMaxWidth(),
     year: Int,
     month: Month,
@@ -314,44 +383,76 @@ fun MonthItem(
     onDayClick: (Int) -> Unit
 ) {
     val daysInMonth = Month.getDaysCount(year, month)
-    Column() {
-        LazyVerticalGrid(
-            modifier = Modifier.height(30.dp).then(modifier),
-            columns = GridCells.Fixed(7)
-        ) {
-            items(7) { i ->
-                WeekDayTab(weekDay = WeekDay.getDayByOrdinal(weekdayOrdinalToCalendarFormat(i)))
-            }
-        }
-        LazyVerticalGrid(
+    Column {
+        CalendarWeekBar(modifier = modifier)
+        CalendarDays(
             modifier = modifier,
-            columns = GridCells.Fixed(7)
-        ) {
-            val firstDayDate = Calendar.getInstance()
-            firstDayDate.set(year, month.ordinal, 1)
-            val emptyDaysCount = weekdayOrdinalFromCalendarFormat(firstDayDate.get(Calendar.DAY_OF_WEEK))
-            items(daysInMonth + emptyDaysCount) { i ->
-                if (i < emptyDaysCount) {
-                    EmptyCalendarDay()
-                } else {
-                    val day = dayToHumanFormat(i - emptyDaysCount)
-                    val date = Calendar.getInstance()
-                    date.set(year, month.ordinal, day)
-                    CalendarDay(
-                        day = day,
-                        isSunday = date.get(Calendar.DAY_OF_WEEK) == Calendar.SUNDAY,
-                        selectedOld = day == selectedDayOld,
-                        selectedNew = day == selectedDayNew,
-                        onClick = onDayClick
-                    )
-                }
+            year = year,
+            month = month,
+            daysInMonth = daysInMonth,
+            selectedDayOld = selectedDayOld,
+            selectedDayNew = selectedDayNew,
+            onDayClick = onDayClick
+        )
+    }
+}
+
+@Composable
+private fun CalendarWeekBar(
+    modifier: Modifier
+) {
+    LazyVerticalGrid(
+        modifier = Modifier
+            .height(30.dp)
+            .then(modifier),
+        columns = GridCells.Fixed(7),
+        userScrollEnabled = false
+    ) {
+        items(7) { i ->
+            WeekDayTab(weekDay = WeekDay.getDayByOrdinal(weekdayOrdinalToCalendarFormat(i)))
+        }
+    }
+}
+
+@Composable
+private fun CalendarDays(
+    modifier: Modifier,
+    year: Int,
+    month: Month,
+    daysInMonth: Int,
+    selectedDayOld: Int?,
+    selectedDayNew: Int?,
+    onDayClick: (Int) -> Unit
+) {
+    LazyVerticalGrid(
+        modifier = modifier,
+        columns = GridCells.Fixed(7),
+        userScrollEnabled = false
+    ) {
+        val firstDayDate = Calendar.getInstance()
+        firstDayDate.set(year, month.ordinal, 1)
+        val emptyDaysCount = weekdayOrdinalFromCalendarFormat(firstDayDate.get(Calendar.DAY_OF_WEEK))
+        items(daysInMonth + emptyDaysCount) { i ->
+            if (i < emptyDaysCount) {
+                EmptyCalendarDay()
+            } else {
+                val day = dayToHumanFormat(i - emptyDaysCount)
+                val date = Calendar.getInstance()
+                date.set(year, month.ordinal, day)
+                CalendarDay(
+                    day = day,
+                    isSunday = date.get(Calendar.DAY_OF_WEEK) == Calendar.SUNDAY,
+                    selectedOld = day == selectedDayOld,
+                    selectedNew = day == selectedDayNew,
+                    onClick = onDayClick
+                )
             }
         }
     }
 }
 
 @Composable
-fun WeekDayTab(weekDay: WeekDay, modifier: Modifier = Modifier) {
+private fun WeekDayTab(weekDay: WeekDay, modifier: Modifier = Modifier) {
     Surface(
         modifier = modifier,
         shape = RoundedCornerShape(4.dp),
@@ -367,7 +468,7 @@ fun WeekDayTab(weekDay: WeekDay, modifier: Modifier = Modifier) {
 }
 
 @Composable
-fun CalendarDay(
+private fun CalendarDay(
     day: Int,
     isSunday: Boolean,
     selectedOld: Boolean,
@@ -397,7 +498,7 @@ fun CalendarDay(
 }
 
 @Composable
-fun EmptyCalendarDay() {
+private fun EmptyCalendarDay() {
     Box(
         modifier = Modifier.aspectRatio(1f),
         contentAlignment = Alignment.Center
