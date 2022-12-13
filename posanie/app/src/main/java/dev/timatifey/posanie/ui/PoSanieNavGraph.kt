@@ -48,8 +48,7 @@ fun PoSanieNavGraph(
             route = BottomNavItems.Picker.route
         )
         composable(BottomNavItems.Settings.route) {
-            val viewModel = hiltViewModel<SettingsViewModel>()
-            SettingsRoute(settingsViewModel = viewModel)
+            SettingsRoute()
         }
     }
 }

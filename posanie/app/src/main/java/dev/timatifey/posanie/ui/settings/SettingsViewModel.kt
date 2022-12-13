@@ -4,57 +4,37 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import dagger.hilt.android.lifecycle.HiltViewModel
 import dev.timatifey.posanie.model.domain.Group
+import dev.timatifey.posanie.model.successOr
+import dev.timatifey.posanie.usecases.SettingsUseCase
 import dev.timatifey.posanie.utils.ErrorMessage
-import kotlinx.coroutines.flow.MutableStateFlow
-import kotlinx.coroutines.flow.SharingStarted
-import kotlinx.coroutines.flow.StateFlow
-import kotlinx.coroutines.flow.map
-import kotlinx.coroutines.flow.stateIn
+import kotlinx.coroutines.flow.*
+import kotlinx.coroutines.launch
 import javax.inject.Inject
 
-sealed interface SettingsUiState {
-
-    val isLoading: Boolean
+class SettingsUiState (
+    val darkTheme: Boolean,
+    val isLoading: Boolean,
     val errorMessages: List<ErrorMessage>
-
-    data class NoGroup(
-        override val isLoading: Boolean,
-        override val errorMessages: List<ErrorMessage>,
-    ) : SettingsUiState
-
-    data class HasGroup(
-        val group: Group,
-        override val isLoading: Boolean,
-        override val errorMessages: List<ErrorMessage>,
-    ) : SettingsUiState
-}
+)
 
 private data class SettingsViewModelState(
-    val group: Group? = null,
+    val darkTheme: Boolean,
     val isLoading: Boolean = false,
     val errorMessages: List<ErrorMessage> = emptyList(),
 ) {
-    fun toUiState(): SettingsUiState =
-        if (group == null) {
-            SettingsUiState.NoGroup(
-                isLoading = isLoading,
-                errorMessages = errorMessages,
-            )
-        } else {
-            SettingsUiState.HasGroup(
-                group = group,
-                isLoading = isLoading,
-                errorMessages = errorMessages,
-            )
-        }
+    fun toUiState(): SettingsUiState = SettingsUiState(
+        darkTheme = darkTheme,
+        isLoading = isLoading,
+        errorMessages = errorMessages
+    )
 }
 
 @HiltViewModel
 class SettingsViewModel @Inject constructor(
-
+    private val settingsUseCase: SettingsUseCase
 ) : ViewModel() {
 
-    private val viewModelState = MutableStateFlow(SettingsViewModelState(isLoading = true))
+    private val viewModelState = MutableStateFlow(SettingsViewModelState(darkTheme = false, isLoading = false))
 
     val uiState: StateFlow<SettingsUiState> = viewModelState
         .map { it.toUiState() }
@@ -63,4 +43,25 @@ class SettingsViewModel @Inject constructor(
             SharingStarted.Eagerly,
             viewModelState.value.toUiState()
         )
+
+    fun saveAndPickTheme(isDark: Boolean) {
+        viewModelScope.launch {
+            settingsUseCase.saveAndPickTheme(isDark)
+            getTheme()
+        }
+    }
+
+    fun getTheme() {
+        viewModelState.update { it.copy(isLoading = true) }
+
+        viewModelScope.launch {
+            val result = settingsUseCase.getTheme()
+            viewModelState.update { state ->
+                return@update state.copy(
+                    darkTheme = result.successOr(false),
+                    isLoading = false,
+                )
+            }
+        }
+    }
 }

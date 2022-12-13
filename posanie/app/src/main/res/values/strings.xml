@@ -11,4 +11,7 @@
     <string name="common">Common</string>
     <string name="evening">Evening</string>
     <string name="distance">Distance</string>
+
+    <string name="preference_file_key">AppPreferences</string>
+    <string name="preference_dark_theme">DarkTheme</string>
 </resources>

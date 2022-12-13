@@ -15,14 +15,18 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 
 @Composable
-fun SettingsScreen() {
+fun SettingsScreen(
+    settingsViewModel: SettingsViewModel
+) {
+    val uiState = settingsViewModel.uiState.collectAsState().value
+
     Column(
         modifier = Modifier
             .verticalScroll(rememberScrollState())
             .padding(horizontal = 8.dp)
     ) {
         SettingsTitle()
-        ThemeSettings()
+        ThemeSettings(checked = uiState.darkTheme, setDarkTheme = { settingsViewModel.saveAndPickTheme(it) })
         LanguageSettings()
     }
 }
@@ -39,28 +43,30 @@ fun SettingsTitle() {
 }
 
 @Composable
-fun ThemeSettings() {
+fun ThemeSettings(
+    checked: Boolean,
+    setDarkTheme: (Boolean) -> Unit
+) {
     Text(
         text = "Theme",
         style = MaterialTheme.typography.titleMedium,
         modifier = Modifier.padding(horizontal = 4.dp, vertical = 8.dp)
     )
-    SettingsSwitchOption(optionName = "Dark Theme", onCheckChange = {})
+    SettingsSwitchOption(optionName = "Dark Theme", checked = checked, onCheckChange = setDarkTheme)
 }
 
 @Composable
 fun SettingsSwitchOption(
     modifier: Modifier = Modifier.padding(4.dp),
     optionName: String,
+    checked: Boolean = false,
     onCheckChange: (Boolean) -> Unit
 ) {
-    var checked by remember { mutableStateOf(false) }
     SettingsOption(modifier = modifier, optionName = optionName) {
         Switch(
             checked = checked,
             onCheckedChange = {
-                checked = !checked
-                onCheckChange(checked)
+                onCheckChange(!checked)
             })
     }
 }
