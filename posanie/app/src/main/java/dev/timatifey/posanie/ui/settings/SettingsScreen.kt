@@ -13,6 +13,7 @@ import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
+import dev.timatifey.posanie.model.data.Language
 
 @Composable
 fun SettingsScreen(
@@ -26,8 +27,14 @@ fun SettingsScreen(
             .padding(horizontal = 8.dp)
     ) {
         SettingsTitle()
-        ThemeSettings(checked = uiState.darkTheme, setDarkTheme = { settingsViewModel.saveAndPickTheme(it) })
-        LanguageSettings()
+        ThemeSettings(
+            checked = uiState.darkTheme,
+            setDarkTheme = { settingsViewModel.saveAndPickTheme(it) }
+        )
+        LanguageSettings(
+            selectedLanguage = uiState.language,
+            onLanguageClick = { settingsViewModel.saveAndPickLanguage(it) }
+        )
     }
 }
 
@@ -72,26 +79,35 @@ fun SettingsSwitchOption(
 }
 
 @Composable
-fun LanguageSettings() {
-    var selectedLanguage by remember { mutableStateOf("English") }
-
+fun LanguageSettings(
+    selectedLanguage: Language,
+    onLanguageClick: (Language) -> Unit
+) {
     Text(
         text = "Language",
         style = MaterialTheme.typography.titleMedium,
         modifier = Modifier.padding(horizontal = 4.dp, vertical = 8.dp)
     )
-    LanguageOption(languageName = "English", selected = selectedLanguage == "English", onClick = { selectedLanguage = "English" })
-    LanguageOption(languageName = "Russian", selected = selectedLanguage == "Russian", onClick = { selectedLanguage = "Russian" })
+    LanguageOption(
+        language = Language.ENGLISH,
+        selected = selectedLanguage == Language.ENGLISH,
+        onClick = { onLanguageClick(Language.ENGLISH) }
+    )
+    LanguageOption(
+        language = Language.RUSSIAN,
+        selected = selectedLanguage == Language.RUSSIAN,
+        onClick = { onLanguageClick(Language.RUSSIAN) }
+    )
 }
 
 @Composable
 fun LanguageOption(
     modifier: Modifier = Modifier.padding(horizontal = 4.dp),
-    languageName: String,
+    language: Language,
     selected: Boolean,
     onClick: () -> Unit
 ) {
-    SettingsOption(modifier = modifier, optionName = languageName) {
+    SettingsOption(modifier = modifier, optionName = language.englishName) {
         RadioButton(
             selected = selected,
             onClick = onClick

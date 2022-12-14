@@ -25,7 +25,10 @@ import dev.timatifey.posanie.ui.theme.PoSanieTheme
 @Composable
 fun PoSanieApp(activity: MainActivity) {
     val settingsViewModel: SettingsViewModel by activity.viewModels()
-    settingsViewModel.getTheme()
+    LaunchedEffect(true) {
+        settingsViewModel.getTheme()
+        settingsViewModel.getLanguage()
+    }
     val uiState = settingsViewModel.uiState.collectAsState().value
     PoSanieTheme(
         darkTheme = uiState.darkTheme

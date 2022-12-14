@@ -14,4 +14,5 @@
 
     <string name="preference_file_key">AppPreferences</string>
     <string name="preference_dark_theme">DarkTheme</string>
+    <string name="preference_language">Language</string>
 </resources>
