@@ -29,6 +29,7 @@ import androidx.navigation.NavHostController
 import com.google.accompanist.swiperefresh.SwipeRefresh
 import com.google.accompanist.swiperefresh.SwipeRefreshState
 import com.google.accompanist.swiperefresh.rememberSwipeRefreshState
+import dev.timatifey.posanie.R
 import dev.timatifey.posanie.model.cache.COURSE_GROUP_DELIMITER
 import dev.timatifey.posanie.model.data.Kind
 import dev.timatifey.posanie.model.data.Type
@@ -309,7 +310,7 @@ fun RefreshableGroupsList(
         if (!swipeRefreshState.isRefreshing) {
             if (levelsToGroups.isEmpty()) {
                 Text(
-                    text = "Can't to fetch groups from server.",
+                    text = stringResource(R.string.no_groups_error),
                     modifier = Modifier.padding(4.dp)
                 )
             } else {
@@ -338,7 +339,7 @@ fun ScrollableGroupsList(
         val levels = levelsToGroups.keys.toList().sorted()
         items(levels) { level ->
             Column {
-                Text("$level курс")
+                Text(stringResource(R.string.level, level))
                 GroupsLevelList(levelsToGroups[level]?.getGroups() ?: emptyList(), groupsInRow, onGroupClick)
             }
         }
@@ -355,7 +356,7 @@ fun GroupsList(
         val levels = levelsToGroups.keys.toList().sorted()
         levels.forEach { level ->
             Column {
-                Text(text = "$level курс", modifier = Modifier.padding(4.dp))
+                Text(text = stringResource(R.string.level, level), modifier = Modifier.padding(4.dp))
                 GroupsLevelList(levelsToGroups[level]?.getGroups() ?: emptyList(), groupsInRow, onGroupClick)
             }
         }

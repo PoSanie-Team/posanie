@@ -12,10 +12,12 @@ import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.semantics.Role
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
+import dev.timatifey.posanie.R
 import java.util.*
 
 @Composable
@@ -88,14 +90,14 @@ fun DateBar(
         IconButton(onClick = goPreviousWeek) {
             Icon(
                 imageVector = Icons.Filled.ArrowBack,
-                contentDescription = "Localized description"
+                contentDescription = stringResource(R.string.previous_week_button_description)
             )
         }
         WeekDate(date = date, oddWeek = oddWeek, hasSchedule = hasSchedule, modifier = Modifier.clickable { openCalendar() })
         IconButton(onClick = goNextWeek) {
             Icon(
                 imageVector = Icons.Filled.ArrowForward,
-                contentDescription = "Localized description"
+                contentDescription = stringResource(R.string.next_week_button_description)
             )
         }
     }
@@ -108,7 +110,7 @@ fun WeekDate(date: Calendar, oddWeek: Boolean, hasSchedule: Boolean, modifier: M
     val month = date.get(Calendar.MONTH) + 1
     val formattedMonth = if (month < 10) "0$month" else "$month"
     val year = date.get(Calendar.YEAR)
-    val week = if (oddWeek) "odd" else "even"
+    val week = if (oddWeek) stringResource(R.string.odd_week) else stringResource(R.string.even_week)
     Column(modifier = modifier, horizontalAlignment = Alignment.CenterHorizontally) {
         Text(text = "$formattedDay.$formattedMonth.$year", textAlign = TextAlign.Center)
         Text(text= if (hasSchedule) week else "", textAlign = TextAlign.Center)
@@ -171,7 +173,7 @@ fun Day(weekDay: WeekDay, selected: Boolean, modifier: Modifier = Modifier, onCl
                 .padding(4.dp),
             contentAlignment = Alignment.Center
         ) {
-            Text(text = weekDay.shortName)
+            Text(text = stringResource(weekDay.shortNameId))
         }
     }
 }

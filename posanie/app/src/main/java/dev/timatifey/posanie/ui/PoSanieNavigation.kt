@@ -12,7 +12,7 @@ sealed class BottomNavItems(
     @DrawableRes val iconId: Int
 ) {
     object Scheduler : BottomNavItems("scheduler", R.string.scheduler, R.drawable.ic_time)
-    object Picker : BottomNavItems("picker", R.string.groups, R.drawable.ic_group)
+    object Picker : BottomNavItems("picker", R.string.picker, R.drawable.ic_group)
     object Settings : BottomNavItems("settings", R.string.settings, R.drawable.ic_settings)
 }
 

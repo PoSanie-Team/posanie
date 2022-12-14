@@ -28,6 +28,7 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.input.key.onKeyEvent
 import androidx.compose.ui.layout.SubcomposeLayout
 import androidx.compose.ui.platform.LocalFocusManager
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.text.input.KeyboardType
@@ -35,6 +36,7 @@ import androidx.compose.ui.unit.Constraints
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import androidx.navigation.NavHostController
+import dev.timatifey.posanie.R
 import dev.timatifey.posanie.model.data.Type
 import dev.timatifey.posanie.ui.RemoteNavItems
 
@@ -111,7 +113,7 @@ fun DefaultGroupsTopBar(
             IconButton(onClick = { navController.popBackStack() }) {
                 Icon(
                     imageVector = Icons.Filled.ArrowBack,
-                    contentDescription = "Localized description"
+                    contentDescription = stringResource(R.string.arrow_back_description)
                 )
             }
         },
@@ -119,7 +121,7 @@ fun DefaultGroupsTopBar(
             IconButton(onClick = openSearch) {
                 Icon(
                     imageVector = Icons.Filled.Search,
-                    contentDescription = "Localized description"
+                    contentDescription = stringResource(R.string.search_button_description)
                 )
             }
         }
@@ -195,7 +197,7 @@ fun SearchGroupsTopBar(
             IconButton(onClick = { navController.popBackStack() }) {
                 Icon(
                     imageVector = Icons.Filled.ArrowBack,
-                    contentDescription = "Localized description"
+                    contentDescription = stringResource(R.string.arrow_back_description)
                 )
             }
         },
@@ -204,14 +206,14 @@ fun SearchGroupsTopBar(
                 IconButton (onClick = submitSearch) {
                     Icon(
                         imageVector = Icons.Filled.Search,
-                        contentDescription = "Localized description"
+                        contentDescription = stringResource(R.string.search_button_description)
                     )
                 }
             } else {
                 IconButton (onClick = closeSearch) {
                     Icon(
                         imageVector = Icons.Filled.Close,
-                        contentDescription = "Localized description"
+                        contentDescription = stringResource(R.string.close_search_button_description)
                     )
                 }
             }
@@ -448,7 +450,7 @@ fun BasicSearchField(
     changeSideEffects: (String) -> Unit = {},
     canChange: (String) -> Boolean = { true }
 ) {
-    val modifierWithBackground =  modifier
+    val modifierWithBackground = modifier
         .background(
             color = MaterialTheme.colorScheme.secondaryContainer,
             shape = RoundedCornerShape(6.dp)

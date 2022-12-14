@@ -1,6 +1,5 @@
 package dev.timatifey.posanie.ui.settings
 
-import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
@@ -12,7 +11,9 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
+import dev.timatifey.posanie.R
 import dev.timatifey.posanie.model.data.Language
 
 @Composable
@@ -41,7 +42,7 @@ fun SettingsScreen(
 @Composable
 fun SettingsTitle() {
     Text(
-        text = "Settings",
+        text = stringResource(R.string.settings),
         style = MaterialTheme.typography.titleLarge,
         modifier = Modifier
             .padding(horizontal = 4.dp, vertical = 4.dp)
@@ -55,11 +56,11 @@ fun ThemeSettings(
     setDarkTheme: (Boolean) -> Unit
 ) {
     Text(
-        text = "Theme",
+        text = stringResource(R.string.theme),
         style = MaterialTheme.typography.titleMedium,
         modifier = Modifier.padding(horizontal = 4.dp, vertical = 8.dp)
     )
-    SettingsSwitchOption(optionName = "Dark Theme", checked = checked, onCheckChange = setDarkTheme)
+    SettingsSwitchOption(optionName = stringResource(R.string.dark_theme), checked = checked, onCheckChange = setDarkTheme)
 }
 
 @Composable
@@ -84,7 +85,7 @@ fun LanguageSettings(
     onLanguageClick: (Language) -> Unit
 ) {
     Text(
-        text = "Language",
+        text = stringResource(R.string.language),
         style = MaterialTheme.typography.titleMedium,
         modifier = Modifier.padding(horizontal = 4.dp, vertical = 8.dp)
     )

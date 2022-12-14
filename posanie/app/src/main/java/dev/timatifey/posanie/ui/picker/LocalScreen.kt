@@ -13,13 +13,12 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.text.style.TextAlign
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import com.google.accompanist.swiperefresh.SwipeRefresh
-import com.google.accompanist.swiperefresh.SwipeRefreshState
 import com.google.accompanist.swiperefresh.rememberSwipeRefreshState
+import dev.timatifey.posanie.R
 import dev.timatifey.posanie.model.domain.Group
-import dev.timatifey.posanie.model.domain.GroupsLevel
 import dev.timatifey.posanie.model.domain.Teacher
 
 @Composable
@@ -43,10 +42,10 @@ fun LocalScreen(
                         .verticalScroll(rememberScrollState())
                         .padding(horizontal = 8.dp)
                 ) {
-                    ScheduleTypeTitle("Groups")
+                    ScheduleTypeTitle(stringResource(R.string.groups))
                     if (levelsToGroups.isEmpty()) {
                         MessageText(
-                            text = "You have not groups. Please add."
+                            text = stringResource(R.string.no_local_groups)
                         )
                     } else {
                         GroupsList(
@@ -55,10 +54,10 @@ fun LocalScreen(
                             onGroupClick = onGroupClick
                         )
                     }
-                    ScheduleTypeTitle("Teachers")
+                    ScheduleTypeTitle(stringResource(R.string.teachers))
                     if (teachers.isEmpty()) {
                         MessageText(
-                            text ="You have no teachers. Please add."
+                            text = stringResource(R.string.no_local_teachers)
                         )
                     } else {
                         TeachersList(
@@ -88,13 +87,17 @@ fun ScheduleTypeTitle(text: String) {
     Text(
         text = text,
         style = MaterialTheme.typography.titleLarge,
-        modifier = Modifier.padding(horizontal = 4.dp, vertical = 4.dp).fillMaxWidth()
+        modifier = Modifier
+            .padding(horizontal = 4.dp, vertical = 4.dp)
+            .fillMaxWidth()
     )
 }
 
 @Composable
 fun MessageText(
-    modifier: Modifier = Modifier.padding(4.dp).fillMaxWidth(),
+    modifier: Modifier = Modifier
+        .padding(4.dp)
+        .fillMaxWidth(),
     text: String = ""
 ) {
     Text(
