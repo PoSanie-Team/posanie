@@ -8,17 +8,13 @@ import androidx.compose.ui.platform.LocalContext
 import dev.timatifey.posanie.ui.MainActivity
 
 @Composable
-fun SettingsRoute(
-    localViewModel: SettingsViewModel
-) {
-    SettingsScreen(settingsViewModel = localViewModel)
-}
-
-@Composable
 fun SettingsRoute() {
     val activity = LocalContext.current.getActivity() ?: return
     val globalViewModel: SettingsViewModel by activity.viewModels()
-    SettingsScreen(settingsViewModel = globalViewModel)
+    SettingsScreen(
+        settingsViewModel = globalViewModel,
+        recreateActivity = { activity.recreate() }
+    )
 }
 
 fun Context.getActivity(): MainActivity? = when (this) {

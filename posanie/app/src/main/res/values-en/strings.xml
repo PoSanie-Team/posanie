@@ -3,11 +3,6 @@
     // Errors
     <string name="load_error">Load error</string>
 
-    //Bottom nav bar
-    <string name="scheduler">Scheduler</string>
-    <string name="picker">Picker</string>
-    <string name="settings">Settings</string>
-
     // Students type
     <string name="bachelor">Bachelor</string>
     <string name="master">Master</string>

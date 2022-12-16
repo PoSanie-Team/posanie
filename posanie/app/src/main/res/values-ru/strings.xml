@@ -1,0 +1,54 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    // Errors
+    <string name="load_error">Load error</string>
+
+    // Students type
+    <string name="bachelor">Бакалавриат</string>
+    <string name="master">Магистратура</string>
+    <string name="specialist">Специалитет</string>
+    <string name="postgraduate">Аспирантура</string>
+
+    // Lessons type
+    <string name="common">Дневное</string>
+    <string name="evening">Вечернее</string>
+    <string name="distance">Дистанционное</string>
+
+    // Settings
+    <string name="theme">Тема</string>
+    <string name="dark_theme">Тёмная тема</string>
+    <string name="language">Язык</string>
+
+    // Picker
+    <string name="faculties">Факультеты</string>
+    <string name="no_faculties_error">Не получается получить факультеты с сервера.</string>
+    <string name="no_groups_error">Не получается получить группы с сервера.</string>
+    <string name="level">%1$d курс</string>
+    <string name="groups">Группы</string>
+    <string name="no_local_groups">У вас нет групп. Пожалуйста добавьте.</string>
+    <string name="teachers">Преподаватели</string>
+    <string name="no_local_teachers">У вас нет преподавателей. Пожалуйста добавьте.</string>
+    <string name="schedule_type_title">"Что вы хотите добавить?"</string>
+    <string name="no_teachers_found">Преподавателей не найдено. Попробуйте другой поисковый запрос.</string>
+
+    <string name="arrow_back_description">Кнопка для возврата назад</string>
+    <string name="search_button_description">Кнопка для поиска</string>
+    <string name="close_search_button_description">Кнопка для остановки поиска</string>
+
+    // Scheduler
+    <string name="odd_week">нечетная</string>
+    <string name="even_week">четная</string>
+    <string name="no_schedule_selected">Пожалуйста сначала выберите группу или учителя.</string>
+    <string name="no_lessons_today">Сегодня занятий нет.</string>
+
+    <string name="monday_short_name">ПН</string>
+    <string name="tuesday_short_name">ВТ</string>
+    <string name="wednesday_short_name">СР</string>
+    <string name="thursday_short_name">ЧТ</string>
+    <string name="friday_short_name">ПТ</string>
+    <string name="saturday_short_name">СБ</string>
+    <string name="sunday_short_name">ВС</string>
+
+    <string name="previous_week_button_description">Кнопка для перехода на предыдущю неделю</string>
+    <string name="next_week_button_description">Кнопка для перехода на следующую неделю</string>
+</resources>

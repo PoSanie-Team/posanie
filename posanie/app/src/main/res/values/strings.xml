@@ -3,7 +3,7 @@
 
     <string name="app_name" translatable="false">PoSanie</string>
 
-    <string name="preference_file_key" translatable="false">AppPreferences</string>
+    <string name="preference_file_key" translatable="false">dev.timfatifey.posanie.app_preferences</string>
     <string name="preference_dark_theme" translatable="false">DarkTheme</string>
     <string name="preference_language" translatable="false">Language</string>
 
@@ -11,11 +11,6 @@
 
     // Errors
     <string name="load_error">Load error</string>
-
-    //Bottom nav bar
-    <string name="scheduler">Scheduler</string>
-    <string name="picker">Picker</string>
-    <string name="settings">Settings</string>
 
     // Students type
     <string name="bachelor">Bachelor</string>

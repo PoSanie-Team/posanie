@@ -17,14 +17,20 @@ import androidx.compose.ui.Modifier
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.window.Popup
+import androidx.compose.ui.platform.LocalConfiguration
+import androidx.compose.ui.platform.LocalContext
 import androidx.navigation.compose.rememberNavController
+import dev.timatifey.posanie.model.data.Language
 import dev.timatifey.posanie.ui.settings.SettingsViewModel
 import dev.timatifey.posanie.ui.theme.PoSanieTheme
+import java.util.Locale
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun PoSanieApp(activity: MainActivity) {
     val settingsViewModel: SettingsViewModel by activity.viewModels()
+    val uiState = settingsViewModel.uiState.collectAsState().value
+
     LaunchedEffect(true) {
         settingsViewModel.getTheme()
         settingsViewModel.getLanguage()

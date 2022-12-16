@@ -18,7 +18,8 @@ import dev.timatifey.posanie.model.data.Language
 
 @Composable
 fun SettingsScreen(
-    settingsViewModel: SettingsViewModel
+    settingsViewModel: SettingsViewModel,
+    recreateActivity: () -> Unit
 ) {
     val uiState = settingsViewModel.uiState.collectAsState().value
 
@@ -27,27 +28,18 @@ fun SettingsScreen(
             .verticalScroll(rememberScrollState())
             .padding(horizontal = 8.dp)
     ) {
-        SettingsTitle()
         ThemeSettings(
             checked = uiState.darkTheme,
             setDarkTheme = { settingsViewModel.saveAndPickTheme(it) }
         )
         LanguageSettings(
             selectedLanguage = uiState.language,
-            onLanguageClick = { settingsViewModel.saveAndPickLanguage(it) }
+            onLanguageClick = {
+                settingsViewModel.saveAndPickLanguage(it)
+                recreateActivity()
+            }
         )
     }
-}
-
-@Composable
-fun SettingsTitle() {
-    Text(
-        text = stringResource(R.string.settings),
-        style = MaterialTheme.typography.titleLarge,
-        modifier = Modifier
-            .padding(horizontal = 4.dp, vertical = 4.dp)
-            .fillMaxWidth()
-    )
 }
 
 @Composable
@@ -57,7 +49,7 @@ fun ThemeSettings(
 ) {
     Text(
         text = stringResource(R.string.theme),
-        style = MaterialTheme.typography.titleMedium,
+        style = MaterialTheme.typography.titleLarge,
         modifier = Modifier.padding(horizontal = 4.dp, vertical = 8.dp)
     )
     SettingsSwitchOption(optionName = stringResource(R.string.dark_theme), checked = checked, onCheckChange = setDarkTheme)
@@ -65,7 +57,7 @@ fun ThemeSettings(
 
 @Composable
 fun SettingsSwitchOption(
-    modifier: Modifier = Modifier.padding(4.dp),
+    modifier: Modifier = Modifier.padding(horizontal = 4.dp, vertical = 2.dp),
     optionName: String,
     checked: Boolean = false,
     onCheckChange: (Boolean) -> Unit
@@ -86,7 +78,7 @@ fun LanguageSettings(
 ) {
     Text(
         text = stringResource(R.string.language),
-        style = MaterialTheme.typography.titleMedium,
+        style = MaterialTheme.typography.titleLarge,
         modifier = Modifier.padding(horizontal = 4.dp, vertical = 8.dp)
     )
     LanguageOption(
@@ -103,27 +95,50 @@ fun LanguageSettings(
 
 @Composable
 fun LanguageOption(
-    modifier: Modifier = Modifier.padding(horizontal = 4.dp),
+    modifier: Modifier = Modifier.padding(horizontal = 4.dp, vertical = 2.dp),
     language: Language,
     selected: Boolean,
     onClick: () -> Unit
 ) {
-    SettingsOption(modifier = modifier, optionName = language.englishName) {
-        RadioButton(
-            selected = selected,
-            onClick = onClick
-        )
-    }
+    SettingsOption(
+        modifier = modifier,
+        optionDescription = {
+            Column {
+                Text(text = language.originName)
+                Text(text = language.englishName, style = MaterialTheme.typography.bodySmall)
+            }
+        },
+        selector = {
+            RadioButton(selected = selected, onClick = onClick)
+        }
+    )
 }
 
 @Composable
-fun SettingsOption(modifier: Modifier = Modifier, optionName: String, selector: @Composable () -> Unit) {
+fun SettingsOption(
+    modifier: Modifier = Modifier,
+    optionName: String,
+    selector: @Composable () -> Unit
+) {
+    SettingsOption(
+        modifier = modifier,
+        optionDescription = { Text(text = optionName) },
+        selector = selector
+    )
+}
+
+@Composable
+fun SettingsOption(
+    modifier: Modifier = Modifier,
+    optionDescription: @Composable () -> Unit,
+    selector: @Composable () -> Unit
+) {
     Row(
         modifier = modifier.fillMaxWidth(),
         horizontalArrangement = Arrangement.SpaceBetween,
         verticalAlignment = Alignment.CenterVertically
     ) {
-        Text(text = optionName)
+        optionDescription()
         selector()
     }
 }

@@ -45,12 +45,16 @@ class SettingsUseCaseImpl @Inject constructor(
     }
 
     override suspend fun getLanguage(): Result<Language> {
-        val sharedPref = context.getSharedPreferences(
-            context.getString(R.string.preference_file_key),
-            Context.MODE_PRIVATE
-        )
-        val languageId = sharedPref.getInt(context.getString(R.string.preference_language), 0)
-        val language = Language.getById(languageId)
+        val language = getLanguageFromPreferences(context)
         return Result.Success(language)
     }
+}
+
+fun getLanguageFromPreferences(context: Context): Language {
+    val sharedPref = context.getSharedPreferences(
+        context.getString(R.string.preference_file_key),
+        Context.MODE_PRIVATE
+    )
+    val languageId = sharedPref.getInt(context.getString(R.string.preference_language), 0)
+    return Language.getById(languageId)
 }
