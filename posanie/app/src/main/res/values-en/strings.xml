@@ -49,6 +49,19 @@
     <string name="saturday_short_name">SA</string>
     <string name="sunday_short_name">SU</string>
 
+    <string name="january_full_name">January</string>
+    <string name="february_full_name">February</string>
+    <string name="march_full_name">March</string>
+    <string name="april_full_name">April</string>
+    <string name="may_full_name">May</string>
+    <string name="june_full_name">June</string>
+    <string name="july_full_name">July</string>
+    <string name="august_full_name">August</string>
+    <string name="september_full_name">September</string>
+    <string name="october_full_name">October</string>
+    <string name="november_full_name">November</string>
+    <string name="december_full_name">December</string>
+
     <string name="previous_week_button_description">Button to go to previous week</string>
     <string name="next_week_button_description">Button to go to next week</string>
 </resources>

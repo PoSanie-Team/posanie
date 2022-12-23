@@ -24,6 +24,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.input.pointer.pointerInput
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.semantics.Role
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.Dp
@@ -266,7 +267,7 @@ private fun CalendarBar(
 @Composable
 private fun CalendarDate(modifier: Modifier = Modifier, month: Int, year: Int) {
     Text(
-        text = "${Month.getByOrdinal(month).fullName} $year",
+        text = "${stringResource(Month.getByOrdinal(month).fullNameId)} $year",
         textAlign = TextAlign.Center,
         modifier = modifier
     )
@@ -462,7 +463,8 @@ private fun WeekDayTab(weekDay: WeekDay, modifier: Modifier = Modifier) {
                 .padding(4.dp),
             contentAlignment = Alignment.Center
         ) {
-            Text(text = weekDay.shortName, color = Color.Unspecified.copy(alpha = 0.5f))
+            val textColor = MaterialTheme.colorScheme.onBackground.copy(alpha = 0.5f)
+            Text(text = stringResource(weekDay.shortNameId), color = textColor)
         }
     }
 }

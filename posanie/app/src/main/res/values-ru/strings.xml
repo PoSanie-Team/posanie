@@ -49,6 +49,19 @@
     <string name="saturday_short_name">СБ</string>
     <string name="sunday_short_name">ВС</string>
 
+    <string name="january_full_name">Январь</string>
+    <string name="february_full_name">Февраль</string>
+    <string name="march_full_name">Март</string>
+    <string name="april_full_name">Апрель</string>
+    <string name="may_full_name">Май</string>
+    <string name="june_full_name">Июнь</string>
+    <string name="july_full_name">Июль</string>
+    <string name="august_full_name">Август</string>
+    <string name="september_full_name">Сентябрь</string>
+    <string name="october_full_name">Октябрь</string>
+    <string name="november_full_name">Ноябрь</string>
+    <string name="december_full_name">Декабрь</string>
+
     <string name="previous_week_button_description">Кнопка для перехода на предыдущю неделю</string>
     <string name="next_week_button_description">Кнопка для перехода на следующую неделю</string>
 </resources>

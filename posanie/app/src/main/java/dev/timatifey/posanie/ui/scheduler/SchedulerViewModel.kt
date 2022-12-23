@@ -1,8 +1,10 @@
 package dev.timatifey.posanie.ui.scheduler
 
+import androidx.annotation.StringRes
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import dagger.hilt.android.lifecycle.HiltViewModel
+import dev.timatifey.posanie.R
 import dev.timatifey.posanie.model.domain.Group
 import dev.timatifey.posanie.model.domain.Lesson
 import dev.timatifey.posanie.model.domain.Teacher
@@ -17,14 +19,14 @@ import java.util.*
 import javax.inject.Inject
 import kotlin.IllegalArgumentException
 
-enum class WeekDay(val shortName: String) {
-    MONDAY("MO"),
-    TUESDAY("TU"),
-    WEDNESDAY("WE"),
-    THURSDAY("TH"),
-    FRIDAY("FR"),
-    SATURDAY("SA"),
-    SUNDAY("SU");
+enum class WeekDay(@StringRes val shortNameId: Int) {
+    MONDAY(R.string.monday_short_name),
+    TUESDAY(R.string.tuesday_short_name),
+    WEDNESDAY(R.string.wednesday_short_name),
+    THURSDAY(R.string.thursday_short_name),
+    FRIDAY(R.string.friday_short_name),
+    SATURDAY(R.string.saturday_short_name),
+    SUNDAY(R.string.sunday_short_name);
 
     companion object {
         fun getDayByOrdinal(ordinal: Int): WeekDay {
@@ -55,19 +57,19 @@ enum class WeekDay(val shortName: String) {
     }
 }
 
-enum class Month(val fullName: String) {
-    JANUARY("January"),
-    FEBRUARY("February"),
-    MARCH("March"),
-    APRIL("April"),
-    MAY("May"),
-    JUNE("June"),
-    JULY("July"),
-    AUGUST("August"),
-    SEPTEMBER("September"),
-    OCTOBER("October"),
-    NOVEMBER("November"),
-    DECEMBER("December");
+enum class Month(@StringRes val fullNameId: Int) {
+    JANUARY(R.string.january_full_name),
+    FEBRUARY(R.string.february_full_name),
+    MARCH(R.string.march_full_name),
+    APRIL(R.string.april_full_name),
+    MAY(R.string.may_full_name),
+    JUNE(R.string.june_full_name),
+    JULY(R.string.july_full_name),
+    AUGUST(R.string.august_full_name),
+    SEPTEMBER(R.string.september_full_name),
+    OCTOBER(R.string.october_full_name),
+    NOVEMBER(R.string.november_full_name),
+    DECEMBER(R.string.december_full_name);
 
     companion object {
         fun getByOrdinal(ordinal: Int): Month {

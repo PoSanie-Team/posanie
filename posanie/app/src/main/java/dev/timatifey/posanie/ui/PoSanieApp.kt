@@ -35,7 +35,7 @@ fun PoSanieApp(activity: MainActivity) {
         settingsViewModel.getTheme()
         settingsViewModel.getLanguage()
     }
-    val uiState = settingsViewModel.uiState.collectAsState().value
+    
     PoSanieTheme(
         darkTheme = uiState.darkTheme
     ) {
