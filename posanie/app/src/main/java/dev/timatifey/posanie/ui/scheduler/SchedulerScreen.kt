@@ -14,11 +14,13 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.input.pointer.PointerInputScope
 import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.platform.LocalConfiguration
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import com.google.accompanist.swiperefresh.SwipeRefresh
 import com.google.accompanist.swiperefresh.rememberSwipeRefreshState
+import dev.timatifey.posanie.R
 import dev.timatifey.posanie.model.domain.Lesson
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.launch
@@ -186,7 +188,7 @@ fun WeekView(
             val weekDay = WeekDay.getWorkDayByOrdinal(weekdayOrdinalToCalendarFormat(i))
             val lessons = lessonsToDays[weekDay] ?: emptyList()
             if (lessons.isEmpty()) {
-                MessageText(text = "No lessons today.")
+                MessageText(text = stringResource(R.string.no_lessons_today))
             } else {
                 LessonsList(
                     lessons = lessons,

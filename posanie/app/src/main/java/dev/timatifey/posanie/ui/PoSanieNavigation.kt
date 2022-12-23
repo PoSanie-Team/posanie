@@ -8,12 +8,11 @@ import dev.timatifey.posanie.model.data.Type
 
 sealed class BottomNavItems(
     val route: String,
-    @StringRes val nameId: Int,
     @DrawableRes val iconId: Int
 ) {
-    object Scheduler : BottomNavItems("scheduler", R.string.scheduler, R.drawable.ic_time)
-    object Picker : BottomNavItems("picker", R.string.groups, R.drawable.ic_group)
-    object Settings : BottomNavItems("settings", R.string.settings, R.drawable.ic_settings)
+    object Scheduler : BottomNavItems("scheduler", R.drawable.ic_time)
+    object Picker : BottomNavItems("picker", R.drawable.ic_group)
+    object Settings : BottomNavItems("settings", R.drawable.ic_settings)
 }
 
 const val FACULTY_ID_ARG = "facultyId"

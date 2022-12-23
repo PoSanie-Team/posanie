@@ -3,19 +3,19 @@ package dev.timatifey.posanie.ui.picker
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.lazy.LazyColumn
-import androidx.compose.foundation.lazy.items
+import androidx.compose.foundation.lazy.*
 import androidx.compose.material3.*
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
-import androidx.navigation.NavController
-import androidx.navigation.NavHostController
 import com.google.accompanist.swiperefresh.SwipeRefresh
 import com.google.accompanist.swiperefresh.SwipeRefreshState
+import dev.timatifey.posanie.R
 import dev.timatifey.posanie.model.domain.Faculty
+
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -32,7 +32,7 @@ fun FacultiesScreen(
                 onBackClick = onBackClick,
                 content = {
                     Text(
-                        text = "Faculties",
+                        text = stringResource(R.string.faculties),
                         style = MaterialTheme.typography.titleMedium
                     )
                 }
