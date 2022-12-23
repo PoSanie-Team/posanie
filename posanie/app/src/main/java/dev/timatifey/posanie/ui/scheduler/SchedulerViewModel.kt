@@ -23,10 +23,24 @@ enum class WeekDay(val shortName: String) {
     WEDNESDAY("WE"),
     THURSDAY("TH"),
     FRIDAY("FR"),
-    SATURDAY("SA");
+    SATURDAY("SA"),
+    SUNDAY("SU");
 
     companion object {
-        fun getByOrdinal(ordinal: Int): WeekDay {
+        fun getDayByOrdinal(ordinal: Int): WeekDay {
+            when(ordinal) {
+                2 -> return MONDAY
+                3 -> return TUESDAY
+                4 -> return WEDNESDAY
+                5 -> return THURSDAY
+                6 -> return FRIDAY
+                7 -> return SATURDAY
+                1 -> return SUNDAY
+            }
+            throw IllegalArgumentException("Illegal ordinal")
+        }
+
+        fun getWorkDayByOrdinal(ordinal: Int): WeekDay {
             when(ordinal) {
                 2 -> return MONDAY
                 3 -> return TUESDAY
@@ -41,11 +55,60 @@ enum class WeekDay(val shortName: String) {
     }
 }
 
+enum class Month(val fullName: String) {
+    JANUARY("January"),
+    FEBRUARY("February"),
+    MARCH("March"),
+    APRIL("April"),
+    MAY("May"),
+    JUNE("June"),
+    JULY("July"),
+    AUGUST("August"),
+    SEPTEMBER("September"),
+    OCTOBER("October"),
+    NOVEMBER("November"),
+    DECEMBER("December");
+
+    companion object {
+        fun getByOrdinal(ordinal: Int): Month {
+            when(ordinal) {
+                0 -> return JANUARY
+                1 -> return FEBRUARY
+                2 -> return MARCH
+                3 -> return APRIL
+                4 -> return MAY
+                5 -> return JUNE
+                6 -> return JULY
+                7 -> return AUGUST
+                8 -> return SEPTEMBER
+                9 -> return OCTOBER
+                10 -> return NOVEMBER
+                11 -> return DECEMBER
+            }
+            throw IllegalArgumentException("Illegal ordinal")
+        }
+
+        fun getDaysCount(year: Int, month: Month): Int {
+            return when (month) {
+                JANUARY -> 31
+                FEBRUARY -> if (year % 4 == 0) 29 else 28
+                MARCH -> 30
+                APRIL -> 31
+                MAY -> 30
+                JUNE -> 31
+                JULY -> 31
+                AUGUST -> 31
+                SEPTEMBER -> 30
+                OCTOBER -> 31
+                NOVEMBER -> 30
+                DECEMBER -> 31
+            }
+        }
+    }
+}
+
 sealed interface SchedulerUiState {
 
-    val mondayDate: Calendar
-    val selectedDate: Calendar
-    val selectedDay: WeekDay
     val isLoading: Boolean
     val errorMessages: List<ErrorMessage>
 
@@ -53,9 +116,9 @@ sealed interface SchedulerUiState {
         val hasSchedule: Boolean = false,
         val weekIsOdd: Boolean = false,
         val lessonsToDays: Map<WeekDay, List<Lesson>>,
-        override val mondayDate: Calendar,
-        override val selectedDate: Calendar,
-        override val selectedDay: WeekDay,
+        val mondayDate: Calendar,
+        val selectedDate: Calendar,
+        val selectedDay: WeekDay,
         override val isLoading: Boolean,
         override val errorMessages: List<ErrorMessage>,
     ) : SchedulerUiState
@@ -76,7 +139,8 @@ private data class SchedulerViewModelState(
         fun getInstance(): SchedulerViewModelState {
             val todayDate: Calendar = Calendar.getInstance()
 
-            val today = WeekDay.getByOrdinal(todayDate.get(Calendar.DAY_OF_WEEK))
+            val today = WeekDay.getWorkDayByOrdinal(todayDate.get(Calendar.DAY_OF_WEEK))
+            val monthOnCalendar = Month.getByOrdinal(todayDate.get(Calendar.MONTH))
 
             val todayYear = todayDate.get(Calendar.YEAR)
             val todayMonth = todayDate.get(Calendar.MONTH)
@@ -103,7 +167,7 @@ private data class SchedulerViewModelState(
         }
     }
 
-    fun toUiState(): SchedulerUiState =
+    fun toUiState(): SchedulerUiState.UiState =
         SchedulerUiState.UiState(
             hasSchedule = hasSchedule,
             weekIsOdd = weekIsOdd,
@@ -125,7 +189,7 @@ class SchedulerViewModel @Inject constructor(
 
     private val viewModelState = MutableStateFlow(SchedulerViewModelState.getInstance())
 
-    val uiState: StateFlow<SchedulerUiState> = viewModelState
+    val uiState: StateFlow<SchedulerUiState.UiState> = viewModelState
         .map { it.toUiState() }
         .stateIn(
             viewModelScope,
@@ -191,6 +255,22 @@ class SchedulerViewModel @Inject constructor(
         }
     }
 
+    fun selectDate(newDate: Calendar) {
+        val dayOrdinal = newDate.get(Calendar.DAY_OF_WEEK)
+        val newWeekDay = WeekDay.getWorkDayByOrdinal(dayOrdinal)
+
+        val newYear = newDate.get(Calendar.YEAR)
+        val newMonth = newDate.get(Calendar.MONTH)
+
+        val newDay = newDate.get(Calendar.DAY_OF_MONTH)
+        val correctedNewDay = if (SchedulerViewModelState.isSunday(newDate)) newDay - 1 else newDay
+
+        val mondayDay = correctedNewDay - newWeekDay.ordinal
+
+        setMonday(newYear, newMonth, mondayDay)
+        selectWeekDay(newWeekDay)
+    }
+
     fun setNextMonday() {
         val d = viewModelState.value.mondayDate.get(Calendar.DAY_OF_MONTH)
         val m = viewModelState.value.mondayDate.get(Calendar.MONTH)
@@ -224,7 +304,6 @@ class SchedulerViewModel @Inject constructor(
     }
 
     fun fetchLessons() {
-
         viewModelState.update { it.copy(isLoading = true) }
 
         viewModelScope.launch {

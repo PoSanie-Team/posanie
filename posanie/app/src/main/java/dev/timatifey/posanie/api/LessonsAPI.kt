@@ -67,7 +67,7 @@ class LessonsAPI(private val dispatcher: CoroutineDispatcher)  {
                 lessonId++
             }
 
-            lessonsToDays[WeekDay.getByOrdinal(adjustWeekDayOrdinal(weekDay))] = lessons;
+            lessonsToDays[WeekDay.getWorkDayByOrdinal(adjustWeekDayOrdinal(weekDay))] = lessons;
         }
         return@withContext lessonsToDays
     }
