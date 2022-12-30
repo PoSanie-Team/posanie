@@ -15,6 +15,7 @@ interface TeachersUseCase {
     suspend fun fetchTeachersBy(name: String): Result<List<Teacher>>
     suspend fun saveAndPickTeacher(teacher: Teacher): Result<Boolean>
     suspend fun pickTeacher(teacher: Teacher?): Result<Boolean>
+    suspend fun deleteTeacher(teacher: Teacher): Result<Boolean>
 }
 
 class TeachersUseCaseImpl @Inject constructor(
@@ -76,6 +77,16 @@ class TeachersUseCaseImpl @Inject constructor(
                     .map { it.copy(isPicked = it.id == teacher?.id) }
                     .toMutableList()
                 teachersDao.upsertTeachers(newTeachers)
+                return@withContext Result.Success(true)
+            } catch (e: Exception) {
+                return@withContext Result.Error(e)
+            }
+        }
+
+    override suspend fun deleteTeacher(teacher: Teacher): Result<Boolean> =
+        withContext(Dispatchers.IO) {
+            try {
+                teachersDao.deleteTeacherById(teacher.id)
                 return@withContext Result.Success(true)
             } catch (e: Exception) {
                 return@withContext Result.Error(e)

@@ -64,4 +64,11 @@
 
     <string name="previous_week_button_description">Кнопка для перехода на предыдущю неделю</string>
     <string name="next_week_button_description">Кнопка для перехода на следующую неделю</string>
+
+    // Popup
+    <string name="ok">ОК</string>
+    <string name="cancel">Отмена</string>
+    <string name="deleteItemDescription">Вы увеерены что хотите убрать %1$s из локальных %2$s?</string>
+    <string name="groupItemsDescription">групп</string>
+    <string name="teacherItemsDescription">учителей</string>
 </resources>

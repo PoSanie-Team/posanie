@@ -1,5 +1,7 @@
 package dev.timatifey.posanie.ui.picker
 
+import androidx.compose.foundation.ExperimentalFoundationApi
+import androidx.compose.foundation.combinedClickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
@@ -22,6 +24,7 @@ import dev.timatifey.posanie.R
 import dev.timatifey.posanie.model.domain.Group
 import dev.timatifey.posanie.model.domain.Teacher
 import dev.timatifey.posanie.ui.BottomNavItems
+import dev.timatifey.posanie.utils.ClickListener
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -59,10 +62,12 @@ fun TeachersScreen(
                 onRefresh = { viewModel.fetchTeachersBy(searchTextState.value) },
                 teachersList = teachersList,
                 modifier = Modifier.padding(paddingValues),
-                onItemClick = {
-                    viewModel.saveAndPickTeacher(it)
-                    navController.navigate(BottomNavItems.Picker.route)
-                }
+                clickListener = ClickListener(
+                    onClick = {
+                        viewModel.saveAndPickTeacher(it)
+                        navController.navigate(BottomNavItems.Picker.route)
+                    }
+                )
             )
         }
     )
@@ -70,11 +75,11 @@ fun TeachersScreen(
 
 @Composable
 fun RefreshableTeachersList(
+    modifier: Modifier = Modifier,
     swipeRefreshState: SwipeRefreshState,
     onRefresh: () -> Unit,
     teachersList: List<Teacher>,
-    onItemClick: (Teacher) -> Unit,
-    modifier: Modifier
+    clickListener: ClickListener<Teacher>,
 ) {
     SwipeRefresh(
         state = swipeRefreshState,
@@ -92,7 +97,7 @@ fun RefreshableTeachersList(
             } else {
                 ScrollableTeachersList(
                     teachersList = teachersList,
-                    onItemClick = onItemClick
+                    clickListener = clickListener
                 )
             }
         }
@@ -101,37 +106,25 @@ fun RefreshableTeachersList(
 
 @Composable
 fun ScrollableTeachersList(
-    teachersList: List<Teacher>,
     modifier: Modifier = Modifier,
-    onItemClick: (Teacher) -> Unit,
+    teachersList: List<Teacher>,
+    clickListener: ClickListener<Teacher>,
 ) {
     LazyColumn(
         modifier = modifier.padding(4.dp)
     ) {
         items(teachersList) { teacher ->
-            TeacherItem(teacher = teacher, onClick = onItemClick)
+            TeacherItem(teacher = teacher, clickListener = clickListener)
         }
     }
 }
 
+@OptIn(ExperimentalMaterial3Api::class, ExperimentalFoundationApi::class)
 @Composable
-fun TeachersList(
-    teachersList: List<Teacher>,
-    modifier: Modifier = Modifier,
-    onItemClick: (Teacher) -> Unit,
+fun TeacherItem(
+    teacher: Teacher,
+    clickListener: ClickListener<Teacher>
 ) {
-    Column(
-        modifier = modifier.padding(4.dp)
-    ) {
-        teachersList.forEach { teacher ->
-            TeacherItem(teacher = teacher, onClick = onItemClick)
-        }
-    }
-}
-
-@OptIn(ExperimentalMaterial3Api::class)
-@Composable
-fun TeacherItem(teacher: Teacher, onClick: (Teacher) -> Unit) {
     CompositionLocalProvider(
         LocalMinimumTouchTargetEnforcement provides false,
     ) {
@@ -141,9 +134,12 @@ fun TeacherItem(teacher: Teacher, onClick: (Teacher) -> Unit) {
         Card(
             modifier = Modifier
                 .fillMaxWidth()
-                .padding(horizontal = 4.dp, vertical = 4.dp),
+                .padding(horizontal = 4.dp, vertical = 4.dp)
+                .combinedClickable(
+                    onClick = { clickListener.onClick(teacher) },
+                    onLongClick = { clickListener.onLongClick(teacher) }
+                ),
             colors = cardColors,
-            onClick = { onClick(teacher) },
         ) {
             Text(
                 text = teacher.name,
@@ -153,19 +149,4 @@ fun TeacherItem(teacher: Teacher, onClick: (Teacher) -> Unit) {
             )
         }
     }
-}
-
-@Preview
-@Composable
-fun TeachersListPreview() {
-    TeachersList(listOf(
-        Teacher(name = "Гуляка Николай Андреевич"),
-        Teacher(name = "Сисюк Наталья Владамировна"),
-        Teacher(name = "Заебомбус Ахмед Мустафанович"),
-        Teacher(name = "Абоба Николай Викторович"),
-        Teacher(name = "Трансплантант Зеро Гелиевич"),
-        Teacher(name = "Сус Амог Усович"),
-    ), Modifier,
-        {}
-    )
 }

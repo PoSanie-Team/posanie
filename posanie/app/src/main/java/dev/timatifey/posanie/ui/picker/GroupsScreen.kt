@@ -3,13 +3,12 @@ package dev.timatifey.posanie.ui.picker
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.expandVertically
 import androidx.compose.animation.shrinkVertically
+import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
+import androidx.compose.foundation.combinedClickable
 import androidx.compose.foundation.layout.*
-import androidx.compose.foundation.lazy.LazyColumn
-import androidx.compose.foundation.lazy.LazyListState
-import androidx.compose.foundation.lazy.items
-import androidx.compose.foundation.lazy.rememberLazyListState
+import androidx.compose.foundation.lazy.*
 import androidx.compose.foundation.selection.selectableGroup
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.*
@@ -39,6 +38,7 @@ import dev.timatifey.posanie.ui.KindNavItems
 import dev.timatifey.posanie.ui.PickerNavItems
 import dev.timatifey.posanie.ui.RemoteNavItems
 import dev.timatifey.posanie.ui.TypeNavItems
+import dev.timatifey.posanie.utils.ClickListener
 import java.lang.IllegalArgumentException
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -136,10 +136,10 @@ fun RemoteGroupsContent(
 
 @Composable
 fun GroupKindNavigationBar(
+    modifier: Modifier = Modifier,
     navController: NavHostController,
     facultyId: Long,
-    items: List<KindNavItems>,
-    modifier: Modifier = Modifier
+    items: List<KindNavItems>
 ) {
     CategoryNavigationBar(
         modifier = modifier
@@ -147,28 +147,31 @@ fun GroupKindNavigationBar(
         val viewModel = hiltViewModel<PickerViewModel>()
         val uiState by viewModel.groupSearchUiState.collectAsState()
         val selectedKind = uiState.selectedKind
-        items.forEach { tab ->
-            val tabRoute = RemoteNavItems.Groups.routeBy(facultyId, tab.kind.id)
-            CategoryBarTextItem(
-                text = stringResource(tab.nameId),
-                selected = selectedKind == tab.kind,
-                onClick = {
-                    navController.navigate(tabRoute) {
-                        launchSingleTop = true
+        LazyRow {
+            items(items = items) { tab ->
+                val tabRoute = RemoteNavItems.Groups.routeBy(facultyId, tab.kind.id)
+                CategoryBarTextItem(
+                    text = stringResource(tab.nameId),
+                    selected = selectedKind == tab.kind,
+                    onClick = {
+                        navController.navigate(tabRoute) {
+                            launchSingleTop = true
+                        }
                     }
-                }
-            )
+                )
+
+            }
         }
     }
 }
 
 @Composable
 fun GroupTypeNavigationBar(
+    modifier: Modifier = Modifier,
     navController: NavHostController,
     facultyId: Long,
     kindId: Long,
-    items: List<TypeNavItems>,
-    modifier: Modifier = Modifier
+    items: List<TypeNavItems>
 ) {
     CategoryNavigationBar(
         modifier = modifier
@@ -176,21 +179,24 @@ fun GroupTypeNavigationBar(
         val viewModel = hiltViewModel<PickerViewModel>()
         val uiState by viewModel.groupSearchUiState.collectAsState()
         val selectedType = uiState.selectedType
-        items.forEach { tab ->
-            val tabRoute = if (selectedType != tab.type) {
-                RemoteNavItems.Groups.routeBy(facultyId, kindId, tab.type.id)
-            } else {
-                RemoteNavItems.Groups.routeBy(facultyId, kindId, Type.DEFAULT.id)
-            }
-            CategoryBarTextItem(
-                text = stringResource(tab.nameId),
-                selected = selectedType == tab.type,
-                onClick = {
-                    navController.navigate(tabRoute) {
-                        launchSingleTop = true
-                    }
+        LazyRow {
+            items(items = items) { tab ->
+                val tabRoute = if (selectedType != tab.type) {
+                    RemoteNavItems.Groups.routeBy(facultyId, kindId, tab.type.id)
+                } else {
+                    RemoteNavItems.Groups.routeBy(facultyId, kindId, Type.DEFAULT.id)
                 }
-            )
+                CategoryBarTextItem(
+                    text = stringResource(tab.nameId),
+                    selected = selectedType == tab.type,
+                    onClick = {
+                        navController.navigate(tabRoute) {
+                            launchSingleTop = true
+                        }
+                    }
+                )
+
+            }
         }
     }
 }
@@ -201,7 +207,7 @@ fun CategoryNavigationBar(
     containerColor: Color = MaterialTheme.colorScheme.surface,
     contentColor: Color = MaterialTheme.colorScheme.contentColorFor(containerColor),
     tonalElevation: Dp = NavigationBarDefaults.Elevation,
-    content: @Composable (Modifier) -> Unit
+    content: @Composable () -> Unit
 ) {
     Surface(
         color = containerColor,
@@ -209,24 +215,23 @@ fun CategoryNavigationBar(
         tonalElevation = tonalElevation,
         modifier = modifier.selectableGroup()
     ) {
-        Row(
+        Box(
             modifier = modifier
                 .fillMaxWidth()
-                .padding(8.dp),
-            horizontalArrangement = Arrangement.SpaceEvenly
+                .padding(8.dp)
         ) {
-            content(Modifier.weight(1f))
+            content()
         }
     }
 }
 
 @Composable
 fun CategoryBarTextItem(
+    modifier: Modifier = Modifier,
     text: String,
     selected: Boolean,
     onClick: () -> Unit,
-    enabled: Boolean = true,
-    modifier: Modifier = Modifier
+    enabled: Boolean = true
 ) {
     Surface(
         shape = RoundedCornerShape(4.dp),
@@ -239,7 +244,7 @@ fun CategoryBarTextItem(
                     role = Role.Tab,
                 )
                 .background(tabColor(selected))
-                .padding(4.dp),
+                .padding(PaddingValues(horizontal = 8.dp, vertical = 4.dp)),
             contentAlignment = Alignment.Center
         ) {
             Text(text = text)
@@ -265,16 +270,19 @@ private fun RemoteGroupsList(
     typeId: String
 ) {
     val uiState = groupsViewModel.groupSearchUiState.collectAsState().value
-    RefreshableGroupsList(
-        levelsToGroups = uiState.levelsToGroups,
-        listState = groupsListStateForKindId(kindId),
-        onGroupPick = { group: Group ->
+    val clickListener = ClickListener(
+        onClick = { group: Group ->
             groupsViewModel.saveAndPickGroup(group)
             navController.navigate(PickerNavItems.Local.route) {
                 popUpTo(navController.graph.findStartDestination().id)
                 launchSingleTop = true
             }
-        },
+        }
+    )
+    RefreshableGroupsList(
+        levelsToGroups = uiState.levelsToGroups,
+        listState = groupsListStateForKindId(kindId),
+        clickListener = clickListener,
         swipeRefreshState = rememberSwipeRefreshState(uiState.isLoading),
         onRefresh = {
             groupsViewModel.selectFilters(
@@ -303,7 +311,7 @@ fun RefreshableGroupsList(
     levelsToGroups: Map<Int, GroupsLevel>,
     listState: LazyListState,
     swipeRefreshState: SwipeRefreshState,
-    onGroupPick: (Group) -> Unit,
+    clickListener: ClickListener<Group>,
     onRefresh: () -> Unit,
 ) {
     SwipeRefresh(state = swipeRefreshState, onRefresh = onRefresh, modifier = Modifier.fillMaxSize()) {
@@ -318,7 +326,7 @@ fun RefreshableGroupsList(
                     levelsToGroups = levelsToGroups,
                     groupsInRow = 2,
                     state = listState,
-                    onGroupClick = onGroupPick
+                    clickListener = clickListener
                 )
             }
         }
@@ -330,8 +338,8 @@ fun ScrollableGroupsList(
     levelsToGroups: Map<Int, GroupsLevel>,
     groupsInRow: Int,
     state: LazyListState = rememberLazyListState(),
-    onGroupClick: (Group) -> Unit)
-{
+    clickListener: ClickListener<Group>
+) {
     LazyColumn(
         state = state,
         contentPadding = PaddingValues(horizontal = 16.dp, vertical = 0.dp),
@@ -340,35 +348,22 @@ fun ScrollableGroupsList(
         items(levels) { level ->
             Column {
                 Text(stringResource(R.string.level, level))
-                GroupsLevelList(levelsToGroups[level]?.getGroups() ?: emptyList(), groupsInRow, onGroupClick)
+                GroupsLevelList(
+                    list = levelsToGroups[level]?.getGroups() ?: emptyList(),
+                    groupsInRow = groupsInRow,
+                    clickListener = clickListener
+                )
             }
         }
     }
 }
 
 @Composable
-fun GroupsList(
-    levelsToGroups: Map<Int, GroupsLevel>,
-    groupsInRow: Int,
-    onGroupClick: (Group) -> Unit)
-{
-    Column {
-        val levels = levelsToGroups.keys.toList().sorted()
-        levels.forEach { level ->
-            Column {
-                Text(text = stringResource(R.string.level, level), modifier = Modifier.padding(4.dp))
-                GroupsLevelList(levelsToGroups[level]?.getGroups() ?: emptyList(), groupsInRow, onGroupClick)
-            }
-        }
-    }
-}
-
-@Composable
-fun GroupsLevelList(list: List<Group>, groupsInRow: Int, onGroupClick: (Group) -> Unit) {
+fun GroupsLevelList(list: List<Group>, groupsInRow: Int, clickListener: ClickListener<Group>) {
     val table = list.toGroupsTable(groupsInRow)
     Column {
         table.forEach { row ->
-            GroupsRow(row = row, groupsInRow = groupsInRow, onGroupClick = onGroupClick)
+            GroupsRow(row = row, groupsInRow = groupsInRow, clickListener = clickListener)
         }
     }
 }
@@ -390,7 +385,7 @@ private fun List<Group>.toGroupsTable(groupsInRow: Int) : List<List<Group>> {
 fun GroupsRow(
     row: List<Group>,
     groupsInRow: Int,
-    onGroupClick: (Group) -> Unit
+    clickListener: ClickListener<Group>
 ) {
     Row(modifier = Modifier.fillMaxWidth()) {
         for (group in row) {
@@ -400,15 +395,20 @@ fun GroupsRow(
                 modifier = Modifier
                     .weight(1f)
                     .padding(4.dp),
-                onGroupClick = onGroupClick
+                clickListener = clickListener
             )
         }
     }
 }
 
-@OptIn(ExperimentalMaterial3Api::class)
+@OptIn(ExperimentalMaterial3Api::class, ExperimentalFoundationApi::class)
 @Composable
-fun GroupItem(group: Group, twoLines: Boolean, modifier: Modifier = Modifier, onGroupClick: (Group) -> Unit) {
+fun GroupItem(
+    modifier: Modifier = Modifier,
+    group: Group,
+    twoLines: Boolean,
+    clickListener: ClickListener<Group>
+) {
     CompositionLocalProvider(
         LocalMinimumTouchTargetEnforcement provides false,
     ) {
@@ -416,9 +416,11 @@ fun GroupItem(group: Group, twoLines: Boolean, modifier: Modifier = Modifier, on
             CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.secondaryContainer)
         } else CardDefaults.cardColors()
         Card(
-            modifier = modifier,
+            modifier = modifier.combinedClickable(
+                onClick = { clickListener.onClick(group) },
+                onLongClick = { clickListener.onLongClick(group) }
+            ),
             colors = cardColors,
-            onClick = { onGroupClick(group) }
         ) {
             val courseString = group.title.substringBefore(COURSE_GROUP_DELIMITER)
             val groupString = group.title.substringAfter(COURSE_GROUP_DELIMITER)
@@ -450,7 +452,7 @@ fun GroupsListPreview() {
         Group(title = "35309/90201"),
         Group(title = "35309/90101"),
     ), 2,
-        {}
+        ClickListener()
     )
 }
 
@@ -462,6 +464,6 @@ fun GroupItemPreview() {
             title = "3530901/90202",
         ),
         twoLines = false,
-        onGroupClick = {}
+        clickListener = ClickListener()
     )
 }

@@ -7,4 +7,4 @@ data class Group(
     val typeId: String = "",
     val level: Int = 0,
     val isPicked: Boolean = false,
-)
+) : ScheduleType

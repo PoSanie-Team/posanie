@@ -1,13 +1,9 @@
 package dev.timatifey.posanie.ui
 
-import androidx.compose.foundation.background
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.res.painterResource
-import androidx.compose.ui.res.stringResource
-import androidx.compose.ui.text.style.TextOverflow
 
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.navigation.*
@@ -26,7 +22,6 @@ import dev.timatifey.posanie.ui.picker.*
 import dev.timatifey.posanie.ui.scheduler.SchedulerRoute
 import dev.timatifey.posanie.ui.scheduler.SchedulerViewModel
 import dev.timatifey.posanie.ui.settings.SettingsRoute
-import dev.timatifey.posanie.ui.settings.SettingsViewModel
 
 @Composable
 fun PoSanieNavGraph(
@@ -47,7 +42,8 @@ fun PoSanieNavGraph(
             SchedulerRoute(schedulerViewModel = schedulerViewModel, createPopup = createPopup)
         }
         pickerNavGraph(
-            navController,
+            navController = navController,
+            createPopup = createPopup,
             route = BottomNavItems.Picker.route
         )
         composable(BottomNavItems.Settings.route) {
@@ -58,6 +54,7 @@ fun PoSanieNavGraph(
 
 fun NavGraphBuilder.pickerNavGraph(
     navController: NavHostController,
+    createPopup: (MutableState<Boolean>, @Composable () -> Unit) -> Unit,
     route: String = BottomNavItems.Picker.route
 ) {
     navigation(
@@ -72,7 +69,8 @@ fun NavGraphBuilder.pickerNavGraph(
             }
             LocalRoute(
                 viewModel = viewModel,
-                navController = navController
+                createPopup = createPopup,
+                navController = navController,
             )
         }
         remoteNavGraph(

@@ -29,6 +29,7 @@ import androidx.compose.ui.semantics.Role
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
+import dev.timatifey.posanie.ui.DialogBar
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.launch
 import java.util.*
@@ -175,9 +176,11 @@ private fun CalendarDialog(
             }
         )
         DialogBar(
-            newSelectedDate = newSelectedDateState.value,
-            selectDate = selectDate,
-            close = close
+            onConfirm = {
+                selectDate(newSelectedDateState.value)
+                close()
+            },
+            onCancel = close
         )
     }
 }
@@ -197,43 +200,6 @@ private fun selectDay(
     val sameDay = newDate.get(Calendar.DAY_OF_MONTH) == newSelectedDate.get(Calendar.DAY_OF_MONTH)
     val sameDate = sameYear && sameMonth && sameDay
     newSelectedDateState.value = if (sameDate) oldSelectedDate else newDate
-}
-
-@Composable
-fun DialogBar(
-    newSelectedDate: Calendar,
-    selectDate: (Calendar) -> Unit,
-    close: () -> Unit
-) {
-    Row(
-        modifier = Modifier
-            .fillMaxSize()
-            .padding(8.dp),
-        verticalAlignment = Alignment.Bottom,
-        horizontalArrangement = Arrangement.SpaceEvenly
-    ) {
-        DialogButton(text = "Cancel", onClick = close)
-        DialogButton(text = "Ok", onClick = {
-            selectDate(newSelectedDate)
-            close()
-        })
-    }
-}
-
-@Composable
-private fun DialogButton(
-    modifier: Modifier = Modifier.padding(horizontal = 8.dp, vertical = 4.dp),
-    text: String,
-    onClick: () -> Unit
-) {
-    Box(
-        modifier = Modifier
-            .clip(CircleShape)
-            .clickable { onClick() }
-            .then(modifier)
-    ) {
-        Text(text = text, textAlign = TextAlign.Center)
-    }
 }
 
 @Composable
@@ -453,7 +419,7 @@ private fun CalendarDays(
 }
 
 @Composable
-private fun WeekDayTab(weekDay: WeekDay, modifier: Modifier = Modifier) {
+private fun WeekDayTab(modifier: Modifier = Modifier, weekDay: WeekDay) {
     Surface(
         modifier = modifier,
         shape = RoundedCornerShape(4.dp),

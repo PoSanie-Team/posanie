@@ -292,6 +292,13 @@ class PickerViewModel @Inject constructor(
         }
     }
 
+    fun deleteGroup(group: Group) {
+        viewModelScope.launch {
+            groupsUseCase.deleteGroup(group)
+            getLocalGroups()
+        }
+    }
+
     fun saveAndPickTeacher(teacher: Teacher) {
         viewModelScope.launch {
             groupsUseCase.pickGroup(null)
@@ -306,6 +313,13 @@ class PickerViewModel @Inject constructor(
             groupsUseCase.pickGroup(null)
             getLocalGroups()
             teachersUseCase.pickTeacher(teacher)
+            getLocalTeachers()
+        }
+    }
+
+    fun deleteTeacher(teacher: Teacher) {
+        viewModelScope.launch {
+            teachersUseCase.deleteTeacher(teacher)
             getLocalTeachers()
         }
     }

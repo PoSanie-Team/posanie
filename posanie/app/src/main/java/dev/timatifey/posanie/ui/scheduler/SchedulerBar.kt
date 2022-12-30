@@ -104,7 +104,7 @@ fun DateBar(
 }
 
 @Composable
-fun WeekDate(date: Calendar, oddWeek: Boolean, hasSchedule: Boolean, modifier: Modifier = Modifier) {
+fun WeekDate(modifier: Modifier = Modifier, date: Calendar, oddWeek: Boolean, hasSchedule: Boolean) {
     val day = date.get(Calendar.DAY_OF_MONTH)
     val formattedDay = if (day < 10) "0$day" else "$day"
     val month = date.get(Calendar.MONTH) + 1
@@ -157,7 +157,7 @@ fun WeekBar(selectedDay: WeekDay, onDayClick: (WeekDay) -> Unit) {
 }
 
 @Composable
-fun Day(weekDay: WeekDay, selected: Boolean, modifier: Modifier = Modifier, onClick: () -> Unit) {
+fun Day(modifier: Modifier = Modifier, weekDay: WeekDay, selected: Boolean, onClick: () -> Unit) {
     Surface(
         modifier = modifier,
         shape = RoundedCornerShape(4.dp),

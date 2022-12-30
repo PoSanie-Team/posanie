@@ -223,10 +223,10 @@ fun SearchGroupsTopBar(
 
 @Composable
 fun GroupsSearchField(
+    modifier: Modifier = Modifier,
     groupPrefix: String,
     courseTextState: MutableState<String>,
     groupTextState: MutableState<String>,
-    modifier: Modifier = Modifier,
     textStyle: TextStyle = TextStyle.Default,
     inProgress: Boolean,
     onSelected: () -> Unit,
@@ -296,8 +296,8 @@ fun GroupsSearchField(
 
 @Composable
 fun GroupPartTextField(
-    state: MutableState<String>,
     modifier: Modifier = Modifier,
+    state: MutableState<String>,
     maxLength: Int,
     textStyle: TextStyle = TextStyle.Default,
     innerPadding: PaddingValues = PaddingValues(0.dp),
@@ -414,8 +414,8 @@ fun TeachersTopBar(
 
 @Composable
 fun TeachersSearchField(
-    searchTextState: MutableState<String>,
     modifier: Modifier = Modifier,
+    searchTextState: MutableState<String>,
     textStyle: TextStyle = TextStyle.Default,
     innerPadding: PaddingValues = PaddingValues(0.dp),
     focusRequester: FocusRequester,
@@ -436,8 +436,8 @@ fun TeachersSearchField(
 
 @Composable
 fun BasicSearchField(
-    searchTextState: MutableState<String>,
     modifier: Modifier = Modifier,
+    searchTextState: MutableState<String>,
     innerPadding: PaddingValues = PaddingValues(0.dp),
     maxWidth: Dp? = null,
     textStyle: TextStyle = TextStyle.Default,
