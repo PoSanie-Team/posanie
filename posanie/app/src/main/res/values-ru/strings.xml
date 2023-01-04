@@ -38,7 +38,7 @@
     // Scheduler
     <string name="odd_week">нечетная</string>
     <string name="even_week">четная</string>
-    <string name="no_schedule_selected">Пожалуйста сначала выберите группу или учителя.</string>
+    <string name="no_schedule_selected">Пожалуйста сначала выберите группу или преподавателя.</string>
     <string name="no_lessons_today">Сегодня занятий нет.</string>
 
     <string name="monday_short_name">ПН</string>
@@ -70,5 +70,5 @@
     <string name="cancel">Отмена</string>
     <string name="deleteItemDescription">Вы увеерены что хотите убрать %1$s из локальных %2$s?</string>
     <string name="groupItemsDescription">групп</string>
-    <string name="teacherItemsDescription">учителей</string>
+    <string name="teacherItemsDescription">преподавателей</string>
 </resources>

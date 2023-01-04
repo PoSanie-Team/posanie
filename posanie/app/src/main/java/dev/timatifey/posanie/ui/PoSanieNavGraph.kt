@@ -6,6 +6,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.painterResource
 
 import androidx.hilt.navigation.compose.hiltViewModel
+import androidx.lifecycle.ViewModel
 import androidx.navigation.*
 
 import androidx.navigation.NavDestination.Companion.hierarchy
@@ -29,6 +30,7 @@ fun PoSanieNavGraph(
     createPopup: (MutableState<Boolean>, @Composable () -> Unit) -> Unit,
     navController: NavHostController = rememberNavController()
 ) {
+    val pickerViewModel = hiltViewModel<PickerViewModel>()
     NavHost(
         navController = navController,
         startDestination = BottomNavItems.Scheduler.route,
@@ -43,8 +45,9 @@ fun PoSanieNavGraph(
         }
         pickerNavGraph(
             navController = navController,
-            createPopup = createPopup,
-            route = BottomNavItems.Picker.route
+            pickerViewModel = pickerViewModel,
+            route = BottomNavItems.Picker.route,
+            createPopup = createPopup
         )
         composable(BottomNavItems.Settings.route) {
             SettingsRoute()
@@ -54,35 +57,37 @@ fun PoSanieNavGraph(
 
 fun NavGraphBuilder.pickerNavGraph(
     navController: NavHostController,
+    pickerViewModel: PickerViewModel,
+    route: String = BottomNavItems.Picker.route,
     createPopup: (MutableState<Boolean>, @Composable () -> Unit) -> Unit,
-    route: String = BottomNavItems.Picker.route
 ) {
     navigation(
         startDestination = PickerNavItems.Local.route,
         route = route
     ) {
         composable(PickerNavItems.Local.route) {
-            val viewModel = hiltViewModel<PickerViewModel>()
             LaunchedEffect(true) {
-                viewModel.getLocalGroups()
-                viewModel.getLocalTeachers()
+                pickerViewModel.getLocalGroups()
+                pickerViewModel.getLocalTeachers()
             }
             LocalRoute(
-                viewModel = viewModel,
+                viewModel = pickerViewModel,
                 createPopup = createPopup,
                 navController = navController,
             )
         }
         remoteNavGraph(
-            route = PickerNavItems.Remote.route,
-            navController = navController
+            navController = navController,
+            pickerViewModel = pickerViewModel,
+            route = PickerNavItems.Remote.route
         )
     }
 }
 
 fun NavGraphBuilder.remoteNavGraph(
     navController: NavHostController,
-    route: String = PickerNavItems.Remote.route,
+    pickerViewModel: PickerViewModel,
+    route: String = PickerNavItems.Remote.route
 ) {
     navigation(
         startDestination = RemoteNavItems.ScheduleTypes.route,
@@ -92,14 +97,13 @@ fun NavGraphBuilder.remoteNavGraph(
             ScheduleTypesRoute(navController = navController)
         }
         composable(RemoteNavItems.Teachers.route) {
-            val teachersViewModel = hiltViewModel<PickerViewModel>()
             val searchState = remember { mutableStateOf(SearchState.NOT_STARTED) }
             LaunchedEffect(true) {
-                teachersViewModel.fetchTeachersBy("")
+                pickerViewModel.fetchTeachersBy("")
             }
             TeachersRoute(
                 navController = navController,
-                viewModel = teachersViewModel,
+                viewModel = pickerViewModel,
                 searchState = searchState
             )
         }
@@ -125,17 +129,15 @@ fun NavGraphBuilder.remoteNavGraph(
             val facultiesViewModel = hiltViewModel<FacultiesViewModel>()
             val facultyName = facultiesViewModel.getFaculty(facultyId)?.title ?: ""
 
-            val viewModel = hiltViewModel<PickerViewModel>()
-
             LaunchedEffect(facultyId, kindId, typeId) {
-                viewModel.selectFilters(kind = Kind.kindBy(kindId), type = Type.typeBy(typeId))
-                viewModel.fetchGroupsBy(facultyId)
+                pickerViewModel.selectFilters(kind = Kind.kindBy(kindId), type = Type.typeBy(typeId))
+                pickerViewModel.fetchGroupsBy(facultyId)
             }
 
             val searchState = remember { mutableStateOf(SearchState.NOT_STARTED) }
             RemoteGroupsRoute(
                 searchState = searchState,
-                groupsViewModel = viewModel,
+                groupsViewModel = pickerViewModel,
                 navController = navController,
                 facultyId = facultyId,
                 facultyName = facultyName,

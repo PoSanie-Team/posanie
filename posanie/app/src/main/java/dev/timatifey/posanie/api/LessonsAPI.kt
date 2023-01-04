@@ -22,7 +22,7 @@ class LessonsAPI(private val dispatcher: CoroutineDispatcher)  {
         val doc = Jsoup.connect(url).ignoreContentType(true).get()
         var json = doc.select("body").html()
         json = json.substring(json.indexOf("{"))
-        return@withContext JSONObject(json).getJSONObject("week").getBoolean("isOdd")
+        return@withContext JSONObject(json).getJSONObject("week").getBoolean("is_odd")
     }
 
     suspend fun getLessonsByGroupId(groupId: Long, date: String) = withContext(dispatcher) {

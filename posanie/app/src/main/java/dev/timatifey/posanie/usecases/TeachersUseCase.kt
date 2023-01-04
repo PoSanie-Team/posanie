@@ -59,11 +59,11 @@ class TeachersUseCaseImpl @Inject constructor(
     override suspend fun saveAndPickTeacher(teacher: Teacher): Result<Boolean> =
         withContext(Dispatchers.IO) {
             try {
-                val newGroups = teachersDao.getPickedTeachers()
+                val newTeachers = teachersDao.getPickedTeachers()
                     .map { it.copy(isPicked = false) }
                     .toMutableList()
-                newGroups.add(teacherMapper.domainToCache(teacher.copy(isPicked = true)))
-                teachersDao.upsertTeachers(newGroups)
+                newTeachers.add(teacherMapper.domainToCache(teacher.copy(isPicked = true)))
+                teachersDao.upsertTeachers(newTeachers)
                 return@withContext Result.Success(true)
             } catch (e: Exception) {
                 return@withContext Result.Error(e)
