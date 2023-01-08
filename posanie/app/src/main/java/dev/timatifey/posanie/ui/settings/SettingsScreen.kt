@@ -14,6 +14,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import dev.timatifey.posanie.R
+import dev.timatifey.posanie.model.data.AppTheme
 import dev.timatifey.posanie.model.data.Language
 
 @Composable
@@ -29,8 +30,8 @@ fun SettingsScreen(
             .padding(horizontal = 8.dp)
     ) {
         ThemeSettings(
-            checked = uiState.darkTheme,
-            setDarkTheme = { settingsViewModel.saveAndPickTheme(it) }
+            selectedTheme = uiState.theme,
+            onThemeClick = { settingsViewModel.saveAndPickTheme(it) }
         )
         LanguageSettings(
             selectedLanguage = uiState.language,
@@ -44,31 +45,41 @@ fun SettingsScreen(
 
 @Composable
 fun ThemeSettings(
-    checked: Boolean,
-    setDarkTheme: (Boolean) -> Unit
+    selectedTheme: AppTheme,
+    onThemeClick: (AppTheme) -> Unit
 ) {
-    Text(
-        text = stringResource(R.string.theme),
-        style = MaterialTheme.typography.titleLarge,
-        modifier = Modifier.padding(horizontal = 4.dp, vertical = 8.dp)
-    )
-    SettingsSwitchOption(optionName = stringResource(R.string.dark_theme), checked = checked, onCheckChange = setDarkTheme)
+    Column(modifier = Modifier.fillMaxWidth()) {
+        Text(
+            text = stringResource(R.string.theme),
+            style = MaterialTheme.typography.titleLarge,
+            modifier = Modifier.padding(horizontal = 4.dp, vertical = 8.dp)
+        )
+        for (theme in AppTheme.values()) {
+            ThemeOption(
+                theme = theme,
+                selected = selectedTheme == theme,
+                onClick = { onThemeClick(theme) }
+            )
+        }
+    }
 }
 
 @Composable
-fun SettingsSwitchOption(
+fun ThemeOption(
     modifier: Modifier = Modifier.padding(horizontal = 4.dp, vertical = 2.dp),
-    optionName: String,
-    checked: Boolean = false,
-    onCheckChange: (Boolean) -> Unit
+    theme: AppTheme,
+    selected: Boolean,
+    onClick: () -> Unit
 ) {
-    SettingsOption(modifier = modifier, optionName = optionName) {
-        Switch(
-            checked = checked,
-            onCheckedChange = {
-                onCheckChange(!checked)
-            })
-    }
+    SettingsOption(
+        modifier = modifier,
+        optionDescription = {
+            Text(text = stringResource(theme.nameId))
+        },
+        selector = {
+            RadioButton(selected = selected, onClick = onClick)
+        }
+    )
 }
 
 @Composable
@@ -76,21 +87,20 @@ fun LanguageSettings(
     selectedLanguage: Language,
     onLanguageClick: (Language) -> Unit
 ) {
-    Text(
-        text = stringResource(R.string.language),
-        style = MaterialTheme.typography.titleLarge,
-        modifier = Modifier.padding(horizontal = 4.dp, vertical = 8.dp)
-    )
-    LanguageOption(
-        language = Language.ENGLISH,
-        selected = selectedLanguage == Language.ENGLISH,
-        onClick = { onLanguageClick(Language.ENGLISH) }
-    )
-    LanguageOption(
-        language = Language.RUSSIAN,
-        selected = selectedLanguage == Language.RUSSIAN,
-        onClick = { onLanguageClick(Language.RUSSIAN) }
-    )
+    Column(modifier = Modifier.fillMaxWidth()) {
+        Text(
+            text = stringResource(R.string.language),
+            style = MaterialTheme.typography.titleLarge,
+            modifier = Modifier.padding(horizontal = 4.dp, vertical = 8.dp)
+        )
+        for (language in Language.values()) {
+            LanguageOption(
+                language = language,
+                selected = selectedLanguage == language,
+                onClick = { onLanguageClick(language) }
+            )
+        }
+    }
 }
 
 @Composable
@@ -114,6 +124,7 @@ fun LanguageOption(
     )
 }
 
+
 @Composable
 fun SettingsOption(
     modifier: Modifier = Modifier,
@@ -125,6 +136,22 @@ fun SettingsOption(
         optionDescription = { Text(text = optionName) },
         selector = selector
     )
+}
+
+@Composable
+fun SettingsSwitchOption(
+    modifier: Modifier = Modifier.padding(horizontal = 4.dp, vertical = 2.dp),
+    optionName: String,
+    checked: Boolean = false,
+    onCheckChange: (Boolean) -> Unit
+) {
+    SettingsOption(modifier = modifier, optionName = optionName) {
+        Switch(
+            checked = checked,
+            onCheckedChange = {
+                onCheckChange(!checked)
+            })
+    }
 }
 
 @Composable

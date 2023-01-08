@@ -79,7 +79,7 @@ fun SchedulerScreen(
                 )
             } else {
                 Box(modifier = Modifier.padding(paddingValues)) {
-                    MessageText(text = "Please choose group or teacher first.")
+                    MessageText(text = stringResource(R.string.no_schedule_selected))
                 }
             }
         }

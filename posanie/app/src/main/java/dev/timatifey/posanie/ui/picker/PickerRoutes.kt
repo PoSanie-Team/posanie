@@ -7,20 +7,17 @@ import com.google.accompanist.swiperefresh.SwipeRefreshState
 import com.google.accompanist.swiperefresh.rememberSwipeRefreshState
 import dev.timatifey.posanie.model.domain.Faculty
 import dev.timatifey.posanie.ui.*
+import dev.timatifey.posanie.utils.ClickListener
 
 @Composable
 fun LocalRoute(
     viewModel: PickerViewModel,
+    createPopup: (MutableState<Boolean>, @Composable () -> Unit) -> Unit,
     navController: NavHostController
 ) {
     LocalScreen(
         viewModel = viewModel,
-        onGroupClick = { group ->
-            viewModel.pickGroup(group)
-        },
-        onTeacherClick = { teacher ->
-            viewModel.pickTeacher(teacher)
-        },
+        createPopup = createPopup,
         onRefresh = {
             viewModel.getLocalGroups()
             viewModel.getLocalTeachers()

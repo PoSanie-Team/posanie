@@ -1,6 +1,5 @@
 package dev.timatifey.posanie.usecases
 
-import android.content.res.Resources.NotFoundException
 import dev.timatifey.posanie.api.GroupsAPI
 import dev.timatifey.posanie.cache.GroupsDao
 import dev.timatifey.posanie.model.Result
@@ -19,6 +18,7 @@ interface GroupsUseCase {
     suspend fun fetchGroupsBy(facultyId: Long): Result<Map<Int, GroupsLevel>>
     suspend fun saveAndPickGroup(group: Group): Result<Boolean>
     suspend fun pickGroup(group: Group?): Result<Boolean>
+    suspend fun deleteGroup(group: Group): Result<Boolean>
 }
 
 class GroupsUseCaseImpl @Inject constructor(
@@ -86,6 +86,16 @@ class GroupsUseCaseImpl @Inject constructor(
                     .map { it.copy(isPicked = it.id == group?.id) }
                     .toMutableList()
                 groupsDao.upsertGroups(newGroups)
+                return@withContext Result.Success(true)
+            } catch (e: Exception) {
+                return@withContext Result.Error(e)
+            }
+        }
+
+    override suspend fun deleteGroup(group: Group): Result<Boolean> =
+        withContext(Dispatchers.IO) {
+            try {
+                groupsDao.deleteGroupById(group.id)
                 return@withContext Result.Success(true)
             } catch (e: Exception) {
                 return@withContext Result.Error(e)

@@ -29,6 +29,7 @@ import androidx.compose.ui.semantics.Role
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
+import dev.timatifey.posanie.ui.DialogBar
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.launch
 import java.util.*
@@ -175,9 +176,11 @@ private fun CalendarDialog(
             }
         )
         DialogBar(
-            newSelectedDate = newSelectedDateState.value,
-            selectDate = selectDate,
-            close = close
+            onConfirm = {
+                selectDate(newSelectedDateState.value)
+                close()
+            },
+            onCancel = close
         )
     }
 }
@@ -197,43 +200,6 @@ private fun selectDay(
     val sameDay = newDate.get(Calendar.DAY_OF_MONTH) == newSelectedDate.get(Calendar.DAY_OF_MONTH)
     val sameDate = sameYear && sameMonth && sameDay
     newSelectedDateState.value = if (sameDate) oldSelectedDate else newDate
-}
-
-@Composable
-fun DialogBar(
-    newSelectedDate: Calendar,
-    selectDate: (Calendar) -> Unit,
-    close: () -> Unit
-) {
-    Row(
-        modifier = Modifier
-            .fillMaxSize()
-            .padding(8.dp),
-        verticalAlignment = Alignment.Bottom,
-        horizontalArrangement = Arrangement.SpaceEvenly
-    ) {
-        DialogButton(text = "Cancel", onClick = close)
-        DialogButton(text = "Ok", onClick = {
-            selectDate(newSelectedDate)
-            close()
-        })
-    }
-}
-
-@Composable
-private fun DialogButton(
-    modifier: Modifier = Modifier.padding(horizontal = 8.dp, vertical = 4.dp),
-    text: String,
-    onClick: () -> Unit
-) {
-    Box(
-        modifier = Modifier
-            .clip(CircleShape)
-            .clickable { onClick() }
-            .then(modifier)
-    ) {
-        Text(text = text, textAlign = TextAlign.Center)
-    }
 }
 
 @Composable
@@ -318,6 +284,15 @@ private fun MonthList(
     Box(
         modifier = modifier
     ) {
+        val todayDate = Calendar.getInstance()
+        val weekBarTextColor = MaterialTheme.colorScheme.onBackground.copy(alpha = 0.5f)
+        val dayBackgroundModifier = Modifier
+            .aspectRatio(1f)
+            .background(
+                color = Color.Transparent,
+                shape = CircleShape
+            )
+            .clip(CircleShape)
         LazyRow(modifier = modifier, state = monthListState, userScrollEnabled = false) {
             items(Int.MAX_VALUE) { i ->
                 val itemMonthIndex = i % 12
@@ -345,10 +320,13 @@ private fun MonthList(
 
                 MonthItem(
                     modifier = modifier.padding(horizontal = 16.dp, vertical = 0.dp),
+                    dayModifier = dayBackgroundModifier,
+                    todayDate = todayDate,
                     year = itemYear,
                     month = itemMonth,
                     selectedDayOld = selectedDayOld,
                     selectedDayNew = selectedDayNew,
+                    weekBarTextColor = weekBarTextColor,
                     onDayClick = onDayClick
                 )
             }
@@ -377,17 +355,22 @@ private fun calculateItemYear(visibleData: CalendarVisibleData, itemMonth: Int):
 @Composable
 private fun MonthItem(
     modifier: Modifier = Modifier.fillMaxWidth(),
+    dayModifier: Modifier,
+    todayDate: Calendar,
     year: Int,
     month: Month,
     selectedDayOld: Int?,
     selectedDayNew: Int?,
+    weekBarTextColor: Color,
     onDayClick: (Int) -> Unit
 ) {
     val daysInMonth = Month.getDaysCount(year, month)
     Column {
-        CalendarWeekBar(modifier = modifier)
+        CalendarWeekBar(modifier = modifier, textColor = weekBarTextColor)
         CalendarDays(
             modifier = modifier,
+            dayModifier = dayModifier,
+            todayDate = todayDate,
             year = year,
             month = month,
             daysInMonth = daysInMonth,
@@ -400,7 +383,8 @@ private fun MonthItem(
 
 @Composable
 private fun CalendarWeekBar(
-    modifier: Modifier
+    modifier: Modifier,
+    textColor: Color
 ) {
     LazyVerticalGrid(
         modifier = Modifier
@@ -410,7 +394,7 @@ private fun CalendarWeekBar(
         userScrollEnabled = false
     ) {
         items(7) { i ->
-            WeekDayTab(weekDay = WeekDay.getDayByOrdinal(weekdayOrdinalToCalendarFormat(i)))
+            WeekDayTab(weekDay = WeekDay.getDayByOrdinal(weekdayOrdinalToCalendarFormat(i)), textColor = textColor)
         }
     }
 }
@@ -418,6 +402,8 @@ private fun CalendarWeekBar(
 @Composable
 private fun CalendarDays(
     modifier: Modifier,
+    dayModifier: Modifier,
+    todayDate: Calendar,
     year: Int,
     month: Month,
     daysInMonth: Int,
@@ -425,35 +411,40 @@ private fun CalendarDays(
     selectedDayNew: Int?,
     onDayClick: (Int) -> Unit
 ) {
-    LazyVerticalGrid(
-        modifier = modifier,
-        columns = GridCells.Fixed(7),
-        userScrollEnabled = false
-    ) {
-        val firstDayDate = Calendar.getInstance()
-        firstDayDate.set(year, month.ordinal, 1)
-        val emptyDaysCount = weekdayOrdinalFromCalendarFormat(firstDayDate.get(Calendar.DAY_OF_WEEK))
-        items(daysInMonth + emptyDaysCount) { i ->
-            if (i < emptyDaysCount) {
-                EmptyCalendarDay()
-            } else {
-                val day = dayToHumanFormat(i - emptyDaysCount)
-                val date = Calendar.getInstance()
-                date.set(year, month.ordinal, day)
-                CalendarDay(
-                    day = day,
-                    isSunday = date.get(Calendar.DAY_OF_WEEK) == Calendar.SUNDAY,
-                    selectedOld = day == selectedDayOld,
-                    selectedNew = day == selectedDayNew,
-                    onClick = onDayClick
-                )
+    todayDate.set(year, month.ordinal, 1)
+    val firstWeekDayOfMonth = todayDate.get(Calendar.DAY_OF_WEEK)
+    val emptyDaysCount = weekdayOrdinalFromCalendarFormat(firstWeekDayOfMonth)
+
+    Column(modifier = modifier) {
+        var i = 0
+        for (row in 0..5) {
+            Row(modifier = Modifier.fillMaxWidth()) {
+                for (column in 0..6) {
+                    if (i < emptyDaysCount || i >= daysInMonth + emptyDaysCount) {
+                        EmptyCalendarDay(modifier = Modifier.weight(1f))
+                    } else {
+                        val day = dayToHumanFormat(i - emptyDaysCount)
+                        val isSunday = i % 7 == 6
+                        val clickableModifier =
+                            if (isSunday) dayModifier
+                            else dayModifier.clickable { onDayClick(day) }
+                        CalendarDay(
+                            modifier = clickableModifier.weight(1f),
+                            day = day,
+                            isSunday = isSunday,
+                            selectedOld = day == selectedDayOld,
+                            selectedNew = day == selectedDayNew,
+                        )
+                    }
+                    i++
+                }
             }
         }
     }
 }
 
 @Composable
-private fun WeekDayTab(weekDay: WeekDay, modifier: Modifier = Modifier) {
+private fun WeekDayTab(modifier: Modifier = Modifier, weekDay: WeekDay, textColor: Color) {
     Surface(
         modifier = modifier,
         shape = RoundedCornerShape(4.dp),
@@ -463,7 +454,6 @@ private fun WeekDayTab(weekDay: WeekDay, modifier: Modifier = Modifier) {
                 .padding(4.dp),
             contentAlignment = Alignment.Center
         ) {
-            val textColor = MaterialTheme.colorScheme.onBackground.copy(alpha = 0.5f)
             Text(text = stringResource(weekDay.shortNameId), color = textColor)
         }
     }
@@ -471,24 +461,14 @@ private fun WeekDayTab(weekDay: WeekDay, modifier: Modifier = Modifier) {
 
 @Composable
 private fun CalendarDay(
+    modifier: Modifier = Modifier,
     day: Int,
     isSunday: Boolean,
     selectedOld: Boolean,
-    selectedNew: Boolean,
-    onClick: (Int) -> Unit
+    selectedNew: Boolean
 ) {
-    val backgroundModifier = Modifier
-        .aspectRatio(1f)
-        .background(
-            color = dayColor(selectedOld = selectedOld, selectedNew = selectedNew),
-            shape = CircleShape
-        )
-    val clickableModifier =
-        if (isSunday) backgroundModifier else backgroundModifier
-            .clip(CircleShape)
-            .clickable { onClick(day) }
     Box(
-        modifier = clickableModifier,
+        modifier = modifier.background(dayColor(selectedOld = selectedOld, selectedNew = selectedNew)),
         contentAlignment = Alignment.Center
     ) {
         Text(
@@ -500,9 +480,9 @@ private fun CalendarDay(
 }
 
 @Composable
-private fun EmptyCalendarDay() {
+private fun EmptyCalendarDay(modifier: Modifier = Modifier) {
     Box(
-        modifier = Modifier.aspectRatio(1f),
+        modifier = modifier,
         contentAlignment = Alignment.Center
     ) {
     }

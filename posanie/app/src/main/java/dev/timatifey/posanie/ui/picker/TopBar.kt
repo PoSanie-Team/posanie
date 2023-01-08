@@ -32,6 +32,7 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.text.input.KeyboardType
+import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.Constraints
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
@@ -107,7 +108,12 @@ fun DefaultGroupsTopBar(
 ) {
     SmallTopAppBar(
         title = {
-            Text(text = facultyName, style = MaterialTheme.typography.titleMedium)
+            Text(
+                text = facultyName,
+                style = MaterialTheme.typography.titleMedium,
+                maxLines = 2,
+                overflow = TextOverflow.Ellipsis
+            )
         },
         navigationIcon = {
             IconButton(onClick = { navController.popBackStack() }) {
@@ -223,10 +229,10 @@ fun SearchGroupsTopBar(
 
 @Composable
 fun GroupsSearchField(
+    modifier: Modifier = Modifier,
     groupPrefix: String,
     courseTextState: MutableState<String>,
     groupTextState: MutableState<String>,
-    modifier: Modifier = Modifier,
     textStyle: TextStyle = TextStyle.Default,
     inProgress: Boolean,
     onSelected: () -> Unit,
@@ -296,8 +302,8 @@ fun GroupsSearchField(
 
 @Composable
 fun GroupPartTextField(
-    state: MutableState<String>,
     modifier: Modifier = Modifier,
+    state: MutableState<String>,
     maxLength: Int,
     textStyle: TextStyle = TextStyle.Default,
     innerPadding: PaddingValues = PaddingValues(0.dp),
@@ -414,8 +420,8 @@ fun TeachersTopBar(
 
 @Composable
 fun TeachersSearchField(
-    searchTextState: MutableState<String>,
     modifier: Modifier = Modifier,
+    searchTextState: MutableState<String>,
     textStyle: TextStyle = TextStyle.Default,
     innerPadding: PaddingValues = PaddingValues(0.dp),
     focusRequester: FocusRequester,
@@ -436,8 +442,8 @@ fun TeachersSearchField(
 
 @Composable
 fun BasicSearchField(
-    searchTextState: MutableState<String>,
     modifier: Modifier = Modifier,
+    searchTextState: MutableState<String>,
     innerPadding: PaddingValues = PaddingValues(0.dp),
     maxWidth: Dp? = null,
     textStyle: TextStyle = TextStyle.Default,
@@ -474,7 +480,7 @@ fun BasicSearchField(
     BasicTextField(
         modifier = finalModifier,
         value = searchTextState.value,
-        textStyle = textStyle,
+        textStyle = textStyle.copy(color = MaterialTheme.colorScheme.onSecondaryContainer),
         keyboardOptions = keyboardOptions,
         singleLine = true,
         keyboardActions = KeyboardActions(

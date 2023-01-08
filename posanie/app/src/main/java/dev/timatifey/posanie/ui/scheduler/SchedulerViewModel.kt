@@ -323,7 +323,7 @@ class SchedulerViewModel @Inject constructor(
                 isOddResult = lessonsUseCase.fetchWeekOddnessByGroupId(group.id, mondayDateString)
             } else if (teacher != null) {
                 lessonsResult = lessonsUseCase.fetchLessonsByTeacherId(teacher.id, mondayDateString)
-                isOddResult = lessonsUseCase.fetchWeekOddnessByGroupId(teacher.id, mondayDateString)
+                isOddResult = lessonsUseCase.fetchWeekOddnessByTeacherId(teacher.id, mondayDateString)
             } else {
                 viewModelState.update { it.copy(isLoading = false, hasSchedule = false) }
                 return@launch
