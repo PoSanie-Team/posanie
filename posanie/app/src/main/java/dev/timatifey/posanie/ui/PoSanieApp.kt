@@ -4,6 +4,8 @@ import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import android.content.Context
 import androidx.activity.viewModels
+import androidx.compose.animation.*
+import androidx.compose.foundation.isSystemInDarkTheme
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
@@ -20,6 +22,7 @@ import androidx.compose.ui.window.Popup
 import androidx.compose.ui.platform.LocalConfiguration
 import androidx.compose.ui.platform.LocalContext
 import androidx.navigation.compose.rememberNavController
+import dev.timatifey.posanie.model.data.AppTheme
 import dev.timatifey.posanie.model.data.Language
 import dev.timatifey.posanie.ui.settings.SettingsViewModel
 import dev.timatifey.posanie.ui.theme.PoSanieTheme
@@ -35,9 +38,15 @@ fun PoSanieApp(activity: MainActivity) {
         settingsViewModel.getTheme()
         settingsViewModel.getLanguage()
     }
-    
+
+    val darkTheme =
+        when (uiState.theme) {
+            AppTheme.DARK -> true
+            AppTheme.LIGHT -> false
+            else -> isSystemInDarkTheme()
+        }
     PoSanieTheme(
-        darkTheme = uiState.darkTheme
+        darkTheme = darkTheme
     ) {
         val navController = rememberNavController()
         val bottomNavItems = listOf(
@@ -86,18 +95,24 @@ fun AppPopup(
     onDismiss: () -> Unit,
     content: @Composable () -> Unit
 ) {
-    if (!isVisible) return
-
-    val shadowColor = Color.Black.copy(alpha = 0.4f)
-    Box(modifier = Modifier
-        .fillMaxSize()
-        .background(shadowColor)
-        .clickable {  }
-    )
+    if (isVisible) {
+        val shadowColor = Color.Black.copy(alpha = 0.4f)
+        Box(modifier = Modifier
+            .fillMaxSize()
+            .background(shadowColor)
+            .clickable {  }
+        )
+    }
     Popup(
         alignment = Alignment.Center,
         onDismissRequest = onDismiss
     ) {
-        content()
+        AnimatedVisibility(
+            visible = isVisible,
+            enter = fadeIn(),
+            exit = fadeOut()
+        ) {
+            content()
+        }
     }
 }

@@ -3,6 +3,7 @@ package dev.timatifey.posanie.ui.settings
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import dagger.hilt.android.lifecycle.HiltViewModel
+import dev.timatifey.posanie.model.data.AppTheme
 import dev.timatifey.posanie.model.data.Language
 import dev.timatifey.posanie.model.domain.Group
 import dev.timatifey.posanie.model.successOr
@@ -13,20 +14,20 @@ import kotlinx.coroutines.launch
 import javax.inject.Inject
 
 class SettingsUiState (
-    val darkTheme: Boolean,
+    val theme: AppTheme,
     val language: Language,
     val isLoading: Boolean,
     val errorMessages: List<ErrorMessage>
 )
 
 private data class SettingsViewModelState(
-    val darkTheme: Boolean,
+    val theme: AppTheme,
     val language: Language,
     val isLoading: Boolean = false,
     val errorMessages: List<ErrorMessage> = emptyList(),
 ) {
     fun toUiState(): SettingsUiState = SettingsUiState(
-        darkTheme = darkTheme,
+        theme = theme,
         language = language,
         isLoading = isLoading,
         errorMessages = errorMessages
@@ -40,7 +41,7 @@ class SettingsViewModel @Inject constructor(
 
     private val viewModelState = MutableStateFlow(
         SettingsViewModelState(
-            darkTheme = false,
+            theme = AppTheme.SYSTEM,
             language = Language.ENGLISH,
             isLoading = false
         )
@@ -54,9 +55,9 @@ class SettingsViewModel @Inject constructor(
             viewModelState.value.toUiState()
         )
 
-    fun saveAndPickTheme(isDark: Boolean) {
+    fun saveAndPickTheme(theme: AppTheme) {
         viewModelScope.launch {
-            settingsUseCase.saveAndPickTheme(isDark)
+            settingsUseCase.saveAndPickTheme(theme)
             getTheme()
         }
     }
@@ -68,7 +69,7 @@ class SettingsViewModel @Inject constructor(
             val result = settingsUseCase.getTheme()
             viewModelState.update { state ->
                 return@update state.copy(
-                    darkTheme = result.successOr(false),
+                    theme = result.successOr(AppTheme.SYSTEM),
                     isLoading = false,
                 )
             }

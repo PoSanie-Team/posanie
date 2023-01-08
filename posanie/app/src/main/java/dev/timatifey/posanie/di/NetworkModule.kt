@@ -30,12 +30,6 @@ object NetworkModule {
 
     @Singleton
     @Provides
-    fun provideSchedulerAPI(retrofit: Retrofit): SchedulerAPI {
-        return retrofit.create(SchedulerAPI::class.java)
-    }
-
-    @Singleton
-    @Provides
     fun provideGroupsAPI(): GroupsAPI {
         return GroupsAPI(Dispatchers.IO)
     }

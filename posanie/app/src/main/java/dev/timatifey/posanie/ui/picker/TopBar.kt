@@ -32,6 +32,7 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.text.input.KeyboardType
+import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.Constraints
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
@@ -107,7 +108,12 @@ fun DefaultGroupsTopBar(
 ) {
     SmallTopAppBar(
         title = {
-            Text(text = facultyName, style = MaterialTheme.typography.titleMedium)
+            Text(
+                text = facultyName,
+                style = MaterialTheme.typography.titleMedium,
+                maxLines = 2,
+                overflow = TextOverflow.Ellipsis
+            )
         },
         navigationIcon = {
             IconButton(onClick = { navController.popBackStack() }) {
@@ -474,7 +480,7 @@ fun BasicSearchField(
     BasicTextField(
         modifier = finalModifier,
         value = searchTextState.value,
-        textStyle = textStyle,
+        textStyle = textStyle.copy(color = MaterialTheme.colorScheme.onSecondaryContainer),
         keyboardOptions = keyboardOptions,
         singleLine = true,
         keyboardActions = KeyboardActions(

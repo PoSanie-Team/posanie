@@ -57,14 +57,12 @@ fun LocalScreen(
     )
 
     SwipeRefresh(state = swipeRefreshState, onRefresh = onRefresh) {
-        if (!swipeRefreshState.isRefreshing) {
-            localGroupsAndTeachers(
-                levelsToGroups = levelsToGroups,
-                groupClickListener = groupClickListener,
-                teachers = teachers,
-                teacherClickListener = teacherClickListener
-            )
-        }
+        localGroupsAndTeachers(
+            levelsToGroups = levelsToGroups,
+            groupClickListener = groupClickListener,
+            teachers = teachers,
+            teacherClickListener = teacherClickListener
+        )
         addItemFAB(goToRemote = goToRemote)
     }
 
@@ -259,6 +257,7 @@ fun LocalTeachersListPreview() {
             Teacher(name = "Абоба Николай Викторович"),
             Teacher(name = "Трансплантант Зеро Гелиевич"),
             Teacher(name = "Сус Амог Усович"),
+            Teacher(name = "Очень очень очень очень очень очень очень очень очень Длинное Имя")
         ),
         modifier = Modifier,
         clickListener = ClickListener()

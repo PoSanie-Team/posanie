@@ -4,12 +4,13 @@ import android.content.Context
 import dagger.hilt.android.qualifiers.ApplicationContext
 import dev.timatifey.posanie.R
 import dev.timatifey.posanie.model.Result
+import dev.timatifey.posanie.model.data.AppTheme
 import dev.timatifey.posanie.model.data.Language
 import javax.inject.Inject
 
 interface SettingsUseCase {
-    suspend fun saveAndPickTheme(isDark: Boolean): Result<Boolean>
-    suspend fun getTheme(): Result<Boolean>
+    suspend fun saveAndPickTheme(theme: AppTheme): Result<Boolean>
+    suspend fun getTheme(): Result<AppTheme>
     suspend fun saveAndPickLanguage(language: Language): Result<Boolean>
     suspend fun getLanguage(): Result<Language>
 }
@@ -18,21 +19,22 @@ class SettingsUseCaseImpl @Inject constructor(
     @ApplicationContext val context: Context
 ) : SettingsUseCase {
 
-    override suspend fun saveAndPickTheme(isDark: Boolean): Result<Boolean> {
+    override suspend fun saveAndPickTheme(theme: AppTheme): Result<Boolean> {
         val sharedPref = context.getSharedPreferences(
             context.getString(R.string.preference_file_key),
             Context.MODE_PRIVATE
         )
-        sharedPref.edit().putBoolean(context.getString(R.string.preference_dark_theme), isDark).apply()
+        sharedPref.edit().putInt(context.getString(R.string.preference_theme), theme.id).apply()
         return Result.Success(true)
     }
 
-    override suspend fun getTheme(): Result<Boolean> {
+    override suspend fun getTheme(): Result<AppTheme> {
         val sharedPref = context.getSharedPreferences(
             context.getString(R.string.preference_file_key),
             Context.MODE_PRIVATE
         )
-        return Result.Success(sharedPref.getBoolean(context.getString(R.string.preference_dark_theme), false))
+        val themeId = sharedPref.getInt(context.getString(R.string.preference_theme), 0)
+        return Result.Success(AppTheme.getById(themeId))
     }
 
     override suspend fun saveAndPickLanguage(language: Language): Result<Boolean> {
