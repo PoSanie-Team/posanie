@@ -14,8 +14,8 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import dev.timatifey.posanie.R
-import dev.timatifey.posanie.model.data.AppTheme
-import dev.timatifey.posanie.model.data.Language
+import dev.timatifey.posanie.model.domain.AppTheme
+import dev.timatifey.posanie.model.domain.Language
 
 @Composable
 fun SettingsScreen(

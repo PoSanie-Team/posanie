@@ -3,8 +3,8 @@ package dev.timatifey.posanie.ui
 import androidx.annotation.DrawableRes
 import androidx.annotation.StringRes
 import dev.timatifey.posanie.R
-import dev.timatifey.posanie.model.data.Kind
-import dev.timatifey.posanie.model.data.Type
+import dev.timatifey.posanie.model.domain.Kind
+import dev.timatifey.posanie.model.domain.Type
 
 sealed class BottomNavItems(
     val route: String,

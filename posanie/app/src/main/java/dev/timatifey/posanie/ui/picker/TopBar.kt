@@ -38,7 +38,7 @@ import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import androidx.navigation.NavHostController
 import dev.timatifey.posanie.R
-import dev.timatifey.posanie.model.data.Type
+import dev.timatifey.posanie.model.domain.Type
 import dev.timatifey.posanie.ui.RemoteNavItems
 
 enum class SearchState {
@@ -51,7 +51,7 @@ const val GROUP_NAME_LENGTH = 5
 @Composable
 fun GroupsTopBar(
     navController: NavHostController,
-    groupsViewModel: PickerViewModel,
+    remoteGroupsViewModel: RemoteGroupsViewModel,
     facultyId: Long,
     facultyName: String,
     kindId: Long,
@@ -72,7 +72,7 @@ fun GroupsTopBar(
             else -> {
                 SearchGroupsTopBar(
                     navController = navController,
-                    groupsViewModel = groupsViewModel,
+                    remoteGroupsViewModel = remoteGroupsViewModel,
                     facultyId = facultyId,
                     kindId = kindId,
                     typeId = typeId,
@@ -137,7 +137,7 @@ fun DefaultGroupsTopBar(
 @Composable
 fun SearchGroupsTopBar(
     navController: NavHostController,
-    groupsViewModel: PickerViewModel,
+    remoteGroupsViewModel: RemoteGroupsViewModel,
     facultyId: Long,
     kindId: Long,
     typeId: String,
@@ -155,7 +155,7 @@ fun SearchGroupsTopBar(
             searchState.value = SearchState.IN_PROGRESS
         },
         updateSearch = {
-            groupsViewModel.filterGroups()
+            remoteGroupsViewModel.filterGroups()
         },
         submitSearch = {
             searchState.value = SearchState.DONE
@@ -164,7 +164,7 @@ fun SearchGroupsTopBar(
             searchState.value = SearchState.NOT_STARTED
             courseSearchState.value = ""
             groupSearchState.value = ""
-            groupsViewModel.filterGroups()
+            remoteGroupsViewModel.filterGroups()
             navController.navigate(RemoteNavItems.Groups.routeBy(facultyId, kindId)) {
                 launchSingleTop = true
             }

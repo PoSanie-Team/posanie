@@ -3,9 +3,8 @@ package dev.timatifey.posanie.ui.settings
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import dagger.hilt.android.lifecycle.HiltViewModel
-import dev.timatifey.posanie.model.data.AppTheme
-import dev.timatifey.posanie.model.data.Language
-import dev.timatifey.posanie.model.domain.Group
+import dev.timatifey.posanie.model.domain.AppTheme
+import dev.timatifey.posanie.model.domain.Language
 import dev.timatifey.posanie.model.successOr
 import dev.timatifey.posanie.usecases.SettingsUseCase
 import dev.timatifey.posanie.utils.ErrorMessage

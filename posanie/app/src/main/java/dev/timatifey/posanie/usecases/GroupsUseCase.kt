@@ -43,7 +43,8 @@ class GroupsUseCaseImpl @Inject constructor(
     override suspend fun getPickedGroup(): Result<Group> =
         withContext(Dispatchers.IO) {
             groupsDao.getGroups().forEach {
-                if (it.isPicked) {
+                val isPicked = it.isPicked != 0
+                if (isPicked) {
                     return@withContext Result.Success(groupMapper.cacheToDomain(it))
                 }
             }
@@ -69,7 +70,7 @@ class GroupsUseCaseImpl @Inject constructor(
         withContext(Dispatchers.IO) {
             try {
                 val newGroups = groupsDao.getPickedGroups()
-                    .map { it.copy(isPicked = false) }
+                    .map { it.copy(isPicked = 0) }
                     .toMutableList()
                 newGroups.add(groupMapper.domainToCache(group.copy(isPicked = true)))
                 groupsDao.upsertGroups(newGroups)
@@ -83,7 +84,7 @@ class GroupsUseCaseImpl @Inject constructor(
         withContext(Dispatchers.IO) {
             try {
                 val newGroups = groupsDao.getGroups()
-                    .map { it.copy(isPicked = it.id == group?.id) }
+                    .map { it.copy(isPicked = if (it.id == group?.id) 1 else 0) }
                     .toMutableList()
                 groupsDao.upsertGroups(newGroups)
                 return@withContext Result.Success(true)

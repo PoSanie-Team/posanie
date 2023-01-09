@@ -24,7 +24,7 @@
     // Picker
     <string name="faculties">Факультеты</string>
     <string name="no_faculties_error">Не получается получить факультеты с сервера.</string>
-    <string name="no_groups_error">Не получается получить группы с сервера.</string>
+    <string name="no_groups_error">Группы не найдены.</string>
     <string name="level">%1$d курс</string>
     <string name="groups">Группы</string>
     <string name="no_local_groups">У вас нет групп. Пожалуйста добавьте.</string>

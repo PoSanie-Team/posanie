@@ -1,13 +1,14 @@
 package dev.timatifey.posanie.ui.picker
 
 import androidx.compose.runtime.*
-import androidx.navigation.NavController
+import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.navigation.NavHostController
 import com.google.accompanist.swiperefresh.SwipeRefreshState
 import com.google.accompanist.swiperefresh.rememberSwipeRefreshState
+import dev.timatifey.posanie.model.domain.Kind
+import dev.timatifey.posanie.model.domain.Type
 import dev.timatifey.posanie.model.domain.Faculty
 import dev.timatifey.posanie.ui.*
-import dev.timatifey.posanie.utils.ClickListener
 
 @Composable
 fun LocalRoute(
@@ -40,12 +41,19 @@ fun ScheduleTypesRoute(
 @Composable
 fun TeachersRoute(
     navController: NavHostController,
-    viewModel: PickerViewModel,
-    searchState: MutableState<SearchState>
+    pickerViewModel: PickerViewModel
 ) {
+    val remoteTeachersViewModel = hiltViewModel<RemoteTeachersViewModel>()
+    val searchState = remember { mutableStateOf(SearchState.NOT_STARTED) }
+
+    LaunchedEffect(true) {
+        remoteTeachersViewModel.fetchTeachersBy("")
+    }
+
     TeachersScreen(
         navController = navController,
-        viewModel = viewModel,
+        pickerViewModel = pickerViewModel,
+        remoteTeachersViewModel = remoteTeachersViewModel,
         searchState = searchState
     )
 }
@@ -87,17 +95,25 @@ fun FacultiesRoute(
 }
 @Composable
 fun RemoteGroupsRoute(
-    searchState: MutableState<SearchState>,
-    groupsViewModel: PickerViewModel,
     navController: NavHostController,
+    pickerViewModel: PickerViewModel,
     facultyId: Long,
     facultyName: String,
     kindId: Long,
     typeId: String
 ) {
+    val remoteGroupsViewModel = hiltViewModel<RemoteGroupsViewModel>()
+    val searchState = remember { mutableStateOf(SearchState.NOT_STARTED) }
+
+    LaunchedEffect(facultyId, kindId, typeId) {
+        remoteGroupsViewModel.selectFilters(kind = Kind.kindBy(kindId), type = Type.typeBy(typeId))
+        remoteGroupsViewModel.fetchGroupsBy(facultyId)
+    }
+
     RemoteGroupsScreen(
         searchState = searchState,
-        groupsViewModel = groupsViewModel,
+        pickerViewModel = pickerViewModel,
+        remoteGroupsViewModel = remoteGroupsViewModel,
         navController = navController,
         facultyId = facultyId,
         facultyName = facultyName,

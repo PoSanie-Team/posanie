@@ -19,13 +19,13 @@ class GroupMapper : Mapper<GroupData, GroupCache, GroupDomain>() {
 
     override fun cacheToDomain(cache: GroupCache): GroupDomain {
         with(cache) {
-            return GroupDomain(id, title, kindId, typeId, level, isPicked)
+            return GroupDomain(id, title, kindId, typeId, level, isPicked != 0)
         }
     }
 
     override fun domainToCache(domain: GroupDomain): GroupCache {
         with(domain) {
-            return GroupCache(id, title, kindId, typeId, level, isPicked)
+            return GroupCache(id, title, kindId, typeId, level, if (isPicked) 1 else 0)
         }
     }
 }

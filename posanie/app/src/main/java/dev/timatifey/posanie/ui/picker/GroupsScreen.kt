@@ -22,7 +22,6 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
-import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.navigation.NavGraph.Companion.findStartDestination
 import androidx.navigation.NavHostController
 import com.google.accompanist.swiperefresh.SwipeRefresh
@@ -30,8 +29,8 @@ import com.google.accompanist.swiperefresh.SwipeRefreshState
 import com.google.accompanist.swiperefresh.rememberSwipeRefreshState
 import dev.timatifey.posanie.R
 import dev.timatifey.posanie.model.cache.COURSE_GROUP_DELIMITER
-import dev.timatifey.posanie.model.data.Kind
-import dev.timatifey.posanie.model.data.Type
+import dev.timatifey.posanie.model.domain.Kind
+import dev.timatifey.posanie.model.domain.Type
 import dev.timatifey.posanie.model.domain.Group
 import dev.timatifey.posanie.model.domain.GroupsLevel
 import dev.timatifey.posanie.ui.KindNavItems
@@ -45,21 +44,22 @@ import java.lang.IllegalArgumentException
 @Composable
 fun RemoteGroupsScreen(
     searchState: MutableState<SearchState>,
-    groupsViewModel: PickerViewModel,
+    pickerViewModel: PickerViewModel,
+    remoteGroupsViewModel: RemoteGroupsViewModel,
     navController: NavHostController,
     facultyId: Long,
     facultyName: String,
     kindId: Long,
     typeId: String
 ) {
-    val courseSearchState = groupsViewModel.courseSearchState
-    val groupSearchState = groupsViewModel.groupSearchState
+    val courseSearchState = remoteGroupsViewModel.courseSearchState
+    val groupSearchState = remoteGroupsViewModel.groupSearchState
 
     Scaffold(
         topBar = {
             GroupsTopBar(
                 navController = navController,
-                groupsViewModel = groupsViewModel,
+                remoteGroupsViewModel = remoteGroupsViewModel,
                 facultyId = facultyId,
                 facultyName = facultyName,
                 kindId = kindId,
@@ -73,7 +73,8 @@ fun RemoteGroupsScreen(
             RemoteGroupsContent(
                 innerPadding = innerPadding,
                 navController = navController,
-                viewModel = groupsViewModel,
+                pickerViewModel = pickerViewModel,
+                remoteGroupsViewModel = remoteGroupsViewModel,
                 facultyId = facultyId,
                 kindId = kindId,
                 typeId = typeId,
@@ -87,7 +88,8 @@ fun RemoteGroupsScreen(
 fun RemoteGroupsContent(
     innerPadding: PaddingValues,
     navController: NavHostController,
-    viewModel: PickerViewModel,
+    pickerViewModel: PickerViewModel,
+    remoteGroupsViewModel: RemoteGroupsViewModel,
     showTypes: Boolean,
     facultyId: Long,
     kindId: Long,
@@ -109,6 +111,7 @@ fun RemoteGroupsContent(
     ) {
         GroupKindNavigationBar(
             navController = navController,
+            viewModel = remoteGroupsViewModel,
             facultyId = facultyId,
             items = kindNavItems
         )
@@ -119,13 +122,15 @@ fun RemoteGroupsContent(
         ) {
             GroupTypeNavigationBar(
                 navController = navController,
+                viewModel = remoteGroupsViewModel,
                 facultyId = facultyId,
                 kindId = kindId,
                 items = typeNavItems
             )
         }
         RemoteGroupsList(
-            groupsViewModel = viewModel,
+            pickerViewModel = pickerViewModel,
+            remoteGroupsViewModel = remoteGroupsViewModel,
             navController = navController,
             facultyId = facultyId,
             kindId = kindId,
@@ -138,14 +143,14 @@ fun RemoteGroupsContent(
 fun GroupKindNavigationBar(
     modifier: Modifier = Modifier,
     navController: NavHostController,
+    viewModel: RemoteGroupsViewModel,
     facultyId: Long,
     items: List<KindNavItems>
 ) {
     CategoryNavigationBar(
         modifier = modifier
     ) {
-        val viewModel = hiltViewModel<PickerViewModel>()
-        val uiState by viewModel.groupSearchUiState.collectAsState()
+        val uiState by viewModel.uiState.collectAsState()
         val selectedKind = uiState.selectedKind
         LazyRow {
             items(items = items) { tab ->
@@ -169,6 +174,7 @@ fun GroupKindNavigationBar(
 fun GroupTypeNavigationBar(
     modifier: Modifier = Modifier,
     navController: NavHostController,
+    viewModel: RemoteGroupsViewModel,
     facultyId: Long,
     kindId: Long,
     items: List<TypeNavItems>
@@ -176,8 +182,7 @@ fun GroupTypeNavigationBar(
     CategoryNavigationBar(
         modifier = modifier
     ) {
-        val viewModel = hiltViewModel<PickerViewModel>()
-        val uiState by viewModel.groupSearchUiState.collectAsState()
+        val uiState by viewModel.uiState.collectAsState()
         val selectedType = uiState.selectedType
         LazyRow {
             items(items = items) { tab ->
@@ -263,16 +268,17 @@ fun tabColor(selected: Boolean): Color {
 
 @Composable
 private fun RemoteGroupsList(
-    groupsViewModel: PickerViewModel,
+    pickerViewModel: PickerViewModel,
+    remoteGroupsViewModel: RemoteGroupsViewModel,
     navController: NavHostController,
     facultyId: Long,
     kindId: Long,
     typeId: String
 ) {
-    val uiState = groupsViewModel.groupSearchUiState.collectAsState().value
+    val uiState = remoteGroupsViewModel.uiState.collectAsState().value
     val clickListener = ClickListener(
         onClick = { group: Group ->
-            groupsViewModel.saveAndPickGroup(group)
+            pickerViewModel.saveAndPickGroup(group)
             navController.navigate(PickerNavItems.Local.route) {
                 popUpTo(navController.graph.findStartDestination().id)
                 launchSingleTop = true
@@ -285,11 +291,11 @@ private fun RemoteGroupsList(
         clickListener = clickListener,
         swipeRefreshState = rememberSwipeRefreshState(uiState.isLoading),
         onRefresh = {
-            groupsViewModel.selectFilters(
+            remoteGroupsViewModel.selectFilters(
                 kind = Kind.kindBy(kindId),
                 type = Type.typeBy(typeId)
             )
-            groupsViewModel.fetchGroupsBy(facultyId)
+            remoteGroupsViewModel.fetchGroupsBy(facultyId)
         }
     )
 }
@@ -319,7 +325,7 @@ fun RefreshableGroupsList(
             if (levelsToGroups.isEmpty()) {
                 Text(
                     text = stringResource(R.string.no_groups_error),
-                    modifier = Modifier.padding(4.dp)
+                    modifier = Modifier.padding(PaddingValues(horizontal = 8.dp, vertical = 4.dp))
                 )
             } else {
                 ScrollableGroupsList(

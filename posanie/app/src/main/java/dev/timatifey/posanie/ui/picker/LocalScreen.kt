@@ -32,7 +32,7 @@ fun LocalScreen(
     onRefresh: () -> Unit,
     goToRemote: () -> Unit
 ) {
-    val uiState = viewModel.localUiState.collectAsState().value
+    val uiState by viewModel.localUiState.collectAsState()
 
     val levelsToGroups = uiState.levelsToGroups
     val teachers = uiState.teachers
