@@ -38,7 +38,7 @@ import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import androidx.navigation.NavHostController
 import dev.timatifey.posanie.R
-import dev.timatifey.posanie.model.data.Type
+import dev.timatifey.posanie.model.domain.Type
 import dev.timatifey.posanie.ui.RemoteNavItems
 
 enum class SearchState {

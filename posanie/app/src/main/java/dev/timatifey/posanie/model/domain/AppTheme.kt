@@ -1,4 +1,4 @@
-package dev.timatifey.posanie.model.data
+package dev.timatifey.posanie.model.domain
 
 import androidx.annotation.StringRes
 import dev.timatifey.posanie.R
@@ -12,11 +12,14 @@ enum class AppTheme (
     DARK(2, R.string.dark_theme);
 
     companion object {
+        val DEFAULT = SYSTEM
+
         fun getById(id: Int): AppTheme {
             return when(id) {
+                0 -> SYSTEM
                 1 -> LIGHT
                 2 -> DARK
-                else -> SYSTEM // system is default
+                else -> DEFAULT
             }
         }
     }

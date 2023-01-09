@@ -1,4 +1,4 @@
-package dev.timatifey.posanie.model.data
+package dev.timatifey.posanie.model.domain
 
 enum class Type(val id: String, val prefix: String) {
     COMMON("common", ""),
@@ -10,12 +10,12 @@ enum class Type(val id: String, val prefix: String) {
         val DEFAULT = ANY
 
         fun typeBy(id: String) : Type {
-            when(id) {
-                "common" -> return COMMON
-                "evening" -> return EVENING
-                "distance" -> return DISTANCE
+            return when(id) {
+                "common" -> COMMON
+                "evening" -> EVENING
+                "distance" -> DISTANCE
+                else -> DEFAULT
             }
-            return DEFAULT
         }
     }
 }

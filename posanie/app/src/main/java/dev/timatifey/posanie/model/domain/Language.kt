@@ -1,4 +1,4 @@
-package dev.timatifey.posanie.model.data
+package dev.timatifey.posanie.model.domain
 
 enum class Language (
     val id: Int,
@@ -10,10 +10,13 @@ enum class Language (
     RUSSIAN(1, "Русский", "Russian", "ru");
 
     companion object {
+        val DEFAULT = ENGLISH
+
         fun getById(id: Int): Language {
             return when(id) {
+                0 -> ENGLISH
                 1 -> RUSSIAN
-                else -> ENGLISH // english is default
+                else -> DEFAULT
             }
         }
     }

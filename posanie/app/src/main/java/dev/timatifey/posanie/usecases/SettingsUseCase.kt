@@ -4,8 +4,8 @@ import android.content.Context
 import dagger.hilt.android.qualifiers.ApplicationContext
 import dev.timatifey.posanie.R
 import dev.timatifey.posanie.model.Result
-import dev.timatifey.posanie.model.data.AppTheme
-import dev.timatifey.posanie.model.data.Language
+import dev.timatifey.posanie.model.domain.AppTheme
+import dev.timatifey.posanie.model.domain.Language
 import javax.inject.Inject
 
 interface SettingsUseCase {

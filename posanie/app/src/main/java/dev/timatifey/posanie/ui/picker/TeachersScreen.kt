@@ -93,7 +93,7 @@ fun RefreshableTeachersList(
             if (teachersList.isEmpty()) {
                 Text(
                     text = stringResource(R.string.no_teachers_found),
-                    modifier = Modifier.padding(4.dp)
+                    modifier = Modifier.padding(PaddingValues(horizontal = 8.dp, vertical = 4.dp))
                 )
             } else {
                 ScrollableTeachersList(

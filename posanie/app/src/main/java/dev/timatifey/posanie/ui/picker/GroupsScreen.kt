@@ -29,8 +29,8 @@ import com.google.accompanist.swiperefresh.SwipeRefreshState
 import com.google.accompanist.swiperefresh.rememberSwipeRefreshState
 import dev.timatifey.posanie.R
 import dev.timatifey.posanie.model.cache.COURSE_GROUP_DELIMITER
-import dev.timatifey.posanie.model.data.Kind
-import dev.timatifey.posanie.model.data.Type
+import dev.timatifey.posanie.model.domain.Kind
+import dev.timatifey.posanie.model.domain.Type
 import dev.timatifey.posanie.model.domain.Group
 import dev.timatifey.posanie.model.domain.GroupsLevel
 import dev.timatifey.posanie.ui.KindNavItems
@@ -325,7 +325,7 @@ fun RefreshableGroupsList(
             if (levelsToGroups.isEmpty()) {
                 Text(
                     text = stringResource(R.string.no_groups_error),
-                    modifier = Modifier.padding(4.dp)
+                    modifier = Modifier.padding(PaddingValues(horizontal = 8.dp, vertical = 4.dp))
                 )
             } else {
                 ScrollableGroupsList(

@@ -6,8 +6,8 @@ import androidx.lifecycle.viewModelScope
 import dagger.hilt.android.lifecycle.HiltViewModel
 import dev.timatifey.posanie.R
 import dev.timatifey.posanie.model.Result
-import dev.timatifey.posanie.model.data.Kind
-import dev.timatifey.posanie.model.data.Type
+import dev.timatifey.posanie.model.domain.Kind
+import dev.timatifey.posanie.model.domain.Type
 import dev.timatifey.posanie.model.domain.GroupsLevel
 import dev.timatifey.posanie.usecases.GroupsUseCase
 import dev.timatifey.posanie.utils.ErrorMessage

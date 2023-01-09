@@ -24,7 +24,7 @@
     // Picker
     <string name="faculties">Faculties</string>
     <string name="no_faculties_error">Can\'t to fetch faculties from server.</string>
-    <string name="no_groups_error">Can\'t to fetch groups from server.</string>
+    <string name="no_groups_error">No groups found.</string>
     <string name="level">%1$d year</string>
     <string name="groups">Groups</string>
     <string name="no_local_groups">You have no groups. Please add.</string>

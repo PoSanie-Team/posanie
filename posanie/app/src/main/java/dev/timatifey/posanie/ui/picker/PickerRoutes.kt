@@ -2,15 +2,13 @@ package dev.timatifey.posanie.ui.picker
 
 import androidx.compose.runtime.*
 import androidx.hilt.navigation.compose.hiltViewModel
-import androidx.navigation.NavController
 import androidx.navigation.NavHostController
 import com.google.accompanist.swiperefresh.SwipeRefreshState
 import com.google.accompanist.swiperefresh.rememberSwipeRefreshState
-import dev.timatifey.posanie.model.data.Kind
-import dev.timatifey.posanie.model.data.Type
+import dev.timatifey.posanie.model.domain.Kind
+import dev.timatifey.posanie.model.domain.Type
 import dev.timatifey.posanie.model.domain.Faculty
 import dev.timatifey.posanie.ui.*
-import dev.timatifey.posanie.utils.ClickListener
 
 @Composable
 fun LocalRoute(
