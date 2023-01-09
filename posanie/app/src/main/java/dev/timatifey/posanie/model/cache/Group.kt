@@ -19,7 +19,7 @@ data class Group(
     @ColumnInfo(name = "level")
     val level: Int,
     @ColumnInfo(name = "is_picked")
-    val isPicked: Boolean = false,
+    val isPicked: Int = 0,
 ) {
     companion object {
         const val TABLE_NAME = "groups_table"

@@ -11,7 +11,7 @@ interface GroupsDao {
     @Query("SELECT * FROM ${Group.TABLE_NAME} ORDER BY id ASC")
     suspend fun getGroups(): List<Group>
 
-    @Query("SELECT * FROM ${Group.TABLE_NAME} WHERE is_picked = true ORDER BY id ASC")
+    @Query("SELECT * FROM ${Group.TABLE_NAME} WHERE is_picked != 0 ORDER BY id ASC")
     suspend fun getPickedGroups(): List<Group>
 
     @Query("SELECT * FROM ${Group.TABLE_NAME} WHERE id = :groupId")

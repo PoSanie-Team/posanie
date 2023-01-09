@@ -34,7 +34,8 @@ class TeachersUseCaseImpl @Inject constructor(
     override suspend fun getPickedTeacher(): Result<Teacher> =
         withContext(Dispatchers.IO) {
             teachersDao.getTeachers().forEach {
-                if (it.isPicked) {
+                val isPicked = it.isPicked != 0
+                if (isPicked) {
                     return@withContext Result.Success(teacherMapper.cacheToDomain(it))
                 }
             }
@@ -60,7 +61,7 @@ class TeachersUseCaseImpl @Inject constructor(
         withContext(Dispatchers.IO) {
             try {
                 val newTeachers = teachersDao.getPickedTeachers()
-                    .map { it.copy(isPicked = false) }
+                    .map { it.copy(isPicked = 0) }
                     .toMutableList()
                 newTeachers.add(teacherMapper.domainToCache(teacher.copy(isPicked = true)))
                 teachersDao.upsertTeachers(newTeachers)
@@ -74,7 +75,7 @@ class TeachersUseCaseImpl @Inject constructor(
         withContext(Dispatchers.IO) {
             try {
                 val newTeachers = teachersDao.getTeachers()
-                    .map { it.copy(isPicked = it.id == teacher?.id) }
+                    .map { it.copy(isPicked = if (it.id == teacher?.id) 1 else 0) }
                     .toMutableList()
                 teachersDao.upsertTeachers(newTeachers)
                 return@withContext Result.Success(true)

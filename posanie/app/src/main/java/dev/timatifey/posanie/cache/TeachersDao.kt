@@ -11,7 +11,7 @@ interface TeachersDao {
     @Query("SELECT * FROM ${Teacher.TABLE_NAME} ORDER BY id ASC")
     suspend fun getTeachers(): List<Teacher>
 
-    @Query("SELECT * FROM ${Teacher.TABLE_NAME} WHERE is_picked = true ORDER BY id ASC")
+    @Query("SELECT * FROM ${Teacher.TABLE_NAME} WHERE is_picked != 0 ORDER BY id ASC")
     suspend fun getPickedTeachers(): List<Teacher>
 
     @Query("SELECT * FROM ${Teacher.TABLE_NAME} WHERE id = :teacherId")

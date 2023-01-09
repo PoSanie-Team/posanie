@@ -11,7 +11,7 @@ data class Teacher(
     @ColumnInfo(name = "name")
     val name: String = "",
     @ColumnInfo(name = "is_picked")
-    val isPicked: Boolean = false,
+    val isPicked: Int = 0,
 ) {
     companion object {
         const val TABLE_NAME = "teachers_table"
