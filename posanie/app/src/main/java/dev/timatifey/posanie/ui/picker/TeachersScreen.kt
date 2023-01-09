@@ -30,13 +30,14 @@ import dev.timatifey.posanie.utils.ClickListener
 @Composable
 fun TeachersScreen(
     navController: NavHostController,
-    viewModel: PickerViewModel,
+    pickerViewModel: PickerViewModel,
+    remoteTeachersViewModel: RemoteTeachersViewModel,
     searchState: MutableState<SearchState>,
 ) {
-    val uiState = viewModel.teacherSearchUiState.collectAsState().value
+    val uiState = remoteTeachersViewModel.uiState.collectAsState().value
     val teachersList = uiState.teachers
     val focusManager = LocalFocusManager.current
-    val searchTextState = viewModel.teacherNameSearchState
+    val searchTextState = remoteTeachersViewModel.teacherNameSearchState
     val swipeRefreshState = rememberSwipeRefreshState(uiState.isLoading)
     Scaffold(
         topBar = {
@@ -46,25 +47,25 @@ fun TeachersScreen(
                 searchTextState = searchTextState,
                 openSearch = { searchState.value = SearchState.IN_PROGRESS },
                 submitSearch = {
-                    viewModel.fetchTeachersBy(searchTextState.value)
+                    remoteTeachersViewModel.fetchTeachersBy(searchTextState.value)
                     searchState.value = SearchState.DONE
                     focusManager.clearFocus()
                 },
                 closeSearch = {
                     searchState.value = SearchState.NOT_STARTED
                     searchTextState.value = ""
-                    viewModel.fetchTeachersBy(searchTextState.value)
+                    remoteTeachersViewModel.fetchTeachersBy(searchTextState.value)
                 })
         },
         content = { paddingValues ->
             RefreshableTeachersList(
                 swipeRefreshState = swipeRefreshState,
-                onRefresh = { viewModel.fetchTeachersBy(searchTextState.value) },
+                onRefresh = { remoteTeachersViewModel.fetchTeachersBy(searchTextState.value) },
                 teachersList = teachersList,
                 modifier = Modifier.padding(paddingValues),
                 clickListener = ClickListener(
                     onClick = {
-                        viewModel.saveAndPickTeacher(it)
+                        pickerViewModel.saveAndPickTeacher(it)
                         navController.navigate(BottomNavItems.Picker.route)
                     }
                 )

@@ -97,14 +97,9 @@ fun NavGraphBuilder.remoteNavGraph(
             ScheduleTypesRoute(navController = navController)
         }
         composable(RemoteNavItems.Teachers.route) {
-            val searchState = remember { mutableStateOf(SearchState.NOT_STARTED) }
-            LaunchedEffect(true) {
-                pickerViewModel.fetchTeachersBy("")
-            }
             TeachersRoute(
                 navController = navController,
-                viewModel = pickerViewModel,
-                searchState = searchState
+                pickerViewModel = pickerViewModel
             )
         }
         composable(RemoteNavItems.Faculties.route) {
@@ -129,16 +124,9 @@ fun NavGraphBuilder.remoteNavGraph(
             val facultiesViewModel = hiltViewModel<FacultiesViewModel>()
             val facultyName = facultiesViewModel.getFaculty(facultyId)?.title ?: ""
 
-            LaunchedEffect(facultyId, kindId, typeId) {
-                pickerViewModel.selectFilters(kind = Kind.kindBy(kindId), type = Type.typeBy(typeId))
-                pickerViewModel.fetchGroupsBy(facultyId)
-            }
-
-            val searchState = remember { mutableStateOf(SearchState.NOT_STARTED) }
             RemoteGroupsRoute(
-                searchState = searchState,
-                groupsViewModel = pickerViewModel,
                 navController = navController,
+                pickerViewModel = pickerViewModel,
                 facultyId = facultyId,
                 facultyName = facultyName,
                 kindId = kindId,
