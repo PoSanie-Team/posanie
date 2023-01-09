@@ -109,6 +109,7 @@ fun RemoteGroupsContent(
     ) {
         GroupKindNavigationBar(
             navController = navController,
+            viewModel = viewModel,
             facultyId = facultyId,
             items = kindNavItems
         )
@@ -119,6 +120,7 @@ fun RemoteGroupsContent(
         ) {
             GroupTypeNavigationBar(
                 navController = navController,
+                viewModel = viewModel,
                 facultyId = facultyId,
                 kindId = kindId,
                 items = typeNavItems
@@ -138,13 +140,13 @@ fun RemoteGroupsContent(
 fun GroupKindNavigationBar(
     modifier: Modifier = Modifier,
     navController: NavHostController,
+    viewModel: PickerViewModel,
     facultyId: Long,
     items: List<KindNavItems>
 ) {
     CategoryNavigationBar(
         modifier = modifier
     ) {
-        val viewModel = hiltViewModel<PickerViewModel>()
         val uiState by viewModel.groupSearchUiState.collectAsState()
         val selectedKind = uiState.selectedKind
         LazyRow {
@@ -169,6 +171,7 @@ fun GroupKindNavigationBar(
 fun GroupTypeNavigationBar(
     modifier: Modifier = Modifier,
     navController: NavHostController,
+    viewModel: PickerViewModel,
     facultyId: Long,
     kindId: Long,
     items: List<TypeNavItems>
@@ -176,7 +179,6 @@ fun GroupTypeNavigationBar(
     CategoryNavigationBar(
         modifier = modifier
     ) {
-        val viewModel = hiltViewModel<PickerViewModel>()
         val uiState by viewModel.groupSearchUiState.collectAsState()
         val selectedType = uiState.selectedType
         LazyRow {
