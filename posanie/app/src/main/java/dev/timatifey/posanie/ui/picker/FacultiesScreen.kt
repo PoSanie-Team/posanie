@@ -25,13 +25,13 @@ import dev.timatifey.posanie.ui.RemoteNavItems
 @Composable
 fun FacultiesScreen(
     navController: NavHostController,
-    facultiesViewModel: FacultiesViewModel,
-    searchState: MutableState<SearchState>
+    facultiesViewModel: FacultiesViewModel
 ) {
     val uiState by facultiesViewModel.uiState.collectAsState()
     val facultyList = uiState.faculties
     val focusManager = LocalFocusManager.current
-    val searchTextState = facultiesViewModel.searchState
+    val searchState = facultiesViewModel.searchState
+    val searchTextState = facultiesViewModel.searchTextState
     val swipeRefreshState = rememberSwipeRefreshState(uiState.isLoading)
 
     Scaffold(
@@ -39,8 +39,11 @@ fun FacultiesScreen(
             FacultiesTopBar(
                 navController = navController,
                 isDone = searchState.value == SearchState.DONE,
+                searchState = searchState.value,
                 searchTextState = searchTextState,
-                openSearch = { searchState.value = SearchState.IN_PROGRESS },
+                openSearch = {
+                    searchState.value = SearchState.IN_PROGRESS
+                },
                 updateSearch = {
                     facultiesViewModel.filterFaculties()
                 },

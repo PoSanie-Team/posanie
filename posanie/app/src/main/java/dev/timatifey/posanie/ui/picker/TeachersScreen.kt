@@ -31,12 +31,12 @@ import dev.timatifey.posanie.utils.ClickListener
 fun TeachersScreen(
     navController: NavHostController,
     pickerViewModel: PickerViewModel,
-    remoteTeachersViewModel: RemoteTeachersViewModel,
-    searchState: MutableState<SearchState>,
+    remoteTeachersViewModel: RemoteTeachersViewModel
 ) {
     val uiState = remoteTeachersViewModel.uiState.collectAsState().value
     val teachersList = uiState.teachers
     val focusManager = LocalFocusManager.current
+    val searchState = remoteTeachersViewModel.searchState
     val searchTextState = remoteTeachersViewModel.teacherNameSearchState
     val swipeRefreshState = rememberSwipeRefreshState(uiState.isLoading)
     Scaffold(

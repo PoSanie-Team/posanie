@@ -51,7 +51,8 @@ class FacultiesViewModel @Inject constructor(
     }
 
     private val viewModelState = MutableStateFlow(FacultiesViewModelState(isLoading = true))
-    val searchState = mutableStateOf("")
+    val searchState = mutableStateOf(SearchState.NOT_STARTED)
+    val searchTextState = mutableStateOf("")
 
     val uiState: StateFlow<FacultiesUiState> = viewModelState
         .map { it.toUiState() }
@@ -99,7 +100,7 @@ class FacultiesViewModel @Inject constructor(
     }
 
     fun filterFaculties()  {
-        val titleRegex = makeFilterRegex(searchState.value)
+        val titleRegex = makeFilterRegex(searchTextState.value)
         viewModelState.update { it.copy(isLoading = true) }
         viewModelScope.launch {
             viewModelState.update { state ->

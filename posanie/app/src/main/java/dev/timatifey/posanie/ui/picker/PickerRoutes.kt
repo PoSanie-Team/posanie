@@ -50,7 +50,6 @@ fun TeachersRoute(
     pickerViewModel: PickerViewModel
 ) {
     val remoteTeachersViewModel = hiltViewModel<RemoteTeachersViewModel>()
-    val searchState = remember { mutableStateOf(SearchState.NOT_STARTED) }
 
     LaunchedEffect(true) {
         remoteTeachersViewModel.fetchTeachersBy("")
@@ -59,8 +58,7 @@ fun TeachersRoute(
     TeachersScreen(
         navController = navController,
         pickerViewModel = pickerViewModel,
-        remoteTeachersViewModel = remoteTeachersViewModel,
-        searchState = searchState
+        remoteTeachersViewModel = remoteTeachersViewModel
     )
 }
 
@@ -69,12 +67,9 @@ fun FacultiesRoute(
     navController: NavHostController,
     facultiesViewModel: FacultiesViewModel
 ) {
-    val searchState = remember { mutableStateOf(SearchState.NOT_STARTED) }
-
     FacultiesScreen(
         navController = navController,
         facultiesViewModel = facultiesViewModel,
-        searchState = searchState
     )
 }
 
@@ -88,7 +83,6 @@ fun RemoteGroupsRoute(
     typeId: String
 ) {
     val remoteGroupsViewModel = hiltViewModel<RemoteGroupsViewModel>()
-    val searchState = remember { mutableStateOf(SearchState.NOT_STARTED) }
 
     LaunchedEffect(facultyId, kindId, typeId) {
         remoteGroupsViewModel.selectFilters(kind = Kind.kindBy(kindId), type = Type.typeBy(typeId))
@@ -96,7 +90,6 @@ fun RemoteGroupsRoute(
     }
 
     RemoteGroupsScreen(
-        searchState = searchState,
         pickerViewModel = pickerViewModel,
         remoteGroupsViewModel = remoteGroupsViewModel,
         navController = navController,

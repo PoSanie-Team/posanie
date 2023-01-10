@@ -3,6 +3,7 @@ package dev.timatifey.posanie.ui.picker
 import android.view.KeyEvent
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.Crossfade
+import androidx.compose.animation.core.MutableTransitionState
 import androidx.compose.animation.fadeIn
 import androidx.compose.animation.fadeOut
 import androidx.compose.foundation.background
@@ -443,14 +444,85 @@ fun TeachersSearchField(
 @Composable
 fun FacultiesTopBar(
     navController: NavHostController,
-    isDone: Boolean,
+    searchState: SearchState,
     searchTextState: MutableState<String>,
+    isDone: Boolean,
     openSearch: () -> Unit,
     updateSearch: () -> Unit,
     submitSearch: () -> Unit,
     closeSearch: () -> Unit
 ) {
-    val focusRequester = FocusRequester()
+    Crossfade(targetState = searchState) { state ->
+        when (state) {
+            SearchState.NOT_STARTED -> {
+                DefaultFacultiesTopBar(
+                    navController = navController,
+                    openSearch = openSearch
+                )
+            }
+            else -> {
+                SearchFacultiesTopBar(
+                    navController = navController,
+                    isDone = isDone,
+                    searchTextState = searchTextState,
+                    inProgress = searchState == SearchState.IN_PROGRESS,
+                    openSearch = openSearch,
+                    updateSearch = updateSearch,
+                    submitSearch = submitSearch,
+                    closeSearch = closeSearch
+                )
+            }
+        }
+
+    }
+}
+
+@OptIn(ExperimentalMaterial3Api::class)
+@Composable
+fun DefaultFacultiesTopBar(
+    navController: NavHostController,
+    openSearch: () -> Unit
+) {
+    SmallTopAppBar(
+        title = {
+            Text(
+                text = stringResource(R.string.faculties),
+                style = MaterialTheme.typography.titleMedium,
+                maxLines = 2,
+                overflow = TextOverflow.Ellipsis
+            )
+        },
+        navigationIcon = {
+            IconButton(onClick = { navController.popBackStack() }) {
+                Icon(
+                    imageVector = Icons.Filled.ArrowBack,
+                    contentDescription = stringResource(R.string.arrow_back_description)
+                )
+            }
+        },
+        actions = {
+            IconButton(onClick = openSearch) {
+                Icon(
+                    imageVector = Icons.Filled.Search,
+                    contentDescription = stringResource(R.string.search_button_description)
+                )
+            }
+        }
+    )
+}
+
+@Composable
+fun SearchFacultiesTopBar(
+    navController: NavHostController,
+    isDone: Boolean,
+    searchTextState: MutableState<String>,
+    inProgress: Boolean,
+    openSearch: () -> Unit,
+    updateSearch: () -> Unit,
+    submitSearch: () -> Unit,
+    closeSearch: () -> Unit
+) {
+    val focusRequester = remember { FocusRequester() }
     BasicTopBar(
         onBackClick = { navController.popBackStack() },
         content = {
@@ -458,6 +530,7 @@ fun FacultiesTopBar(
                 searchTextState = searchTextState,
                 textStyle = MaterialTheme.typography.bodyMedium,
                 innerPadding = PaddingValues(6.dp),
+                inProgress = inProgress,
                 onSelected = openSearch,
                 onChanged = updateSearch,
                 submitSearch = submitSearch,
@@ -490,11 +563,21 @@ fun FacultiesSearchField(
     searchTextState: MutableState<String>,
     textStyle: TextStyle = TextStyle.Default,
     innerPadding: PaddingValues = PaddingValues(0.dp),
+    inProgress: Boolean,
     focusRequester: FocusRequester,
     onSelected: () -> Unit,
     onChanged: () -> Unit,
     submitSearch: () -> Unit
 ) {
+    val focusManager = LocalFocusManager.current
+    LaunchedEffect(inProgress) {
+        if (inProgress) {
+            focusRequester.requestFocus()
+        } else {
+            focusManager.clearFocus()
+        }
+    }
+
     BasicSearchField(
         searchTextState = searchTextState,
         modifier = modifier,

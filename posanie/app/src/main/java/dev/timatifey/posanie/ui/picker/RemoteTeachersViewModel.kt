@@ -1,6 +1,7 @@
 package dev.timatifey.posanie.ui.picker
 
 import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import dagger.hilt.android.lifecycle.HiltViewModel
@@ -50,6 +51,7 @@ class RemoteTeachersViewModel @Inject constructor(
             SharingStarted.Eagerly,
             viewModelState.value.toUiState()
         )
+    val searchState = mutableStateOf(SearchState.NOT_STARTED)
     val teacherNameSearchState = mutableStateOf("")
 
     fun fetchTeachersBy(name: String) {
