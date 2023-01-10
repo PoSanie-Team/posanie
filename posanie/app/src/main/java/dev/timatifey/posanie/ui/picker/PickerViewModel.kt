@@ -38,21 +38,21 @@ class PickerViewModel @Inject constructor(
     private data class ViewModelState(
         val localGroups: Map<Int, GroupsLevel>? = null,
         val localTeachers: List<Teacher>? = null,
-        val isLoading: Boolean = false,
+        val commandsRunning: Int = 0,
         val errorMessages: List<ErrorMessage> = emptyList(),
     ) {
 
         fun toLocalUiState(): LocalUiState = LocalUiState(
             levelsToGroups = localGroups ?: emptyMap(),
             teachers = localTeachers ?: emptyList(),
-            isLoading = isLoading,
+            isLoading = commandsRunning > 0,
             errorMessages = errorMessages
         )
     }
 
     private val viewModelState = MutableStateFlow(
         ViewModelState(
-            isLoading = true
+            commandsRunning = 0
         )
     )
 
@@ -64,40 +64,40 @@ class PickerViewModel @Inject constructor(
             viewModelState.value.toLocalUiState()
         )
 
-    fun getLocalGroups() {
-        viewModelState.update { it.copy(isLoading = true) }
+    suspend fun getLocalGroups() {
+        viewModelState.update { it.copy(commandsRunning = it.commandsRunning + 1) }
 
-        viewModelScope.launch {
-            val result = groupsUseCase.getLocalGroups()
-            viewModelState.update { state ->
-                return@update state.copy(
-                    localGroups = result.successOr(emptyMap()),
-                    isLoading = false,
-                )
-            }
+        val result = groupsUseCase.getLocalGroups()
+        viewModelState.update { state ->
+            return@update state.copy(
+                localGroups = result.successOr(emptyMap()),
+                commandsRunning = state.commandsRunning - 1,
+            )
         }
     }
 
-    fun getLocalTeachers() {
-        viewModelState.update { it.copy(isLoading = true) }
+    suspend fun getLocalTeachers() {
+        viewModelState.update { it.copy(commandsRunning = it.commandsRunning + 1) }
 
-        viewModelScope.launch {
-            val result = teachersUseCase.getLocalTeachers()
-            viewModelState.update { state ->
-                return@update state.copy(
-                    localTeachers = result.successOr(emptyList()),
-                    isLoading = false,
-                )
-            }
+        val result = teachersUseCase.getLocalTeachers()
+        viewModelState.update { state ->
+            return@update state.copy(
+                localTeachers = result.successOr(emptyList()),
+                commandsRunning = state.commandsRunning - 1,
+            )
         }
     }
 
     fun saveAndPickGroup(group: Group) {
         viewModelScope.launch {
+            viewModelState.update { it.copy(commandsRunning = it.commandsRunning + 1) }
+
             groupsUseCase.saveAndPickGroup(group)
             getLocalGroups()
             teachersUseCase.pickTeacher(null)
             getLocalTeachers()
+
+            viewModelState.update { it.copy(commandsRunning = it.commandsRunning - 1) }
         }
     }
 
@@ -119,10 +119,14 @@ class PickerViewModel @Inject constructor(
 
     fun saveAndPickTeacher(teacher: Teacher) {
         viewModelScope.launch {
+            viewModelState.update { it.copy(commandsRunning = it.commandsRunning + 1) }
+
             groupsUseCase.pickGroup(null)
             getLocalGroups()
             teachersUseCase.saveAndPickTeacher(teacher)
             getLocalTeachers()
+
+            viewModelState.update { it.copy(commandsRunning = it.commandsRunning - 1) }
         }
     }
 

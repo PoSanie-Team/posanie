@@ -91,7 +91,10 @@ fun NavGraphBuilder.remoteNavGraph(
         route = route
     ) {
         composable(RemoteNavItems.ScheduleTypes.route) {
-            ScheduleTypesRoute(navController = navController)
+            ScheduleTypesRoute(
+                navController = navController,
+                viewModel = pickerViewModel
+            )
         }
         composable(RemoteNavItems.Teachers.route) {
             TeachersRoute(

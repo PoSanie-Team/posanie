@@ -528,3 +528,15 @@ fun BasicTopBar(
         actions = actions
     )
 }
+
+@OptIn(ExperimentalMaterial3Api::class)
+@Composable
+fun BasicTopBar(
+    content: @Composable () -> Unit = {},
+    actions: @Composable RowScope.() -> Unit = {}
+) {
+    SmallTopAppBar(
+        title = content,
+        actions = actions
+    )
+}

@@ -25,6 +25,7 @@ class TeachersAPI(private val dispatcher: CoroutineDispatcher) {
             )
             teachers.add(teacher)
         }
+        teachers.sortBy { it.name }
         return@withContext teachers
     }
 }

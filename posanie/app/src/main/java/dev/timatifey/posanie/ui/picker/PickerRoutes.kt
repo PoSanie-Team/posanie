@@ -2,6 +2,7 @@ package dev.timatifey.posanie.ui.picker
 
 import androidx.compose.runtime.*
 import androidx.hilt.navigation.compose.hiltViewModel
+import androidx.lifecycle.viewModelScope
 import androidx.navigation.NavHostController
 import com.google.accompanist.swiperefresh.SwipeRefreshState
 import com.google.accompanist.swiperefresh.rememberSwipeRefreshState
@@ -9,19 +10,22 @@ import dev.timatifey.posanie.model.domain.Kind
 import dev.timatifey.posanie.model.domain.Type
 import dev.timatifey.posanie.model.domain.Faculty
 import dev.timatifey.posanie.ui.*
+import kotlinx.coroutines.launch
 
 @Composable
 fun LocalRoute(
+    navController: NavHostController,
     viewModel: PickerViewModel,
-    createPopup: (MutableState<Boolean>, @Composable () -> Unit) -> Unit,
-    navController: NavHostController
+    createPopup: (MutableState<Boolean>, @Composable () -> Unit) -> Unit
 ) {
     LocalScreen(
         viewModel = viewModel,
         createPopup = createPopup,
         onRefresh = {
-            viewModel.getLocalGroups()
-            viewModel.getLocalTeachers()
+            viewModel.viewModelScope.launch {
+                viewModel.getLocalGroups()
+                viewModel.getLocalTeachers()
+            }
         },
         goToRemote = { navController.navigate(PickerNavItems.Remote.route) }
     )
@@ -29,9 +33,11 @@ fun LocalRoute(
 
 @Composable
 fun ScheduleTypesRoute(
-    navController: NavHostController
+    navController: NavHostController,
+    viewModel: PickerViewModel
 ) {
     ScheduleTypeScreen(
+        viewModel = viewModel,
         onBackClick = { navController.popBackStack() },
         selectGroups = { navController.navigate(RemoteNavItems.Faculties.route) },
         selectTeachers = { navController.navigate(RemoteNavItems.Teachers.route) }

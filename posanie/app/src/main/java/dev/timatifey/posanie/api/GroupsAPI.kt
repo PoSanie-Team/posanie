@@ -31,6 +31,9 @@ class GroupsAPI(private val dispatcher: CoroutineDispatcher) {
                 addGroup(groups, group)
             }
         }
+        groups.keys.forEach { key ->
+            groups[key]?.sortGroups()
+        }
         return@withContext groups
     }
 
@@ -39,6 +42,6 @@ class GroupsAPI(private val dispatcher: CoroutineDispatcher) {
         if (!groups.containsKey(group.level)) {
             groups[group.level] = GroupsLevel(level = group.level)
         }
-        groups[group.level]?.add(group)
+        groups[group.level]?.addGroup(group)
     }
 }

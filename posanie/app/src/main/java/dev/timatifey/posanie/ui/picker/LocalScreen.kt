@@ -56,14 +56,23 @@ fun LocalScreen(
         }
     )
 
-    SwipeRefresh(state = swipeRefreshState, onRefresh = onRefresh) {
-        localGroupsAndTeachers(
-            levelsToGroups = levelsToGroups,
-            groupClickListener = groupClickListener,
-            teachers = teachers,
-            teacherClickListener = teacherClickListener
-        )
-        addItemFAB(goToRemote = goToRemote)
+    if (levelsToGroups.isNotEmpty() || teachers.isNotEmpty()) {
+        SwipeRefresh(state = swipeRefreshState, onRefresh = onRefresh) {
+            localGroupsAndTeachers(
+                levelsToGroups = levelsToGroups,
+                groupClickListener = groupClickListener,
+                teachers = teachers,
+                teacherClickListener = teacherClickListener
+            )
+        }
+        AddItemFAB(goToRemote = goToRemote)
+    }
+
+    LaunchedEffect(levelsToGroups, teachers, uiState.isLoading) {
+        val isLoading = uiState.isLoading
+        if (levelsToGroups.isEmpty() && teachers.isEmpty() && !isLoading) {
+            goToRemote()
+        }
     }
 
     LaunchedEffect(true) {
@@ -166,7 +175,7 @@ fun ContentWithHint(
 }
 
 @Composable
-fun addItemFAB(
+fun AddItemFAB(
     goToRemote: () -> Unit
 ) {
     Box(
