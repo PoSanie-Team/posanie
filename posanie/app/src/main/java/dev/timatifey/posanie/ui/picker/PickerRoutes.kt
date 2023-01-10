@@ -66,39 +66,18 @@ fun TeachersRoute(
 
 @Composable
 fun FacultiesRoute(
-    facultiesViewModel: FacultiesViewModel,
-    navController: NavHostController
+    navController: NavHostController,
+    facultiesViewModel: FacultiesViewModel
 ) {
-    val uiState by facultiesViewModel.uiState.collectAsState()
-    FacultiesRoute(
+    val searchState = remember { mutableStateOf(SearchState.NOT_STARTED) }
+
+    FacultiesScreen(
         navController = navController,
-        uiState = uiState,
-        onFacultyPick = {
-            navController.navigate(RemoteNavItems.Groups.routeBy(facultyId = it.id))
-        },
-        refreshingState = rememberSwipeRefreshState(uiState.isLoading),
-        onRefresh = { facultiesViewModel.getFaculties() }
+        facultiesViewModel = facultiesViewModel,
+        searchState = searchState
     )
 }
 
-@Composable
-fun FacultiesRoute(
-    navController: NavHostController,
-    uiState: FacultiesUiState,
-    onFacultyPick: (Faculty) -> Unit,
-    refreshingState: SwipeRefreshState,
-    onRefresh: () -> Unit
-) {
-    when (uiState) {
-        is FacultiesUiState.FacultiesList -> FacultiesScreen(
-            onBackClick = { navController.popBackStack() },
-            list = uiState.faculties,
-            swipeRefreshState = refreshingState,
-            onFacultyPick = onFacultyPick,
-            onRefresh = onRefresh
-        )
-    }
-}
 @Composable
 fun RemoteGroupsRoute(
     navController: NavHostController,

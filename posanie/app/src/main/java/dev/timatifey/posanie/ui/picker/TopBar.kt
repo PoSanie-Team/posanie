@@ -403,14 +403,14 @@ fun TeachersTopBar(
                 IconButton (onClick = closeSearch) {
                     Icon(
                         imageVector = Icons.Filled.Close,
-                        contentDescription = "Localized description"
+                        contentDescription = stringResource(R.string.close_search_button_description)
                     )
                 }
             } else {
                 IconButton (onClick = submitSearch) {
                     Icon(
                         imageVector = Icons.Filled.Search,
-                        contentDescription = "Localized description"
+                        contentDescription = stringResource(R.string.search_button_description)
                     )
                 }
             }
@@ -434,8 +434,76 @@ fun TeachersSearchField(
         textStyle = textStyle,
         innerPadding = innerPadding,
         focusRequester = focusRequester,
-        prompt = "Type teacher name",
+        prompt = stringResource(R.string.teacher_search_prompt),
         onSelected = onSelected,
+        submitSearch = submitSearch
+    )
+}
+
+@Composable
+fun FacultiesTopBar(
+    navController: NavHostController,
+    isDone: Boolean,
+    searchTextState: MutableState<String>,
+    openSearch: () -> Unit,
+    updateSearch: () -> Unit,
+    submitSearch: () -> Unit,
+    closeSearch: () -> Unit
+) {
+    val focusRequester = FocusRequester()
+    BasicTopBar(
+        onBackClick = { navController.popBackStack() },
+        content = {
+            FacultiesSearchField(
+                searchTextState = searchTextState,
+                textStyle = MaterialTheme.typography.bodyMedium,
+                innerPadding = PaddingValues(6.dp),
+                onSelected = openSearch,
+                onChanged = updateSearch,
+                submitSearch = submitSearch,
+                focusRequester = focusRequester
+            )
+        },
+        actions = {
+            if (isDone) {
+                IconButton (onClick = closeSearch) {
+                    Icon(
+                        imageVector = Icons.Filled.Close,
+                        contentDescription = stringResource(R.string.close_search_button_description)
+                    )
+                }
+            } else {
+                IconButton (onClick = submitSearch) {
+                    Icon(
+                        imageVector = Icons.Filled.Search,
+                        contentDescription = stringResource(R.string.search_button_description)
+                    )
+                }
+            }
+        }
+    )
+}
+
+@Composable
+fun FacultiesSearchField(
+    modifier: Modifier = Modifier,
+    searchTextState: MutableState<String>,
+    textStyle: TextStyle = TextStyle.Default,
+    innerPadding: PaddingValues = PaddingValues(0.dp),
+    focusRequester: FocusRequester,
+    onSelected: () -> Unit,
+    onChanged: () -> Unit,
+    submitSearch: () -> Unit
+) {
+    BasicSearchField(
+        searchTextState = searchTextState,
+        modifier = modifier,
+        textStyle = textStyle,
+        innerPadding = innerPadding,
+        focusRequester = focusRequester,
+        prompt = stringResource(R.string.faculty_search_prompt),
+        onSelected = onSelected,
+        changeSideEffects = { onChanged() },
         submitSearch = submitSearch
     )
 }

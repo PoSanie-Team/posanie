@@ -23,7 +23,7 @@
 
     // Picker
     <string name="faculties">Faculties</string>
-    <string name="no_faculties_error">Can\'t to fetch faculties from server.</string>
+    <string name="no_faculties_error">No faculties found.</string>
     <string name="no_groups_error">No groups found.</string>
     <string name="level">%1$d year</string>
     <string name="groups">Groups</string>
@@ -32,6 +32,8 @@
     <string name="no_local_teachers">You have no teachers. Please add.</string>
     <string name="schedule_type_title">"What do you want to add?"</string>
     <string name="no_teachers_found">Can\'t find any teachers. Please try another search query.</string>
+    <string name="teacher_search_prompt">Type teacher name</string>
+    <string name="faculty_search_prompt">Type faculty name</string>
 
     <string name="arrow_back_description">Button to go back</string>
     <string name="search_button_description">Search button</string>
