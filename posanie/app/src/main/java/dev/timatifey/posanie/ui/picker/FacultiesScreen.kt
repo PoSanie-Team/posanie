@@ -45,7 +45,7 @@ fun FacultiesScreen(
                     modifier = Modifier.padding(paddingValues)
                 ) {
                     if (list.isEmpty()) {
-                        Text( "Can't to fetch faculties from server.", modifier = Modifier.padding(8.dp))
+                        Text( stringResource(R.string.no_faculties_error), modifier = Modifier.padding(8.dp))
                     } else {
                         FacultiesList(list, onFacultyPick)
                     }

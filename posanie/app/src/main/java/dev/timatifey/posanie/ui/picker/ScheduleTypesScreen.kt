@@ -1,9 +1,11 @@
 package dev.timatifey.posanie.ui.picker
 
+import androidx.activity.compose.BackHandler
 import androidx.compose.foundation.layout.*
 import androidx.compose.material3.*
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.CompositionLocalProvider
+import androidx.compose.runtime.collectAsState
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
@@ -14,21 +16,16 @@ import dev.timatifey.posanie.R
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun ScheduleTypeScreen(
+    viewModel: PickerViewModel,
     onBackClick: () -> Unit,
     selectGroups: () -> Unit,
     selectTeachers: () -> Unit
 ) {
-    Scaffold(
+    val uiState = viewModel.localUiState.collectAsState().value
+    val localScreenIsEmpty = uiState.levelsToGroups.isEmpty() && uiState.teachers.isEmpty()
+        Scaffold(
         topBar = {
-            BasicTopBar(
-                onBackClick = onBackClick,
-                content = {
-                    Text(
-                        text = stringResource(R.string.schedule_type_title),
-                        style = MaterialTheme.typography.titleMedium
-                    )
-                }
-            )
+            TopBarVariants(localScreenIsEmpty = localScreenIsEmpty, onBackClick = onBackClick)
         }
     ) { paddingValues ->
         Box (modifier = Modifier.padding(paddingValues)) {
@@ -39,6 +36,39 @@ fun ScheduleTypeScreen(
                 ScheduleTypeItem(name = stringResource(R.string.teachers), onClick = selectTeachers)
             }
         }
+    }
+
+    BackHandler {
+        if (!localScreenIsEmpty) {
+            onBackClick()
+        }
+    }
+}
+
+@Composable
+fun TopBarVariants(
+    localScreenIsEmpty: Boolean,
+    onBackClick: () -> Unit
+) {
+    if (localScreenIsEmpty) {
+        BasicTopBar(
+            content = {
+                Text(
+                    text = stringResource(R.string.schedule_type_title),
+                    style = MaterialTheme.typography.titleMedium
+                )
+            }
+        )
+    } else {
+        BasicTopBar(
+            onBackClick = onBackClick,
+            content = {
+                Text(
+                    text = stringResource(R.string.schedule_type_title),
+                    style = MaterialTheme.typography.titleMedium
+                )
+            }
+        )
     }
 }
 
