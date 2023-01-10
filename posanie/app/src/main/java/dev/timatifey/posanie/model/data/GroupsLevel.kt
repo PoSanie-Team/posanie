@@ -5,8 +5,12 @@ data class GroupsLevel(
     private val groupList: MutableList<Group> = mutableListOf()
 ) {
 
-    fun add(group: Group) {
+    fun addGroup(group: Group) {
         groupList.add(group)
+    }
+
+    fun sortGroups() {
+        groupList.sortBy { it.title }
     }
 
     fun getGroups(): List<Group> {
