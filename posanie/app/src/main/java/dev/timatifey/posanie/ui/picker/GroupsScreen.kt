@@ -43,7 +43,6 @@ import java.lang.IllegalArgumentException
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun RemoteGroupsScreen(
-    searchState: MutableState<SearchState>,
     pickerViewModel: PickerViewModel,
     remoteGroupsViewModel: RemoteGroupsViewModel,
     navController: NavHostController,
@@ -52,6 +51,7 @@ fun RemoteGroupsScreen(
     kindId: Long,
     typeId: String
 ) {
+    val searchState = remoteGroupsViewModel.searchState
     val courseSearchState = remoteGroupsViewModel.courseSearchState
     val groupSearchState = remoteGroupsViewModel.groupSearchState
 

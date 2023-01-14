@@ -23,7 +23,7 @@
 
     // Picker
     <string name="faculties">Факультеты</string>
-    <string name="no_faculties_error">Не получается получить факультеты с сервера.</string>
+    <string name="no_faculties_error">Факультеты не найдены.</string>
     <string name="no_groups_error">Группы не найдены.</string>
     <string name="level">%1$d курс</string>
     <string name="groups">Группы</string>
@@ -32,6 +32,8 @@
     <string name="no_local_teachers">У вас нет преподавателей. Пожалуйста добавьте.</string>
     <string name="schedule_type_title">"Что вы хотите добавить?"</string>
     <string name="no_teachers_found">Преподавателей не найдено. Попробуйте другой поисковый запрос.</string>
+    <string name="teacher_search_prompt">Введите имя преподавателя</string>
+    <string name="faculty_search_prompt">Введите название факультета</string>
 
     <string name="arrow_back_description">Кнопка для возврата назад</string>
     <string name="search_button_description">Кнопка для поиска</string>

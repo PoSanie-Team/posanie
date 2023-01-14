@@ -2,7 +2,6 @@ package dev.timatifey.posanie.ui.picker
 
 import android.view.KeyEvent
 import androidx.compose.animation.AnimatedVisibility
-import androidx.compose.animation.Crossfade
 import androidx.compose.animation.fadeIn
 import androidx.compose.animation.fadeOut
 import androidx.compose.foundation.background
@@ -60,29 +59,26 @@ fun GroupsTopBar(
     courseSearchState: MutableState<String>,
     groupSearchState: MutableState<String>,
 ) {
-    Crossfade(targetState = searchState.value) { state ->
-        when (state) {
-            SearchState.NOT_STARTED -> {
-                DefaultGroupsTopBar(
-                    navController = navController,
-                    facultyName = facultyName,
-                    searchState = searchState
-                )
-            }
-            else -> {
-                SearchGroupsTopBar(
-                    navController = navController,
-                    remoteGroupsViewModel = remoteGroupsViewModel,
-                    facultyId = facultyId,
-                    kindId = kindId,
-                    typeId = typeId,
-                    searchState = searchState,
-                    courseSearchState = courseSearchState,
-                    groupSearchState = groupSearchState
-                )
-            }
-        }
-
+    SearchGroupsTopBar(
+        navController = navController,
+        remoteGroupsViewModel = remoteGroupsViewModel,
+        facultyId = facultyId,
+        kindId = kindId,
+        typeId = typeId,
+        searchState = searchState,
+        courseSearchState = courseSearchState,
+        groupSearchState = groupSearchState
+    )
+    AnimatedVisibility(
+        visible = searchState.value == SearchState.NOT_STARTED,
+        enter = fadeIn(),
+        exit = fadeOut()
+    ) {
+        DefaultGroupsTopBar(
+            navController = navController,
+            facultyName = facultyName,
+            searchState = searchState
+        )
     }
 }
 
@@ -245,7 +241,11 @@ fun GroupsSearchField(
     val focusManager = LocalFocusManager.current
     LaunchedEffect(inProgress) {
         if (inProgress) {
-            courseFocusRequester.requestFocus()
+            if (courseTextState.value.length == COURSE_NAME_LENGTH) {
+                groupFocusRequester.requestFocus()
+            } else {
+                courseFocusRequester.requestFocus()
+            }
         } else {
             focusManager.clearFocus()
         }
@@ -292,7 +292,9 @@ fun GroupsSearchField(
             onMinLength = {
                 val startIndex = 0
                 val endIndex = courseTextState.value.length - 1
-                courseTextState.value = courseTextState.value.substring(startIndex, endIndex)
+                if (courseTextState.value.length == COURSE_NAME_LENGTH) {
+                    courseTextState.value = courseTextState.value.substring(startIndex, endIndex)
+                }
                 courseFocusRequester.requestFocus()
             },
             submitSearch = submitSearch
@@ -403,14 +405,14 @@ fun TeachersTopBar(
                 IconButton (onClick = closeSearch) {
                     Icon(
                         imageVector = Icons.Filled.Close,
-                        contentDescription = "Localized description"
+                        contentDescription = stringResource(R.string.close_search_button_description)
                     )
                 }
             } else {
                 IconButton (onClick = submitSearch) {
                     Icon(
                         imageVector = Icons.Filled.Search,
-                        contentDescription = "Localized description"
+                        contentDescription = stringResource(R.string.search_button_description)
                     )
                 }
             }
@@ -434,8 +436,156 @@ fun TeachersSearchField(
         textStyle = textStyle,
         innerPadding = innerPadding,
         focusRequester = focusRequester,
-        prompt = "Type teacher name",
+        prompt = stringResource(R.string.teacher_search_prompt),
         onSelected = onSelected,
+        submitSearch = submitSearch
+    )
+}
+
+@Composable
+fun FacultiesTopBar(
+    navController: NavHostController,
+    searchState: SearchState,
+    searchTextState: MutableState<String>,
+    isDone: Boolean,
+    openSearch: () -> Unit,
+    updateSearch: () -> Unit,
+    submitSearch: () -> Unit,
+    closeSearch: () -> Unit
+) {
+    SearchFacultiesTopBar(
+        navController = navController,
+        isDone = isDone,
+        searchTextState = searchTextState,
+        inProgress = searchState == SearchState.IN_PROGRESS,
+        openSearch = openSearch,
+        updateSearch = updateSearch,
+        submitSearch = submitSearch,
+        closeSearch = closeSearch
+    )
+
+    AnimatedVisibility(
+        visible = searchState == SearchState.NOT_STARTED,
+        enter = fadeIn(),
+        exit = fadeOut()
+    ) {
+        DefaultFacultiesTopBar(
+            navController = navController,
+            openSearch = openSearch
+        )
+    }
+}
+
+@OptIn(ExperimentalMaterial3Api::class)
+@Composable
+fun DefaultFacultiesTopBar(
+    navController: NavHostController,
+    openSearch: () -> Unit
+) {
+    SmallTopAppBar(
+        title = {
+            Text(
+                text = stringResource(R.string.faculties),
+                style = MaterialTheme.typography.titleMedium,
+                maxLines = 2,
+                overflow = TextOverflow.Ellipsis
+            )
+        },
+        navigationIcon = {
+            IconButton(onClick = { navController.popBackStack() }) {
+                Icon(
+                    imageVector = Icons.Filled.ArrowBack,
+                    contentDescription = stringResource(R.string.arrow_back_description)
+                )
+            }
+        },
+        actions = {
+            IconButton(onClick = openSearch) {
+                Icon(
+                    imageVector = Icons.Filled.Search,
+                    contentDescription = stringResource(R.string.search_button_description)
+                )
+            }
+        }
+    )
+}
+
+@Composable
+fun SearchFacultiesTopBar(
+    navController: NavHostController,
+    isDone: Boolean,
+    searchTextState: MutableState<String>,
+    inProgress: Boolean,
+    openSearch: () -> Unit,
+    updateSearch: () -> Unit,
+    submitSearch: () -> Unit,
+    closeSearch: () -> Unit
+) {
+    val focusRequester = remember { FocusRequester() }
+    BasicTopBar(
+        onBackClick = { navController.popBackStack() },
+        content = {
+            FacultiesSearchField(
+                searchTextState = searchTextState,
+                textStyle = MaterialTheme.typography.bodyMedium,
+                innerPadding = PaddingValues(6.dp),
+                inProgress = inProgress,
+                onSelected = openSearch,
+                onChanged = updateSearch,
+                submitSearch = submitSearch,
+                focusRequester = focusRequester
+            )
+        },
+        actions = {
+            if (isDone) {
+                IconButton (onClick = closeSearch) {
+                    Icon(
+                        imageVector = Icons.Filled.Close,
+                        contentDescription = stringResource(R.string.close_search_button_description)
+                    )
+                }
+            } else {
+                IconButton (onClick = submitSearch) {
+                    Icon(
+                        imageVector = Icons.Filled.Search,
+                        contentDescription = stringResource(R.string.search_button_description)
+                    )
+                }
+            }
+        }
+    )
+}
+
+@Composable
+fun FacultiesSearchField(
+    modifier: Modifier = Modifier,
+    searchTextState: MutableState<String>,
+    textStyle: TextStyle = TextStyle.Default,
+    innerPadding: PaddingValues = PaddingValues(0.dp),
+    inProgress: Boolean,
+    focusRequester: FocusRequester,
+    onSelected: () -> Unit,
+    onChanged: () -> Unit,
+    submitSearch: () -> Unit
+) {
+    val focusManager = LocalFocusManager.current
+    LaunchedEffect(inProgress) {
+        if (inProgress) {
+            focusRequester.requestFocus()
+        } else {
+            focusManager.clearFocus()
+        }
+    }
+
+    BasicSearchField(
+        searchTextState = searchTextState,
+        modifier = modifier,
+        textStyle = textStyle,
+        innerPadding = innerPadding,
+        focusRequester = focusRequester,
+        prompt = stringResource(R.string.faculty_search_prompt),
+        onSelected = onSelected,
+        changeSideEffects = { onChanged() },
         submitSearch = submitSearch
     )
 }

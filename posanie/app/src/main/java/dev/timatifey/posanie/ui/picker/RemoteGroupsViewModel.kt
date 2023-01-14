@@ -59,6 +59,7 @@ class RemoteGroupsViewModel @Inject constructor(
             SharingStarted.Eagerly,
             viewModelState.value.toUiState()
         )
+    val searchState = mutableStateOf(SearchState.NOT_STARTED)
     val courseSearchState = mutableStateOf("")
     val groupSearchState = mutableStateOf("")
 

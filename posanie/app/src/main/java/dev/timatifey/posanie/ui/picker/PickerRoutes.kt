@@ -50,7 +50,6 @@ fun TeachersRoute(
     pickerViewModel: PickerViewModel
 ) {
     val remoteTeachersViewModel = hiltViewModel<RemoteTeachersViewModel>()
-    val searchState = remember { mutableStateOf(SearchState.NOT_STARTED) }
 
     LaunchedEffect(true) {
         remoteTeachersViewModel.fetchTeachersBy("")
@@ -59,46 +58,21 @@ fun TeachersRoute(
     TeachersScreen(
         navController = navController,
         pickerViewModel = pickerViewModel,
-        remoteTeachersViewModel = remoteTeachersViewModel,
-        searchState = searchState
-    )
-}
-
-@Composable
-fun FacultiesRoute(
-    facultiesViewModel: FacultiesViewModel,
-    navController: NavHostController
-) {
-    val uiState by facultiesViewModel.uiState.collectAsState()
-    FacultiesRoute(
-        navController = navController,
-        uiState = uiState,
-        onFacultyPick = {
-            navController.navigate(RemoteNavItems.Groups.routeBy(facultyId = it.id))
-        },
-        refreshingState = rememberSwipeRefreshState(uiState.isLoading),
-        onRefresh = { facultiesViewModel.getFaculties() }
+        remoteTeachersViewModel = remoteTeachersViewModel
     )
 }
 
 @Composable
 fun FacultiesRoute(
     navController: NavHostController,
-    uiState: FacultiesUiState,
-    onFacultyPick: (Faculty) -> Unit,
-    refreshingState: SwipeRefreshState,
-    onRefresh: () -> Unit
+    facultiesViewModel: FacultiesViewModel
 ) {
-    when (uiState) {
-        is FacultiesUiState.FacultiesList -> FacultiesScreen(
-            onBackClick = { navController.popBackStack() },
-            list = uiState.faculties,
-            swipeRefreshState = refreshingState,
-            onFacultyPick = onFacultyPick,
-            onRefresh = onRefresh
-        )
-    }
+    FacultiesScreen(
+        navController = navController,
+        facultiesViewModel = facultiesViewModel,
+    )
 }
+
 @Composable
 fun RemoteGroupsRoute(
     navController: NavHostController,
@@ -109,7 +83,6 @@ fun RemoteGroupsRoute(
     typeId: String
 ) {
     val remoteGroupsViewModel = hiltViewModel<RemoteGroupsViewModel>()
-    val searchState = remember { mutableStateOf(SearchState.NOT_STARTED) }
 
     LaunchedEffect(facultyId, kindId, typeId) {
         remoteGroupsViewModel.selectFilters(kind = Kind.kindBy(kindId), type = Type.typeBy(typeId))
@@ -117,7 +90,6 @@ fun RemoteGroupsRoute(
     }
 
     RemoteGroupsScreen(
-        searchState = searchState,
         pickerViewModel = pickerViewModel,
         remoteGroupsViewModel = remoteGroupsViewModel,
         navController = navController,

@@ -5,49 +5,73 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.*
 import androidx.compose.material3.*
-import androidx.compose.runtime.Composable
-import androidx.compose.runtime.CompositionLocalProvider
+import androidx.compose.runtime.*
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.platform.LocalFocusManager
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
+import androidx.lifecycle.viewmodel.compose.viewModel
+import androidx.navigation.NavHostController
 import com.google.accompanist.swiperefresh.SwipeRefresh
 import com.google.accompanist.swiperefresh.SwipeRefreshState
+import com.google.accompanist.swiperefresh.rememberSwipeRefreshState
 import dev.timatifey.posanie.R
 import dev.timatifey.posanie.model.domain.Faculty
+import dev.timatifey.posanie.ui.RemoteNavItems
 
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun FacultiesScreen(
-    onBackClick: () -> Unit,
-    list: List<Faculty>,
-    swipeRefreshState: SwipeRefreshState,
-    onFacultyPick: (Faculty) -> Unit,
-    onRefresh: () -> Unit,
+    navController: NavHostController,
+    facultiesViewModel: FacultiesViewModel
 ) {
+    val uiState by facultiesViewModel.uiState.collectAsState()
+    val facultyList = uiState.faculties
+    val focusManager = LocalFocusManager.current
+    val searchState = facultiesViewModel.searchState
+    val searchTextState = facultiesViewModel.searchTextState
+    val swipeRefreshState = rememberSwipeRefreshState(uiState.isLoading)
+
     Scaffold(
         topBar = {
-            BasicTopBar(
-                onBackClick = onBackClick,
-                content = {
-                    Text(
-                        text = stringResource(R.string.faculties),
-                        style = MaterialTheme.typography.titleMedium
-                    )
-                }
-            )
+            FacultiesTopBar(
+                navController = navController,
+                isDone = searchState.value == SearchState.DONE,
+                searchState = searchState.value,
+                searchTextState = searchTextState,
+                openSearch = {
+                    searchState.value = SearchState.IN_PROGRESS
+                },
+                updateSearch = {
+                    facultiesViewModel.filterFaculties()
+                },
+                submitSearch = {
+                    searchState.value = SearchState.DONE
+                    focusManager.clearFocus()
+                },
+                closeSearch = {
+                    searchState.value = SearchState.NOT_STARTED
+                    searchTextState.value = ""
+                    facultiesViewModel.filterFaculties()
+                })
         }
     ) { paddingValues ->
-        SwipeRefresh(state = swipeRefreshState, onRefresh = onRefresh) {
+        SwipeRefresh(state = swipeRefreshState, onRefresh = { facultiesViewModel.fetchFaculties() }) {
             if (!swipeRefreshState.isRefreshing) {
                 Box(
                     modifier = Modifier.padding(paddingValues)
                 ) {
-                    if (list.isEmpty()) {
+                    if (facultyList.isEmpty()) {
                         Text( stringResource(R.string.no_faculties_error), modifier = Modifier.padding(8.dp))
                     } else {
-                        FacultiesList(list, onFacultyPick)
+                        FacultiesList(
+                            list = facultyList,
+                            onFacultyClick = {
+                                navController.navigate(RemoteNavItems.Groups.routeBy(facultyId = it.id))
+                            }
+                        )
                     }
                 }
             }
