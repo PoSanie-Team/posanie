@@ -2,8 +2,6 @@ package dev.timatifey.posanie.ui.picker
 
 import android.view.KeyEvent
 import androidx.compose.animation.AnimatedVisibility
-import androidx.compose.animation.Crossfade
-import androidx.compose.animation.core.MutableTransitionState
 import androidx.compose.animation.fadeIn
 import androidx.compose.animation.fadeOut
 import androidx.compose.foundation.background
@@ -61,29 +59,26 @@ fun GroupsTopBar(
     courseSearchState: MutableState<String>,
     groupSearchState: MutableState<String>,
 ) {
-    Crossfade(targetState = searchState.value) { state ->
-        when (state) {
-            SearchState.NOT_STARTED -> {
-                DefaultGroupsTopBar(
-                    navController = navController,
-                    facultyName = facultyName,
-                    searchState = searchState
-                )
-            }
-            else -> {
-                SearchGroupsTopBar(
-                    navController = navController,
-                    remoteGroupsViewModel = remoteGroupsViewModel,
-                    facultyId = facultyId,
-                    kindId = kindId,
-                    typeId = typeId,
-                    searchState = searchState,
-                    courseSearchState = courseSearchState,
-                    groupSearchState = groupSearchState
-                )
-            }
-        }
-
+    SearchGroupsTopBar(
+        navController = navController,
+        remoteGroupsViewModel = remoteGroupsViewModel,
+        facultyId = facultyId,
+        kindId = kindId,
+        typeId = typeId,
+        searchState = searchState,
+        courseSearchState = courseSearchState,
+        groupSearchState = groupSearchState
+    )
+    AnimatedVisibility(
+        visible = searchState.value == SearchState.NOT_STARTED,
+        enter = fadeIn(),
+        exit = fadeOut()
+    ) {
+        DefaultGroupsTopBar(
+            navController = navController,
+            facultyName = facultyName,
+            searchState = searchState
+        )
     }
 }
 
@@ -246,7 +241,11 @@ fun GroupsSearchField(
     val focusManager = LocalFocusManager.current
     LaunchedEffect(inProgress) {
         if (inProgress) {
-            courseFocusRequester.requestFocus()
+            if (courseTextState.value.length == COURSE_NAME_LENGTH) {
+                groupFocusRequester.requestFocus()
+            } else {
+                courseFocusRequester.requestFocus()
+            }
         } else {
             focusManager.clearFocus()
         }
@@ -293,7 +292,9 @@ fun GroupsSearchField(
             onMinLength = {
                 val startIndex = 0
                 val endIndex = courseTextState.value.length - 1
-                courseTextState.value = courseTextState.value.substring(startIndex, endIndex)
+                if (courseTextState.value.length == COURSE_NAME_LENGTH) {
+                    courseTextState.value = courseTextState.value.substring(startIndex, endIndex)
+                }
                 courseFocusRequester.requestFocus()
             },
             submitSearch = submitSearch
@@ -452,28 +453,26 @@ fun FacultiesTopBar(
     submitSearch: () -> Unit,
     closeSearch: () -> Unit
 ) {
-    Crossfade(targetState = searchState) { state ->
-        when (state) {
-            SearchState.NOT_STARTED -> {
-                DefaultFacultiesTopBar(
-                    navController = navController,
-                    openSearch = openSearch
-                )
-            }
-            else -> {
-                SearchFacultiesTopBar(
-                    navController = navController,
-                    isDone = isDone,
-                    searchTextState = searchTextState,
-                    inProgress = searchState == SearchState.IN_PROGRESS,
-                    openSearch = openSearch,
-                    updateSearch = updateSearch,
-                    submitSearch = submitSearch,
-                    closeSearch = closeSearch
-                )
-            }
-        }
+    SearchFacultiesTopBar(
+        navController = navController,
+        isDone = isDone,
+        searchTextState = searchTextState,
+        inProgress = searchState == SearchState.IN_PROGRESS,
+        openSearch = openSearch,
+        updateSearch = updateSearch,
+        submitSearch = submitSearch,
+        closeSearch = closeSearch
+    )
 
+    AnimatedVisibility(
+        visible = searchState == SearchState.NOT_STARTED,
+        enter = fadeIn(),
+        exit = fadeOut()
+    ) {
+        DefaultFacultiesTopBar(
+            navController = navController,
+            openSearch = openSearch
+        )
     }
 }
 
