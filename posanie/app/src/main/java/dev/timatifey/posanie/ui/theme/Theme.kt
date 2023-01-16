@@ -13,50 +13,116 @@ import androidx.compose.runtime.SideEffect
 import androidx.compose.ui.graphics.toArgb
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalView
-import androidx.core.view.ViewCompat
+import androidx.core.view.WindowCompat
+import dev.timatifey.posanie.model.domain.AppColorScheme
+import dev.timatifey.posanie.model.domain.AppTheme
 
-private val DarkColorScheme = darkColorScheme(
-    primary = Purple80,
-    secondary = PurpleGrey80,
-    tertiary = Pink80
-)
-
-private val LightColorScheme = lightColorScheme(
+private val LightPurpleColorScheme = lightColorScheme(
     primary = Purple40,
     secondary = PurpleGrey40,
-    tertiary = Pink40
+    tertiary = Pink40,
+    primaryContainer = Purple90,
+    secondaryContainer = PurpleGrey90,
+    surfaceVariant = DesaturatedPurpleGrey95
+)
 
-    /* Other default colors to override
-    background = Color(0xFFFFFBFE),
-    surface = Color(0xFFFFFBFE),
-    onPrimary = Color.White,
-    onSecondary = Color.White,
-    onTertiary = Color.White,
-    onBackground = Color(0xFF1C1B1F),
-    onSurface = Color(0xFF1C1B1F),
-    */
+private val DarkPurpleColorScheme = darkColorScheme(
+    primary = Purple80,
+    secondary = PurpleGrey80,
+    tertiary = Pink80,
+    primaryContainer = Purple30,
+    secondaryContainer = PurpleGrey30,
+    surfaceVariant = DesaturatedPurpleGrey35
+)
+
+private val LightPinkColorScheme = lightColorScheme(
+    primary = SaturatedPink40,
+    secondary = PinkGrey40,
+    tertiary = Sand40,
+    primaryContainer = SaturatedPink90,
+    secondaryContainer = PinkGrey90,
+    surfaceVariant = DesaturatedPinkGrey95
+)
+
+private val DarkPinkColorScheme = darkColorScheme(
+    primary = SaturatedPink80,
+    secondary = PinkGrey80,
+    tertiary = Sand80,
+    primaryContainer = SaturatedPink30,
+    secondaryContainer = PinkGrey30,
+    surfaceVariant = DesaturatedPinkGrey35
+)
+
+private val LightGreenColorScheme = lightColorScheme(
+    primary = Green40,
+    secondary = GreenGrey40,
+    tertiary = Blue40,
+    primaryContainer = Green90,
+    secondaryContainer = GreenGrey90,
+    surfaceVariant = DesaturatedGreenGrey95
+)
+
+private val DarkGreenColorScheme = darkColorScheme(
+    primary = Green80,
+    secondary = GreenGrey80,
+    tertiary = Blue80,
+    primaryContainer = Green30,
+    secondaryContainer = GreenGrey30,
+    surfaceVariant = DesaturatedGreenGrey35
+)
+
+private val ContrastColorScheme = darkColorScheme(
+    primary = Purple80,
+    secondary = PurpleGrey80,
+    tertiary = Pink80,
+    primaryContainer = Purple30,
+    secondaryContainer = PurpleGrey30,
+    surface = Black,
+    surfaceVariant = DesaturatedPurpleGrey35,
+    background = Black
 )
 
 @Composable
 fun PoSanieTheme(
-    darkTheme: Boolean = isSystemInDarkTheme(),
+    appTheme: AppTheme,
+    appColorScheme: AppColorScheme,
     // Dynamic color is available on Android 12+
-    dynamicColor: Boolean = true,
     content: @Composable () -> Unit
 ) {
-    val colorScheme = when {
-        dynamicColor && Build.VERSION.SDK_INT >= Build.VERSION_CODES.S -> {
-            val context = LocalContext.current
-            if (darkTheme) dynamicDarkColorScheme(context) else dynamicLightColorScheme(context)
-        }
-        darkTheme -> DarkColorScheme
-        else -> LightColorScheme
+    val darkTheme = when(appTheme) {
+        AppTheme.SYSTEM -> isSystemInDarkTheme()
+        AppTheme.LIGHT -> false
+        AppTheme.DARK -> true
     }
+    val canUseDynamicColor = Build.VERSION.SDK_INT >= Build.VERSION_CODES.S
+
+    val purpleColorScheme = if (darkTheme) DarkPurpleColorScheme else LightPurpleColorScheme
+    val pinkColorScheme = if (darkTheme) DarkPinkColorScheme else LightPinkColorScheme
+    val greenColorScheme = if (darkTheme) DarkGreenColorScheme else LightGreenColorScheme
+    val contrastColorScheme = if (darkTheme) ContrastColorScheme else LightPurpleColorScheme
+
+    val context = LocalContext.current
+    val systemColorScheme = if (canUseDynamicColor) {
+        if (darkTheme) dynamicDarkColorScheme(context) else dynamicLightColorScheme(context)
+    } else {
+        purpleColorScheme
+    }
+
+    val colorScheme = when(appColorScheme) {
+        AppColorScheme.SYSTEM -> systemColorScheme
+        AppColorScheme.PURPLE -> purpleColorScheme
+        AppColorScheme.PINK -> pinkColorScheme
+        AppColorScheme.GREEN -> greenColorScheme
+        AppColorScheme.CONTRAST -> contrastColorScheme
+    }
+
     val view = LocalView.current
     if (!view.isInEditMode) {
+        val currentWindow = (view.context as? Activity)?.window
+            ?: throw Exception("Not in an activity - unable to get Window reference")
         SideEffect {
             (view.context as Activity).window.statusBarColor = colorScheme.primary.toArgb()
-            ViewCompat.getWindowInsetsController(view)?.isAppearanceLightStatusBars = darkTheme
+            WindowCompat.getInsetsController(currentWindow, view).isAppearanceLightStatusBars = darkTheme
         }
     }
 

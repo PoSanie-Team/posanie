@@ -16,9 +16,15 @@
 
     // Settings
     <string name="theme">Theme</string>
-    <string name="system_theme">System Theme</string>
-    <string name="light_theme">Light Theme</string>
-    <string name="dark_theme">Dark Theme</string>
+    <string name="system_theme">System</string>
+    <string name="light_theme">Light</string>
+    <string name="dark_theme">Dark</string>
+    <string name="color_scheme">Color Scheme</string>
+    <string name="system_scheme">System</string>
+    <string name="purple_scheme">Purple</string>
+    <string name="pink_scheme">Pink</string>
+    <string name="green_scheme">Green</string>
+    <string name="contrast_scheme">Contrast</string>
     <string name="language">Language</string>
 
     // Picker

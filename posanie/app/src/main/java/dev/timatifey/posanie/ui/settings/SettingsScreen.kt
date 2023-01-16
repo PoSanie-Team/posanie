@@ -14,6 +14,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import dev.timatifey.posanie.R
+import dev.timatifey.posanie.model.domain.AppColorScheme
 import dev.timatifey.posanie.model.domain.AppTheme
 import dev.timatifey.posanie.model.domain.Language
 
@@ -32,6 +33,10 @@ fun SettingsScreen(
         ThemeSettings(
             selectedTheme = uiState.theme,
             onThemeClick = { settingsViewModel.saveAndPickTheme(it) }
+        )
+        ColorSchemeSettings(
+            selectedColorScheme = uiState.colorScheme,
+            onColorSchemeClick = { settingsViewModel.saveAndPickColorScheme(it) }
         )
         LanguageSettings(
             selectedLanguage = uiState.language,
@@ -75,6 +80,45 @@ fun ThemeOption(
         modifier = modifier,
         optionDescription = {
             Text(text = stringResource(theme.nameId))
+        },
+        selector = {
+            RadioButton(selected = selected, onClick = onClick)
+        }
+    )
+}
+
+@Composable
+fun ColorSchemeSettings(
+    selectedColorScheme: AppColorScheme,
+    onColorSchemeClick: (AppColorScheme) -> Unit
+) {
+    Column(modifier = Modifier.fillMaxWidth()) {
+        Text(
+            text = stringResource(R.string.color_scheme),
+            style = MaterialTheme.typography.titleLarge,
+            modifier = Modifier.padding(horizontal = 4.dp, vertical = 8.dp)
+        )
+        for (colorScheme in AppColorScheme.values()) {
+            ColorSchemeOption(
+                colorScheme = colorScheme,
+                selected = selectedColorScheme == colorScheme,
+                onClick = { onColorSchemeClick(colorScheme) }
+            )
+        }
+    }
+}
+
+@Composable
+fun ColorSchemeOption(
+    modifier: Modifier = Modifier.padding(horizontal = 4.dp, vertical = 2.dp),
+    colorScheme: AppColorScheme,
+    selected: Boolean,
+    onClick: () -> Unit
+) {
+    SettingsOption(
+        modifier = modifier,
+        optionDescription = {
+            Text(text = stringResource(colorScheme.nameId))
         },
         selector = {
             RadioButton(selected = selected, onClick = onClick)
