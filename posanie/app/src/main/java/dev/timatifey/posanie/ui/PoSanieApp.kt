@@ -29,17 +29,14 @@ fun PoSanieApp(activity: MainActivity) {
 
     LaunchedEffect(true) {
         settingsViewModel.getTheme()
+        settingsViewModel.getColorScheme()
         settingsViewModel.getLanguage()
     }
 
-    val darkTheme =
-        when (uiState.theme) {
-            AppTheme.DARK -> true
-            AppTheme.LIGHT -> false
-            else -> isSystemInDarkTheme()
-        }
+
     PoSanieTheme(
-        darkTheme = darkTheme
+        appTheme = uiState.theme,
+        appColorScheme = uiState.colorScheme
     ) {
         val navController = rememberNavController()
         val bottomNavItems = listOf(

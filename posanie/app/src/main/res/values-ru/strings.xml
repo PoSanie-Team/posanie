@@ -16,9 +16,15 @@
 
     // Settings
     <string name="theme">Тема</string>
-    <string name="system_theme">Системная тема</string>
-    <string name="light_theme">Светлая тема</string>
-    <string name="dark_theme">Тёмная тема</string>
+    <string name="system_theme">Системная</string>
+    <string name="light_theme">Светлая</string>
+    <string name="dark_theme">Тёмная</string>
+    <string name="color_scheme">Цветовая схема</string>
+    <string name="system_scheme">Системная</string>
+    <string name="purple_scheme">Фиолетовая</string>
+    <string name="pink_scheme">Розовая</string>
+    <string name="green_scheme">Зеленая</string>
+    <string name="contrast_scheme">Контрастная</string>
     <string name="language">Язык</string>
 
     // Picker
