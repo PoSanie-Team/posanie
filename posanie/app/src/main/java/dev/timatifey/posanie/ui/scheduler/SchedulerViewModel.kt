@@ -109,22 +109,16 @@ enum class Month(@StringRes val fullNameId: Int) {
     }
 }
 
-sealed interface SchedulerUiState {
-
-    val isLoading: Boolean
-    val errorMessages: List<ErrorMessage>
-
-    data class UiState(
-        val hasSchedule: Boolean = false,
-        val weekIsOdd: Boolean = false,
-        val lessonsToDays: Map<WeekDay, List<Lesson>>,
-        val mondayDate: Calendar,
-        val selectedDate: Calendar,
-        val selectedDay: WeekDay,
-        override val isLoading: Boolean,
-        override val errorMessages: List<ErrorMessage>,
-    ) : SchedulerUiState
-}
+data class SchedulerUiState(
+    val hasSchedule: Boolean = false,
+    val weekIsOdd: Boolean = false,
+    val lessonsToDays: Map<WeekDay, List<Lesson>>,
+    val mondayDate: Calendar,
+    val selectedDate: Calendar,
+    val selectedDay: WeekDay,
+    val isLoading: Boolean,
+    val errorMessages: List<ErrorMessage>,
+)
 
 private data class SchedulerViewModelState(
     val hasSchedule: Boolean = false,
@@ -134,7 +128,7 @@ private data class SchedulerViewModelState(
     val mondayDate: Calendar,
     val selectedDate: Calendar,
     val selectedDay: WeekDay,
-    val isLoading: Boolean = false,
+    val isLoading: Int = 0,
     val errorMessages: List<ErrorMessage> = emptyList(),
 ) {
     companion object {
@@ -142,7 +136,6 @@ private data class SchedulerViewModelState(
             val todayDate: Calendar = Calendar.getInstance()
 
             val today = WeekDay.getWorkDayByOrdinal(todayDate.get(Calendar.DAY_OF_WEEK))
-            val monthOnCalendar = Month.getByOrdinal(todayDate.get(Calendar.MONTH))
 
             val todayYear = todayDate.get(Calendar.YEAR)
             val todayMonth = todayDate.get(Calendar.MONTH)
@@ -159,7 +152,7 @@ private data class SchedulerViewModelState(
                 mondayDate = mondayDate,
                 selectedDate = todayDate,
                 selectedDay = today,
-                isLoading = true,
+                isLoading = 0,
                 hasSchedule = false
             )
         }
@@ -169,15 +162,15 @@ private data class SchedulerViewModelState(
         }
     }
 
-    fun toUiState(): SchedulerUiState.UiState =
-        SchedulerUiState.UiState(
+    fun toUiState(): SchedulerUiState =
+        SchedulerUiState(
             hasSchedule = hasSchedule,
             weekIsOdd = weekIsOdd,
             lessonsToDays = lessonsToDays ?: emptyMap(),
             mondayDate = mondayDate,
             selectedDate = selectedDate,
             selectedDay = selectedDay,
-            isLoading = isLoading,
+            isLoading = isLoading > 0,
             errorMessages = errorMessages,
         )
 }
@@ -191,7 +184,7 @@ class SchedulerViewModel @Inject constructor(
 
     private val viewModelState = MutableStateFlow(SchedulerViewModelState.getInstance())
 
-    val uiState: StateFlow<SchedulerUiState.UiState> = viewModelState
+    val uiState: StateFlow<SchedulerUiState> = viewModelState
         .map { it.toUiState() }
         .stateIn(
             viewModelScope,
@@ -306,7 +299,7 @@ class SchedulerViewModel @Inject constructor(
     }
 
     fun fetchLessons() {
-        viewModelState.update { it.copy(isLoading = true) }
+        viewModelState.update { it.copy(isLoading = it.isLoading + 1) }
 
         viewModelScope.launch {
             val group: Group? = groupsUseCase.getPickedGroup().successOr(null)
@@ -325,7 +318,7 @@ class SchedulerViewModel @Inject constructor(
                 lessonsResult = lessonsUseCase.fetchLessonsByTeacherId(teacher.id, mondayDateString)
                 isOddResult = lessonsUseCase.fetchWeekOddnessByTeacherId(teacher.id, mondayDateString)
             } else {
-                viewModelState.update { it.copy(isLoading = false, hasSchedule = false) }
+                viewModelState.update { it.copy(isLoading = it.isLoading - 1, hasSchedule = false) }
                 return@launch
             }
             val newLessonToDays = lessonsResult.successOr(emptyMap())
@@ -336,7 +329,7 @@ class SchedulerViewModel @Inject constructor(
                     weekIsOdd = weekIsOdd,
                     lessonsToDays = newLessonToDays,
                     selectedLessons = newLessonToDays[state.selectedDay],
-                    isLoading = false,
+                    isLoading = state.isLoading - 1,
                 )
             }
         }
