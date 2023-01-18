@@ -8,28 +8,27 @@ import dev.timatifey.posanie.model.cache.*
 
 @Database(
     entities = [
-        Scheduler::class,
-        SchedulerWeek::class,
+        GroupSchedulerWeek::class,
+        TeacherSchedulerWeek::class,
         SchedulerDay::class,
         Lesson::class,
         Group::class,
         Faculty::class,
         Teacher::class
     ],
-    version = 1
+    version = 4
 )
 @TypeConverters(
-    SchedulerWeekConverter::class,
-    SchedulerDaysConverter::class,
-    DayLessonsConverter::class,
+    WeekDayConverter::class,
+    IntListConverter::class,
+    CalendarConverter::class
 )
 abstract class SchedulerRoomDatabase : RoomDatabase() {
 
-    abstract fun SchedulerDao(): SchedulerDao
     abstract fun GroupsDao(): GroupsDao
     abstract fun FacultiesDao(): FacultiesDao
     abstract fun TeachersDao(): TeachersDao
-    abstract fun LessonsDao(): LessonsDao
+    abstract fun SchedulerDao(): SchedulerDao
 
     companion object {
         const val DATABASE_NAME = "scheduler_db"

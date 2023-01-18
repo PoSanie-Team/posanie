@@ -1,33 +1,213 @@
 package dev.timatifey.posanie.usecases
 
+import android.content.res.Resources.NotFoundException
 import dev.timatifey.posanie.api.LessonsAPI
-import dev.timatifey.posanie.cache.LessonsDao
+import dev.timatifey.posanie.cache.SchedulerDao
 import dev.timatifey.posanie.model.Result
+import dev.timatifey.posanie.model.cache.GroupSchedulerWeek
+import dev.timatifey.posanie.model.cache.SchedulerDay
+import dev.timatifey.posanie.model.cache.SchedulerWeek
+import dev.timatifey.posanie.model.cache.TeacherSchedulerWeek
 import dev.timatifey.posanie.model.domain.Lesson
 import dev.timatifey.posanie.model.mappers.LessonMapper
 import dev.timatifey.posanie.ui.scheduler.WeekDay
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
+import java.util.*
 import javax.inject.Inject
 
 interface LessonsUseCase {
-    suspend fun getLessons(): Result<List<Lesson>>
+    suspend fun getLessonsByGroupId(groupId: Long): Result<Map<WeekDay, List<Lesson>>>
+    suspend fun getLessonsByTeacherId(teacherId: Long): Result<Map<WeekDay, List<Lesson>>>
+    suspend fun saveGroupLessons(
+        groupId: Long,
+        mondayDate: Calendar,
+        weekIsOdd: Boolean,
+        lessonsToWeekDays: Map<WeekDay, List<Lesson>>,
+    ): Result<Boolean>
+    suspend fun saveTeacherLessons(
+        teacherId: Long,
+        mondayDate: Calendar,
+        weekIsOdd: Boolean,
+        lessonsToWeekDays: Map<WeekDay, List<Lesson>>
+    ): Result<Boolean>
+    suspend fun getGroupSchedulerWeekOddness(groupId: Long): Result<Boolean>
+    suspend fun getTeacherSchedulerWeekOddness(teacherId: Long): Result<Boolean>
+    suspend fun getGroupSchedulerWeekMonday(groupId: Long): Result<Calendar>
+    suspend fun getTeacherSchedulerWeekMonday(teacherId: Long): Result<Calendar>
     suspend fun fetchLessonsByGroupId(groupId: Long, date: String): Result<Map<WeekDay, List<Lesson>>>
     suspend fun fetchLessonsByTeacherId(teacherId: Long, date: String): Result<Map<WeekDay, List<Lesson>>>
     suspend fun fetchWeekOddnessByGroupId(groupId: Long, date: String): Result<Boolean>
     suspend fun fetchWeekOddnessByTeacherId(groupId: Long, date: String): Result<Boolean>
 }
 
+private enum class SchedulerType {
+    GROUP, TEACHER
+}
+
 class LessonsUseCaseImpl @Inject constructor(
     private val lessonMapper: LessonMapper,
-    private val lessonsDao: LessonsDao,
+    private val schedulerDao: SchedulerDao,
     private val lessonsApi: LessonsAPI,
 ) : LessonsUseCase {
-    override suspend fun getLessons(): Result<List<Lesson>> =
+
+    override suspend fun getLessonsByGroupId(groupId: Long): Result<Map<WeekDay, List<Lesson>>> =
         withContext(Dispatchers.IO) {
-            return@withContext Result.Success(
-                lessonsDao.getLessons().map { lesson -> lessonMapper.cacheToDomain(lesson) }
+            val schedulerWeek = schedulerDao.getSchedulerWeekByGroupId(groupId)
+                ?: return@withContext Result.Error(NotFoundException())
+            return@withContext getLessonsFromSchedulerWeek(schedulerWeek)
+        }
+
+    override suspend fun getLessonsByTeacherId(teacherId: Long): Result<Map<WeekDay, List<Lesson>>> =
+        withContext(Dispatchers.IO) {
+            val schedulerWeek = schedulerDao.getSchedulerWeekByTeacherId(teacherId)
+                ?: return@withContext Result.Error(NotFoundException())
+            return@withContext getLessonsFromSchedulerWeek(schedulerWeek)
+        }
+
+    override suspend fun saveGroupLessons(
+        groupId: Long,
+        mondayDate: Calendar,
+        weekIsOdd: Boolean,
+        lessonsToWeekDays: Map<WeekDay, List<Lesson>>
+    ): Result<Boolean> =
+        withContext(Dispatchers.IO) {
+            try {
+                val schedulerDays = createSchedulerDays(
+                    weekId = groupId,
+                    schedulerType = SchedulerType.GROUP,
+                    lessonsToWeekDays = lessonsToWeekDays
+                )
+                saveLessons(lessonsToWeekDays)
+                saveSchedulerDays(schedulerDays)
+                val isOdd = if (weekIsOdd) 1 else 0
+                val groupSchedulerWeek = GroupSchedulerWeek(
+                    id = groupId,
+                    isOdd = isOdd,
+                    mondayDate = mondayDate,
+                    schedulerDays = schedulerDays.map { it.id }
+                )
+                schedulerDao.upsertGroupSchedulerWeek(groupSchedulerWeek)
+                return@withContext Result.Success(true)
+            } catch (e: Exception) {
+                return@withContext Result.Error(e)
+            }
+        }
+
+    override suspend fun saveTeacherLessons(
+        teacherId: Long,
+        mondayDate: Calendar,
+        weekIsOdd: Boolean,
+        lessonsToWeekDays: Map<WeekDay, List<Lesson>>
+    ): Result<Boolean> =
+        withContext(Dispatchers.IO) {
+            try {
+                val schedulerDays = createSchedulerDays(
+                    weekId = teacherId,
+                    schedulerType = SchedulerType.TEACHER,
+                    lessonsToWeekDays = lessonsToWeekDays
+                )
+                saveLessons(lessonsToWeekDays)
+                saveSchedulerDays(schedulerDays)
+                val isOdd = if (weekIsOdd) 1 else 0
+                val groupSchedulerWeek = TeacherSchedulerWeek(
+                    id = teacherId,
+                    isOdd = isOdd,
+                    mondayDate = mondayDate,
+                    schedulerDays = schedulerDays.map { it.id }
+                )
+                schedulerDao.upsertTeacherSchedulerWeek(groupSchedulerWeek)
+                return@withContext Result.Success(true)
+            } catch (e: Exception) {
+                return@withContext Result.Error(e)
+            }
+        }
+
+    private suspend fun saveLessons(lessonsToWeekDays: Map<WeekDay, List<Lesson>>) =
+        withContext(Dispatchers.IO) {
+            for (weekDay in lessonsToWeekDays.keys) {
+                val lessons = lessonsToWeekDays[weekDay] ?: continue
+                schedulerDao.upsertLessons(lessons.map { lessonMapper.domainToCache(it) })
+            }
+        }
+
+    private fun createSchedulerDays(
+        schedulerType: SchedulerType,
+        weekId: Long,
+        lessonsToWeekDays: Map<WeekDay, List<Lesson>>
+    ): List<SchedulerDay> {
+        val schedulerDays = mutableListOf<SchedulerDay>()
+        for (weekDay in lessonsToWeekDays.keys) {
+            val lessons = lessonsToWeekDays[weekDay] ?: continue
+            val schedulerDay = SchedulerDay(
+                id = createSchedulerDayId(
+                    schedulerType = schedulerType,
+                    weekId = weekId,
+                    weekDay = weekDay
+                ),
+                weekDay = weekDay,
+                lessons = lessons.map { it.id }
             )
+            schedulerDays.add(schedulerDay)
+        }
+        return schedulerDays
+    }
+
+    private suspend fun saveSchedulerDays(schedulerDays: List<SchedulerDay>) =
+        withContext(Dispatchers.IO) {
+            schedulerDays.forEach { schedulerDay ->
+                schedulerDao.upsertSchedulerDay(schedulerDay)
+            }
+        }
+
+    private fun createSchedulerDayId(schedulerType: SchedulerType, weekId: Long, weekDay: WeekDay): Long {
+        val typePrefix = when(schedulerType) {
+            SchedulerType.GROUP -> 1
+            SchedulerType.TEACHER -> 2
+        }
+        val dayIdString = typePrefix.toString() + weekId.toString() + weekDay.ordinal.toString()
+        return dayIdString.toLong()
+    }
+
+    override suspend fun getGroupSchedulerWeekOddness(groupId: Long): Result<Boolean> =
+        withContext(Dispatchers.IO) {
+            val schedulerWeek = schedulerDao.getSchedulerWeekByGroupId(groupId)
+                ?: return@withContext Result.Error(NotFoundException())
+            val weekIsOdd = schedulerWeek.isOdd != 0
+            return@withContext Result.Success(weekIsOdd)
+        }
+
+    override suspend fun getTeacherSchedulerWeekOddness(teacherId: Long): Result<Boolean> =
+        withContext(Dispatchers.IO) {
+            val schedulerWeek = schedulerDao.getSchedulerWeekByTeacherId(teacherId)
+                ?: return@withContext Result.Error(NotFoundException())
+            val weekIsOdd = schedulerWeek.isOdd != 0
+            return@withContext Result.Success(weekIsOdd)
+        }
+
+    override suspend fun getGroupSchedulerWeekMonday(groupId: Long): Result<Calendar> =
+        withContext(Dispatchers.IO) {
+            val schedulerWeek = schedulerDao.getSchedulerWeekByGroupId(groupId)
+                ?: return@withContext Result.Error(NotFoundException())
+            return@withContext Result.Success(schedulerWeek.mondayDate)
+        }
+
+    override suspend fun getTeacherSchedulerWeekMonday(teacherId: Long): Result<Calendar> =
+        withContext(Dispatchers.IO) {
+            val schedulerWeek = schedulerDao.getSchedulerWeekByTeacherId(teacherId)
+                ?: return@withContext Result.Error(NotFoundException())
+            return@withContext Result.Success(schedulerWeek.mondayDate)
+        }
+
+    private suspend fun getLessonsFromSchedulerWeek(schedulerWeek: SchedulerWeek): Result<Map<WeekDay, List<Lesson>>> =
+        withContext(Dispatchers.IO) {
+            val schedulerDays = schedulerDao.getSchedulersDaysByIds(schedulerWeek.schedulerDays)
+            val lessonsToWeekDays = mutableMapOf<WeekDay, List<Lesson>>()
+            schedulerDays.forEach { schedulerDay ->
+                val lessons = schedulerDao.getLessonsByIds(schedulerDay.lessons)
+                lessonsToWeekDays[schedulerDay.weekDay] = lessons.map { lessonMapper.cacheToDomain(it) }
+            }
+            return@withContext Result.Success(lessonsToWeekDays)
         }
 
     override suspend fun fetchLessonsByGroupId(

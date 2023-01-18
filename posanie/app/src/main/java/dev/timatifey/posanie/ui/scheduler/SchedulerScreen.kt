@@ -313,20 +313,3 @@ fun LessonItemPreview() {
         )
     )
 }
-
-@Preview
-@Composable
-fun ShortLessonItemPreview() {
-    LessonItem(
-        lesson = Lesson(
-            id = 0,
-            start = "10:00",
-            end = "11:40",
-            name = "Военная подготовка",
-            type = "Лабораторные",
-            place = "3-й учебный корпус, 401",
-            teacher = "Лупин Анатолий Викторович",
-            lmsUrl = ""
-        )
-    )
-}
