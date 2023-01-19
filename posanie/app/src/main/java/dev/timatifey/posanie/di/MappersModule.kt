@@ -1,15 +1,9 @@
 package dev.timatifey.posanie.di
 
-import android.content.Context
-import androidx.room.Room
 import dagger.Module
 import dagger.Provides
 import dagger.hilt.InstallIn
-import dagger.hilt.android.qualifiers.ApplicationContext
 import dagger.hilt.components.SingletonComponent
-import dev.timatifey.posanie.cache.GroupsDao
-import dev.timatifey.posanie.cache.SchedulerDao
-import dev.timatifey.posanie.cache.SchedulerRoomDatabase
 import dev.timatifey.posanie.model.mappers.*
 import javax.inject.Singleton
 

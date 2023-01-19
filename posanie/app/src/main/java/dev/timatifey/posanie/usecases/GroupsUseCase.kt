@@ -2,7 +2,9 @@ package dev.timatifey.posanie.usecases
 
 import dev.timatifey.posanie.api.GroupsAPI
 import dev.timatifey.posanie.cache.GroupsDao
+import dev.timatifey.posanie.cache.SchedulerDao
 import dev.timatifey.posanie.model.Result
+import dev.timatifey.posanie.model.cache.Lesson
 import dev.timatifey.posanie.model.domain.Group
 import dev.timatifey.posanie.model.domain.GroupsLevel
 import dev.timatifey.posanie.model.mappers.GroupMapper
@@ -25,6 +27,7 @@ class GroupsUseCaseImpl @Inject constructor(
     private val groupMapper: GroupMapper,
     private val groupsLevelMapper: GroupsLevelMapper,
     private val groupsDao: GroupsDao,
+    private val schedulerDao: SchedulerDao,
     private val groupsAPI: GroupsAPI,
 ) : GroupsUseCase {
 
@@ -97,9 +100,21 @@ class GroupsUseCaseImpl @Inject constructor(
         withContext(Dispatchers.IO) {
             try {
                 groupsDao.deleteGroupById(group.id)
+                deleteGroupLessonsCache(group.id)
                 return@withContext Result.Success(true)
             } catch (e: Exception) {
                 return@withContext Result.Error(e)
             }
         }
+
+    private suspend fun deleteGroupLessonsCache(groupId: Long) {
+        val schedulerWeek = schedulerDao.getSchedulerWeekByGroupId(groupId)
+        val schedulerDays = schedulerDao.getSchedulersDaysByIds(schedulerWeek.schedulerDays)
+        val lessons = mutableListOf<Lesson>()
+        schedulerDays.forEach { lessons.addAll(schedulerDao.getLessonsByIds(it.lessons)) }
+        schedulerDao.deleteLessonsByIds(lessons.map { it.id })
+        schedulerDao.deleteSchedulersDaysByIds(schedulerDays.map { it.id })
+        schedulerDao.deleteSchedulerWeekByGroupId(groupId)
+    }
+
 }

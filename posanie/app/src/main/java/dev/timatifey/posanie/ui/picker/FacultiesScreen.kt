@@ -1,8 +1,6 @@
 package dev.timatifey.posanie.ui.picker
 
-import androidx.compose.foundation.layout.Box
-import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.*
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
@@ -28,6 +26,7 @@ fun FacultiesScreen(
     facultiesViewModel: FacultiesViewModel
 ) {
     val uiState by facultiesViewModel.uiState.collectAsState()
+    val errorMessages = uiState.errorMessages
     val facultyList = uiState.faculties
     val focusManager = LocalFocusManager.current
     val searchState = facultiesViewModel.searchState
@@ -63,8 +62,17 @@ fun FacultiesScreen(
                 Box(
                     modifier = Modifier.padding(paddingValues)
                 ) {
-                    if (facultyList.isEmpty()) {
-                        Text( stringResource(R.string.no_faculties_error), modifier = Modifier.padding(8.dp))
+                    if (errorMessages.isNotEmpty()) {
+                        Column {
+                            errorMessages.forEach { errorMessage ->
+                                Text(
+                                    text = stringResource(errorMessage.messageId),
+                                    modifier = Modifier.padding(PaddingValues(horizontal = 16.dp, vertical = 8.dp))
+                                )
+                            }
+                        }
+                    } else if (facultyList.isEmpty()) {
+                        Text( stringResource(R.string.no_faculties), modifier = Modifier.padding(8.dp))
                     } else {
                         FacultiesList(
                             list = facultyList,

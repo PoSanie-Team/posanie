@@ -671,7 +671,7 @@ fun BasicTopBar(
             IconButton(onClick = onBackClick) {
                 Icon(
                     imageVector = Icons.Filled.ArrowBack,
-                    contentDescription = "Localized description"
+                    contentDescription = stringResource(R.string.arrow_back_description)
                 )
             }
         },

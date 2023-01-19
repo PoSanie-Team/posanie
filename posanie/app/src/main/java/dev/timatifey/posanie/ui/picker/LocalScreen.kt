@@ -187,7 +187,10 @@ fun AddItemFAB(
                 .padding(16.dp)
                 .align(Alignment.BottomEnd)
         ) {
-            Icon(imageVector = Icons.Filled.Add, contentDescription = null)
+            Icon(
+                imageVector = Icons.Filled.Add,
+                contentDescription = stringResource(R.string.add_item_button_description)
+            )
         }
     }
 }

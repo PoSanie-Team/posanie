@@ -1,9 +1,16 @@
 package dev.timatifey.posanie.ui
 
+import android.content.Context
+import android.net.ConnectivityManager
+import android.net.Network
+import android.net.NetworkCapabilities
+import android.net.NetworkRequest
+import android.os.Looper
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.painterResource
+import androidx.core.content.ContextCompat.getSystemService
 
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.navigation.*
@@ -15,6 +22,7 @@ import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.currentBackStackEntryAsState
 import androidx.navigation.compose.rememberNavController
+import dagger.hilt.android.qualifiers.ActivityContext
 import dev.timatifey.posanie.ui.picker.*
 
 import dev.timatifey.posanie.ui.scheduler.SchedulerRoute
@@ -23,6 +31,7 @@ import dev.timatifey.posanie.ui.settings.SettingsRoute
 
 @Composable
 fun PoSanieNavGraph(
+    context: Context,
     modifier: Modifier = Modifier,
     createPopup: (MutableState<Boolean>, @Composable () -> Unit) -> Unit,
     navController: NavHostController = rememberNavController()
@@ -36,11 +45,15 @@ fun PoSanieNavGraph(
         composable(BottomNavItems.Scheduler.route) {
             val schedulerViewModel = hiltViewModel<SchedulerViewModel>()
             LaunchedEffect(true) {
+                registerConnectivityListener(context) { connectionState ->
+                    schedulerViewModel.updateConnectionState(connectionState)
+                }
                 schedulerViewModel.fetchLessons()
             }
             SchedulerRoute(schedulerViewModel = schedulerViewModel, createPopup = createPopup)
         }
         pickerNavGraph(
+            context = context,
             navController = navController,
             pickerViewModel = pickerViewModel,
             route = BottomNavItems.Picker.route,
@@ -52,7 +65,25 @@ fun PoSanieNavGraph(
     }
 }
 
+fun registerConnectivityListener(context: Context, onNetworkStateChange: (ConnectionState) -> Unit) {
+    val connectivityManager = getSystemService(context, ConnectivityManager::class.java)
+    val networkRequest = NetworkRequest.Builder()
+        .addCapability(NetworkCapabilities.NET_CAPABILITY_INTERNET)
+        .build()
+    val callback = object: ConnectivityManager.NetworkCallback() {
+        override fun onAvailable(network: Network) {
+            onNetworkStateChange(ConnectionState.AVAILABLE)
+        }
+
+        override fun onLost(network: Network) {
+            onNetworkStateChange(ConnectionState.UNAVAILABLE)
+        }
+    }
+    connectivityManager?.registerNetworkCallback(networkRequest, callback)
+}
+
 fun NavGraphBuilder.pickerNavGraph(
+    context: Context,
     navController: NavHostController,
     pickerViewModel: PickerViewModel,
     route: String = BottomNavItems.Picker.route,
@@ -74,6 +105,7 @@ fun NavGraphBuilder.pickerNavGraph(
             )
         }
         remoteNavGraph(
+            context = context,
             navController = navController,
             pickerViewModel = pickerViewModel,
             route = PickerNavItems.Remote.route
@@ -82,6 +114,7 @@ fun NavGraphBuilder.pickerNavGraph(
 }
 
 fun NavGraphBuilder.remoteNavGraph(
+    context: Context,
     navController: NavHostController,
     pickerViewModel: PickerViewModel,
     route: String = PickerNavItems.Remote.route
@@ -125,6 +158,7 @@ fun NavGraphBuilder.remoteNavGraph(
             val facultyName = facultiesViewModel.getFaculty(facultyId)?.title ?: ""
 
             RemoteGroupsRoute(
+                context = context,
                 navController = navController,
                 pickerViewModel = pickerViewModel,
                 facultyId = facultyId,

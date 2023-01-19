@@ -3,18 +3,47 @@ package dev.timatifey.posanie.cache
 import androidx.room.Dao
 import androidx.room.Query
 import androidx.room.Upsert
-import dev.timatifey.posanie.model.cache.Scheduler
+import dev.timatifey.posanie.model.cache.*
 
 @Dao
 interface SchedulerDao {
 
-    @Query("SELECT * FROM ${Scheduler.TABLE_NAME} WHERE group_id = :groupId ORDER BY id ASC")
-    suspend fun getSchedulersForGroup(groupId: Long): List<Scheduler>
+    // Week
+    @Query("SELECT * FROM ${GroupSchedulerWeek.TABLE_NAME} WHERE id = :groupId")
+    suspend fun getSchedulerWeekByGroupId(groupId: Long): GroupSchedulerWeek
 
-    @Upsert(entity = Scheduler::class)
-    fun upsertSchedulers(schedulers: List<Scheduler>)
+    @Query("SELECT * FROM ${TeacherSchedulerWeek.TABLE_NAME} WHERE id = :teacherId")
+    suspend fun getSchedulerWeekByTeacherId(teacherId: Long): TeacherSchedulerWeek
 
-    @Query("DELETE FROM ${Scheduler.TABLE_NAME}")
-    fun deleteAllUsers()
+    @Upsert(entity = GroupSchedulerWeek::class)
+    fun upsertGroupSchedulerWeek(groupSchedulerWeek: GroupSchedulerWeek)
 
+    @Upsert(entity = TeacherSchedulerWeek::class)
+    fun upsertTeacherSchedulerWeek(teacherSchedulerWeek: TeacherSchedulerWeek)
+
+    @Query("DELETE FROM ${GroupSchedulerWeek.TABLE_NAME} WHERE id = :groupId")
+    fun deleteSchedulerWeekByGroupId(groupId: Long)
+
+    @Query("DELETE FROM ${TeacherSchedulerWeek.TABLE_NAME} WHERE id = :teacherId")
+    fun deleteSchedulerWeekByTeacherId(teacherId: Long)
+
+    // Days
+    @Query("SELECT * FROM ${SchedulerDay.TABLE_NAME} WHERE id IN (:schedulerDayIds)")
+    fun getSchedulersDaysByIds(schedulerDayIds: List<Long>): List<SchedulerDay>
+
+    @Upsert(entity = SchedulerDay::class)
+    fun upsertSchedulerDay(schedulerDay: SchedulerDay)
+
+    @Query("DELETE FROM ${SchedulerDay.TABLE_NAME} WHERE id IN (:schedulerDayIds)")
+    fun deleteSchedulersDaysByIds(schedulerDayIds: List<Long>)
+
+    // Lessons
+    @Query("SELECT * FROM ${Lesson.TABLE_NAME} WHERE id IN (:lessonIds)")
+    fun getLessonsByIds(lessonIds: List<Long>): List<Lesson>
+
+    @Upsert(entity = Lesson::class)
+    fun upsertLessons(lessons: List<Lesson>)
+
+    @Query("DELETE FROM ${Lesson.TABLE_NAME} WHERE id IN (:lessonIds)")
+    fun deleteLessonsByIds(lessonIds: List<Long>)
 }

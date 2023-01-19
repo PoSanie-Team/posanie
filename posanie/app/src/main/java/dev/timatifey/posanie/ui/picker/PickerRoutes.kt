@@ -1,5 +1,6 @@
 package dev.timatifey.posanie.ui.picker
 
+import android.content.Context
 import androidx.compose.runtime.*
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.viewModelScope
@@ -75,6 +76,7 @@ fun FacultiesRoute(
 
 @Composable
 fun RemoteGroupsRoute(
+    context: Context,
     navController: NavHostController,
     pickerViewModel: PickerViewModel,
     facultyId: Long,
@@ -83,6 +85,13 @@ fun RemoteGroupsRoute(
     typeId: String
 ) {
     val remoteGroupsViewModel = hiltViewModel<RemoteGroupsViewModel>()
+    LaunchedEffect(true) {
+        registerConnectivityListener(context) { connectionState ->
+            if (connectionState == ConnectionState.AVAILABLE) {
+                remoteGroupsViewModel.fetchGroupsBy(facultyId)
+            }
+        }
+    }
 
     LaunchedEffect(facultyId, kindId, typeId) {
         remoteGroupsViewModel.selectFilters(kind = Kind.kindBy(kindId), type = Type.typeBy(typeId))

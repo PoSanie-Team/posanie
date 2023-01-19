@@ -22,6 +22,7 @@ import com.google.accompanist.swiperefresh.SwipeRefresh
 import com.google.accompanist.swiperefresh.rememberSwipeRefreshState
 import dev.timatifey.posanie.R
 import dev.timatifey.posanie.model.domain.Lesson
+import dev.timatifey.posanie.utils.ErrorMessage
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.launch
 import java.util.*
@@ -63,6 +64,7 @@ fun SchedulerScreen(
             if (schedulerUiState.hasSchedule) {
                 val weekState = WeekState(
                     dayListState = weekDayListState,
+                    errorMessages = schedulerUiState.errorMessages,
                     isLoading = schedulerUiState.isLoading
                 )
                 val weekScroller = createWeekScroller(
@@ -125,6 +127,7 @@ fun ScrollableWeek(
 
 class WeekState(
     val dayListState: LazyListState,
+    val errorMessages: List<ErrorMessage>,
     val isLoading: Boolean,
 )
 
@@ -187,7 +190,9 @@ fun WeekView(
         items(6) { i ->
             val weekDay = WeekDay.getWorkDayByOrdinal(weekdayOrdinalToCalendarFormat(i))
             val lessons = lessonsToDays[weekDay] ?: emptyList()
-            if (lessons.isEmpty()) {
+            if (state.errorMessages.isNotEmpty()) {
+                MessageText(text = stringResource(R.string.no_lessons_error_message))
+            } else if (lessons.isEmpty()) {
                 MessageText(text = stringResource(R.string.no_lessons_today))
             } else {
                 LessonsList(
@@ -246,7 +251,7 @@ suspend fun PointerInputScope.handleSwipe(
 @Composable
 fun MessageText(
     modifier: Modifier = Modifier
-        .padding(16.dp)
+        .padding(PaddingValues(horizontal = 8.dp, vertical = 16.dp))
         .width(LocalConfiguration.current.screenWidthDp.dp),
     text: String = ""
 ) {
@@ -294,7 +299,6 @@ fun LessonItem(modifier: Modifier = Modifier, lesson: Lesson) {
 
         }
     }
-
 }
 
 @Preview
@@ -306,23 +310,6 @@ fun LessonItemPreview() {
             start = "10:00",
             end = "11:40",
             name = "Цифровая обработка сигналов",
-            type = "Лабораторные",
-            place = "3-й учебный корпус, 401",
-            teacher = "Лупин Анатолий Викторович",
-            lmsUrl = ""
-        )
-    )
-}
-
-@Preview
-@Composable
-fun ShortLessonItemPreview() {
-    LessonItem(
-        lesson = Lesson(
-            id = 0,
-            start = "10:00",
-            end = "11:40",
-            name = "Военная подготовка",
             type = "Лабораторные",
             place = "3-й учебный корпус, 401",
             teacher = "Лупин Анатолий Викторович",

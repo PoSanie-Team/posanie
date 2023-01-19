@@ -18,6 +18,8 @@ import kotlinx.coroutines.launch
 import java.util.*
 import javax.inject.Inject
 import kotlin.IllegalArgumentException
+import dev.timatifey.posanie.model.Result
+import dev.timatifey.posanie.ui.ConnectionState
 
 enum class WeekDay(@StringRes val shortNameId: Int) {
     MONDAY(R.string.monday_short_name),
@@ -109,32 +111,26 @@ enum class Month(@StringRes val fullNameId: Int) {
     }
 }
 
-sealed interface SchedulerUiState {
-
-    val isLoading: Boolean
-    val errorMessages: List<ErrorMessage>
-
-    data class UiState(
-        val hasSchedule: Boolean = false,
-        val weekIsOdd: Boolean = false,
-        val lessonsToDays: Map<WeekDay, List<Lesson>>,
-        val mondayDate: Calendar,
-        val selectedDate: Calendar,
-        val selectedDay: WeekDay,
-        override val isLoading: Boolean,
-        override val errorMessages: List<ErrorMessage>,
-    ) : SchedulerUiState
-}
+data class SchedulerUiState(
+    val hasSchedule: Boolean = false,
+    val weekIsOdd: Boolean = false,
+    val lessonsToDays: Map<WeekDay, List<Lesson>>,
+    val mondayDate: Calendar,
+    val selectedDate: Calendar,
+    val selectedDay: WeekDay,
+    val isLoading: Boolean,
+    val errorMessages: List<ErrorMessage>,
+)
 
 private data class SchedulerViewModelState(
     val hasSchedule: Boolean = false,
     val weekIsOdd: Boolean = false,
     val lessonsToDays: Map<WeekDay, List<Lesson>>? = null,
-    val selectedLessons: List<Lesson>? = null,
     val mondayDate: Calendar,
     val selectedDate: Calendar,
     val selectedDay: WeekDay,
-    val isLoading: Boolean = false,
+    val connectionState: ConnectionState,
+    val isLoading: Int = 0,
     val errorMessages: List<ErrorMessage> = emptyList(),
 ) {
     companion object {
@@ -142,7 +138,6 @@ private data class SchedulerViewModelState(
             val todayDate: Calendar = Calendar.getInstance()
 
             val today = WeekDay.getWorkDayByOrdinal(todayDate.get(Calendar.DAY_OF_WEEK))
-            val monthOnCalendar = Month.getByOrdinal(todayDate.get(Calendar.MONTH))
 
             val todayYear = todayDate.get(Calendar.YEAR)
             val todayMonth = todayDate.get(Calendar.MONTH)
@@ -159,7 +154,8 @@ private data class SchedulerViewModelState(
                 mondayDate = mondayDate,
                 selectedDate = todayDate,
                 selectedDay = today,
-                isLoading = true,
+                connectionState = ConnectionState.AVAILABLE,
+                isLoading = 0,
                 hasSchedule = false
             )
         }
@@ -169,15 +165,15 @@ private data class SchedulerViewModelState(
         }
     }
 
-    fun toUiState(): SchedulerUiState.UiState =
-        SchedulerUiState.UiState(
+    fun toUiState(): SchedulerUiState =
+        SchedulerUiState(
             hasSchedule = hasSchedule,
             weekIsOdd = weekIsOdd,
             lessonsToDays = lessonsToDays ?: emptyMap(),
             mondayDate = mondayDate,
             selectedDate = selectedDate,
             selectedDay = selectedDay,
-            isLoading = isLoading,
+            isLoading = isLoading > 0,
             errorMessages = errorMessages,
         )
 }
@@ -191,7 +187,7 @@ class SchedulerViewModel @Inject constructor(
 
     private val viewModelState = MutableStateFlow(SchedulerViewModelState.getInstance())
 
-    val uiState: StateFlow<SchedulerUiState.UiState> = viewModelState
+    val uiState: StateFlow<SchedulerUiState> = viewModelState
         .map { it.toUiState() }
         .stateIn(
             viewModelScope,
@@ -250,8 +246,7 @@ class SchedulerViewModel @Inject constructor(
                 newSelectedDate.set(year, month, day)
                 return@update it.copy(
                     selectedDate = newSelectedDate,
-                    selectedDay = weekDay,
-                    selectedLessons = it.lessonsToDays?.get(weekDay)
+                    selectedDay = weekDay
                 )
             }
         }
@@ -274,6 +269,7 @@ class SchedulerViewModel @Inject constructor(
     }
 
     fun setNextMonday() {
+        if (viewModelState.value.connectionState == ConnectionState.UNAVAILABLE) return
         val d = viewModelState.value.mondayDate.get(Calendar.DAY_OF_MONTH)
         val m = viewModelState.value.mondayDate.get(Calendar.MONTH)
         val y = viewModelState.value.mondayDate.get(Calendar.YEAR)
@@ -281,6 +277,7 @@ class SchedulerViewModel @Inject constructor(
     }
 
     fun setPreviousMonday() {
+        if (viewModelState.value.connectionState == ConnectionState.UNAVAILABLE) return
         val d = viewModelState.value.mondayDate.get(Calendar.DAY_OF_MONTH)
         val m = viewModelState.value.mondayDate.get(Calendar.MONTH)
         val y = viewModelState.value.mondayDate.get(Calendar.YEAR)
@@ -297,27 +294,81 @@ class SchedulerViewModel @Inject constructor(
                 }
                 return@update it.copy(
                     mondayDate = newWeekMonday,
-                    selectedDate = newWeekMonday,
-                    selectedLessons = emptyList()
+                    selectedDate = newWeekMonday
                 )
             }
             fetchLessons()
         }
     }
 
+    fun updateConnectionState(connectionState: ConnectionState) {
+        viewModelState.update { state -> state.copy(connectionState = connectionState) }
+        if (connectionState == ConnectionState.AVAILABLE) fetchLessons()
+    }
+
+    private suspend fun getLessons() {
+        viewModelState.update { it.copy(isLoading = it.isLoading + 1) }
+
+        val group: Group? = groupsUseCase.getPickedGroup().successOr(null)
+        val teacher: Teacher? = teachersUseCase.getPickedTeacher().successOr(null)
+
+        val lessonsResult: Result<Map<WeekDay, List<Lesson>>>
+        val isOddResult: Result<Boolean>
+        val mondayDateResult: Result<Calendar>
+
+        if (group != null) {
+            lessonsResult = lessonsUseCase.getLessonsByGroupId(group.id)
+            isOddResult = lessonsUseCase.getGroupSchedulerWeekOddness(group.id)
+            mondayDateResult = lessonsUseCase.getGroupSchedulerWeekMonday(group.id)
+        } else if (teacher != null) {
+            lessonsResult = lessonsUseCase.getLessonsByTeacherId(teacher.id)
+            isOddResult = lessonsUseCase.getTeacherSchedulerWeekOddness(teacher.id)
+            mondayDateResult = lessonsUseCase.getTeacherSchedulerWeekMonday(teacher.id)
+        } else {
+            viewModelState.update { it.copy(isLoading = it.isLoading - 1, hasSchedule = false) }
+            return
+        }
+        val newLessonToDays = lessonsResult.successOr(emptyMap())
+        val weekIsOdd = isOddResult.successOr(false)
+        val mondayDate = mondayDateResult.successOr(viewModelState.value.mondayDate)
+        val errorMessages =
+            if (lessonsResult is Result.Error) listOf(exceptionToErrorMessage(lessonsResult.exception))
+            else emptyList()
+
+        val day = mondayDate.get(Calendar.DAY_OF_MONTH) + viewModelState.value.selectedDay.ordinal
+        val month = mondayDate.get(Calendar.MONTH)
+        val year = mondayDate.get(Calendar.YEAR)
+        val selectedDate = Calendar.getInstance()
+        selectedDate.set(year, month, day)
+
+        viewModelState.update { state ->
+            return@update state.copy(
+                hasSchedule = true,
+                weekIsOdd = weekIsOdd,
+                mondayDate = mondayDate,
+                selectedDate = selectedDate,
+                lessonsToDays = newLessonToDays,
+                errorMessages = errorMessages,
+                isLoading = state.isLoading - 1,
+            )
+        }
+    }
+
+    private fun exceptionToErrorMessage(exception: Exception): ErrorMessage {
+        return ErrorMessage(0, androidx.compose.ui.R.string.default_error_message)
+    }
+
     fun fetchLessons() {
-        viewModelState.update { it.copy(isLoading = true) }
+        viewModelState.update { it.copy(isLoading = it.isLoading + 1) }
 
         viewModelScope.launch {
             val group: Group? = groupsUseCase.getPickedGroup().successOr(null)
             val teacher: Teacher? = teachersUseCase.getPickedTeacher().successOr(null)
 
-            val day = uiState.value.mondayDate.get(Calendar.DAY_OF_MONTH)
-            val month = uiState.value.mondayDate.get(Calendar.MONTH) + 1
-            val year = uiState.value.mondayDate.get(Calendar.YEAR)
-            val mondayDateString = "$year-$month-$day"
-            val lessonsResult: dev.timatifey.posanie.model.Result<Map<WeekDay, List<Lesson>>>
-            val isOddResult: dev.timatifey.posanie.model.Result<Boolean>
+            val lessonsResult: Result<Map<WeekDay, List<Lesson>>>
+            val isOddResult: Result<Boolean>
+            val mondayDateString = convertDateToString(viewModelState.value.mondayDate)
+
             if (group != null) {
                 lessonsResult = lessonsUseCase.fetchLessonsByGroupId(group.id, mondayDateString)
                 isOddResult = lessonsUseCase.fetchWeekOddnessByGroupId(group.id, mondayDateString)
@@ -325,20 +376,64 @@ class SchedulerViewModel @Inject constructor(
                 lessonsResult = lessonsUseCase.fetchLessonsByTeacherId(teacher.id, mondayDateString)
                 isOddResult = lessonsUseCase.fetchWeekOddnessByTeacherId(teacher.id, mondayDateString)
             } else {
-                viewModelState.update { it.copy(isLoading = false, hasSchedule = false) }
+                viewModelState.update { it.copy(isLoading = it.isLoading - 1, hasSchedule = false) }
                 return@launch
             }
-            val newLessonToDays = lessonsResult.successOr(emptyMap())
-            val weekIsOdd = isOddResult.successOr(false)
-            viewModelState.update { state ->
-                return@update state.copy(
-                    hasSchedule = true,
-                    weekIsOdd = weekIsOdd,
-                    lessonsToDays = newLessonToDays,
-                    selectedLessons = newLessonToDays[state.selectedDay],
-                    isLoading = false,
-                )
+
+            if (lessonsResult is Result.Success && isOddResult is Result.Success) {
+                val newLessonToDays = lessonsResult.data
+                val weekIsOdd = isOddResult.data
+                viewModelState.update { state ->
+                    return@update state.copy(
+                        hasSchedule = true,
+                        weekIsOdd = weekIsOdd,
+                        lessonsToDays = newLessonToDays,
+                        errorMessages = emptyList(),
+                        isLoading = state.isLoading - 1
+                    )
+                }
+                saveResults(group, teacher, isOddResult, lessonsResult)
+            } else {
+                getLessons()
+                viewModelState.update { state ->
+                    return@update state.copy(
+                        isLoading = state.isLoading - 1
+                    )
+                }
             }
         }
     }
+
+    private suspend fun saveResults(
+        group: Group?,
+        teacher: Teacher?,
+        isOddResult: Result<Boolean>,
+        lessonsResult: Result<Map<WeekDay, List<Lesson>>>
+    ) {
+        if (group != null) {
+            lessonsUseCase.saveGroupLessons(
+                groupId = group.id,
+                mondayDate = viewModelState.value.mondayDate,
+                weekIsOdd = isOddResult.successOr(false),
+                lessonsToWeekDays = lessonsResult.successOr(emptyMap())
+            )
+        }
+        if (teacher != null) {
+            lessonsUseCase.saveTeacherLessons(
+                teacherId = teacher.id,
+                mondayDate = viewModelState.value.mondayDate,
+                weekIsOdd = isOddResult.successOr(false),
+                lessonsToWeekDays = lessonsResult.successOr(emptyMap())
+            )
+        }
+    }
+
+    private fun convertDateToString(date: Calendar): String {
+        val day = date.get(Calendar.DAY_OF_MONTH)
+        val month = fromCalendarMonthToApiMonth(date.get(Calendar.MONTH))
+        val year = date.get(Calendar.YEAR)
+        return "$year-$month-$day"
+    }
+
+    private fun fromCalendarMonthToApiMonth(month: Int) = month + 1
 }

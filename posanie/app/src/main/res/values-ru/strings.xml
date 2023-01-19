@@ -29,8 +29,8 @@
 
     // Picker
     <string name="faculties">Факультеты</string>
-    <string name="no_faculties_error">Факультеты не найдены.</string>
-    <string name="no_groups_error">Группы не найдены.</string>
+    <string name="no_faculties">Факультеты не найдены.</string>
+    <string name="no_groups">Группы не найдены.</string>
     <string name="level">%1$d курс</string>
     <string name="groups">Группы</string>
     <string name="no_local_groups">У вас нет групп. Пожалуйста добавьте.</string>
@@ -41,9 +41,14 @@
     <string name="teacher_search_prompt">Введите имя преподавателя</string>
     <string name="faculty_search_prompt">Введите название факультета</string>
 
+    <string name="no_faculties_error_message">Не могу загрузить факультеты.</string>
+    <string name="no_groups_error_message">Не могу загрузить группы.</string>
+    <string name="no_teachers_error_message">Не могу загрузить преподавателей.</string>
+
     <string name="arrow_back_description">Кнопка для возврата назад</string>
     <string name="search_button_description">Кнопка для поиска</string>
     <string name="close_search_button_description">Кнопка для остановки поиска</string>
+    <string name="add_item_button_description">Кнопка для добавления нового элемента</string>
 
     // Scheduler
     <string name="odd_week">нечетная</string>
@@ -72,8 +77,12 @@
     <string name="november_full_name">Ноябрь</string>
     <string name="december_full_name">Декабрь</string>
 
+    <string name="no_lessons_error_message">Не могу загрузить занятия.</string>
+
     <string name="previous_week_button_description">Кнопка для перехода на предыдущю неделю</string>
     <string name="next_week_button_description">Кнопка для перехода на следующую неделю</string>
+    <string name="previous_month_button_description">Кнопка для перехода на предыдущий месяц</string>
+    <string name="next_month_button_description">Кнопка для перехода на следующий месяц</string>
 
     // Popup
     <string name="ok">ОК</string>

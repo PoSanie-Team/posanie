@@ -1,8 +1,10 @@
 package dev.timatifey.posanie.usecases
 
 import dev.timatifey.posanie.api.TeachersAPI
+import dev.timatifey.posanie.cache.SchedulerDao
 import dev.timatifey.posanie.cache.TeachersDao
 import dev.timatifey.posanie.model.Result
+import dev.timatifey.posanie.model.cache.Lesson
 import dev.timatifey.posanie.model.domain.Teacher
 import dev.timatifey.posanie.model.mappers.TeacherMapper
 import kotlinx.coroutines.Dispatchers
@@ -21,6 +23,7 @@ interface TeachersUseCase {
 class TeachersUseCaseImpl @Inject constructor(
     private val teacherMapper: TeacherMapper,
     private val teachersDao: TeachersDao,
+    private val schedulerDao: SchedulerDao,
     private val teachersAPI: TeachersAPI,
 ) : TeachersUseCase {
 
@@ -39,7 +42,7 @@ class TeachersUseCaseImpl @Inject constructor(
                     return@withContext Result.Success(teacherMapper.cacheToDomain(it))
                 }
             }
-            return@withContext Result.Error(Exception("No picked groups"))
+            return@withContext Result.Error(Exception("No picked teachers"))
         }
 
     override suspend fun fetchTeachersBy(name: String): Result<List<Teacher>> =
@@ -88,10 +91,21 @@ class TeachersUseCaseImpl @Inject constructor(
         withContext(Dispatchers.IO) {
             try {
                 teachersDao.deleteTeacherById(teacher.id)
+                deleteTeacherLessonsCache(teacher.id)
                 return@withContext Result.Success(true)
             } catch (e: Exception) {
                 return@withContext Result.Error(e)
             }
         }
+
+    private suspend fun deleteTeacherLessonsCache(teacherId: Long) {
+        val schedulerWeek = schedulerDao.getSchedulerWeekByTeacherId(teacherId)
+        val schedulerDays = schedulerDao.getSchedulersDaysByIds(schedulerWeek.schedulerDays)
+        val lessons = mutableListOf<Lesson>()
+        schedulerDays.forEach { lessons.addAll(schedulerDao.getLessonsByIds(it.lessons)) }
+        schedulerDao.deleteLessonsByIds(lessons.map { it.id })
+        schedulerDao.deleteSchedulersDaysByIds(schedulerDays.map { it.id })
+        schedulerDao.deleteSchedulerWeekByTeacherId(teacherId)
+    }
 
 }

@@ -38,6 +38,7 @@ import dev.timatifey.posanie.ui.PickerNavItems
 import dev.timatifey.posanie.ui.RemoteNavItems
 import dev.timatifey.posanie.ui.TypeNavItems
 import dev.timatifey.posanie.utils.ClickListener
+import dev.timatifey.posanie.utils.ErrorMessage
 import java.lang.IllegalArgumentException
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -286,6 +287,7 @@ private fun RemoteGroupsList(
         }
     )
     RefreshableGroupsList(
+        errorMessages = uiState.errorMessages,
         levelsToGroups = uiState.levelsToGroups,
         listState = groupsListStateForKindId(kindId),
         clickListener = clickListener,
@@ -314,6 +316,7 @@ fun groupsListStateForKindId(kindId: Long): LazyListState {
 
 @Composable
 fun RefreshableGroupsList(
+    errorMessages: List<ErrorMessage>,
     levelsToGroups: Map<Int, GroupsLevel>,
     listState: LazyListState,
     swipeRefreshState: SwipeRefreshState,
@@ -322,10 +325,19 @@ fun RefreshableGroupsList(
 ) {
     SwipeRefresh(state = swipeRefreshState, onRefresh = onRefresh, modifier = Modifier.fillMaxSize()) {
         if (!swipeRefreshState.isRefreshing) {
-            if (levelsToGroups.isEmpty()) {
+            if (errorMessages.isNotEmpty()) {
+                Column {
+                    errorMessages.forEach { errorMessage ->
+                        Text(
+                            text = stringResource(errorMessage.messageId),
+                            modifier = Modifier.padding(PaddingValues(horizontal = 16.dp, vertical = 8.dp))
+                        )
+                    }
+                }
+            } else if (levelsToGroups.isEmpty()) {
                 Text(
-                    text = stringResource(R.string.no_groups_error),
-                    modifier = Modifier.padding(PaddingValues(horizontal = 8.dp, vertical = 4.dp))
+                    text = stringResource(R.string.no_groups),
+                    modifier = Modifier.padding(PaddingValues(horizontal = 16.dp, vertical = 8.dp))
                 )
             } else {
                 ScrollableGroupsList(

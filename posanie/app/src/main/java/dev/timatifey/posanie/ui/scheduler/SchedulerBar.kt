@@ -23,7 +23,7 @@ import java.util.*
 @Composable
 fun SchedulerBar(
     schedulerViewModel: SchedulerViewModel,
-    schedulerUiState: SchedulerUiState.UiState,
+    schedulerUiState: SchedulerUiState,
     openCalendar: () -> Unit
 ) {
     SchedulerBar(

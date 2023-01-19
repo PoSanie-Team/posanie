@@ -25,6 +25,7 @@ import dev.timatifey.posanie.model.domain.Group
 import dev.timatifey.posanie.model.domain.Teacher
 import dev.timatifey.posanie.ui.BottomNavItems
 import dev.timatifey.posanie.utils.ClickListener
+import dev.timatifey.posanie.utils.ErrorMessage
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -61,6 +62,7 @@ fun TeachersScreen(
             RefreshableTeachersList(
                 swipeRefreshState = swipeRefreshState,
                 onRefresh = { remoteTeachersViewModel.fetchTeachersBy(searchTextState.value) },
+                errorMessages = uiState.errorMessages,
                 teachersList = teachersList,
                 modifier = Modifier.padding(paddingValues),
                 clickListener = ClickListener(
@@ -79,6 +81,7 @@ fun RefreshableTeachersList(
     modifier: Modifier = Modifier,
     swipeRefreshState: SwipeRefreshState,
     onRefresh: () -> Unit,
+    errorMessages: List<ErrorMessage>,
     teachersList: List<Teacher>,
     clickListener: ClickListener<Teacher>,
 ) {
@@ -90,10 +93,19 @@ fun RefreshableTeachersList(
             .padding(4.dp)
     ) {
         if (!swipeRefreshState.isRefreshing) {
-            if (teachersList.isEmpty()) {
+            if (errorMessages.isNotEmpty()) {
+                Column {
+                    errorMessages.forEach { errorMessage ->
+                        Text(
+                            text = stringResource(errorMessage.messageId),
+                            modifier = Modifier.padding(PaddingValues(horizontal = 16.dp, vertical = 8.dp))
+                        )
+                    }
+                }
+            } else if (teachersList.isEmpty()) {
                 Text(
                     text = stringResource(R.string.no_teachers_found),
-                    modifier = Modifier.padding(PaddingValues(horizontal = 8.dp, vertical = 4.dp))
+                    modifier = Modifier.padding(PaddingValues(horizontal = 16.dp, vertical = 8.dp))
                 )
             } else {
                 ScrollableTeachersList(

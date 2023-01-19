@@ -28,12 +28,6 @@ object RoomModule {
 
     @Singleton
     @Provides
-    fun provideSchedulerDao(schedulerRoomDatabase: SchedulerRoomDatabase): SchedulerDao {
-        return schedulerRoomDatabase.SchedulerDao()
-    }
-
-    @Singleton
-    @Provides
     fun provideGroupsDao(schedulerRoomDatabase: SchedulerRoomDatabase): GroupsDao {
         return schedulerRoomDatabase.GroupsDao()
     }
@@ -52,7 +46,7 @@ object RoomModule {
 
     @Singleton
     @Provides
-    fun provideLessonsDao(schedulerRoomDatabase: SchedulerRoomDatabase): LessonsDao {
-        return schedulerRoomDatabase.LessonsDao()
+    fun provideSchedulerDao(schedulerRoomDatabase: SchedulerRoomDatabase): SchedulerDao {
+        return schedulerRoomDatabase.SchedulerDao()
     }
 }

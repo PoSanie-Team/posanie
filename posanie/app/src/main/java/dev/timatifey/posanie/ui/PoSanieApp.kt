@@ -55,6 +55,7 @@ fun PoSanieApp(activity: MainActivity) {
                 modifier = Modifier.padding(innerPadding)
             ) {
                 PoSanieNavGraph(
+                    context = activity,
                     navController = navController,
                     createPopup = { visibilityState, content ->
                         popupDataList.add(PopupData(visibilityState, content))
