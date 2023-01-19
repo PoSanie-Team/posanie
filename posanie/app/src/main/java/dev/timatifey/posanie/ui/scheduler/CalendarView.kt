@@ -29,6 +29,7 @@ import androidx.compose.ui.semantics.Role
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
+import dev.timatifey.posanie.R
 import dev.timatifey.posanie.ui.DialogBar
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.launch
@@ -217,14 +218,14 @@ private fun CalendarBar(
         IconButton(onClick = goPreviousMonth) {
             Icon(
                 imageVector = Icons.Filled.ArrowBack,
-                contentDescription = "Localized description"
+                contentDescription = stringResource(R.string.previous_month_button_description)
             )
         }
         CalendarDate(month = month, year = year)
         IconButton(onClick = goNextMonth) {
             Icon(
                 imageVector = Icons.Filled.ArrowForward,
-                contentDescription = "Localized description"
+                contentDescription = stringResource(R.string.next_month_button_description)
             )
         }
     }

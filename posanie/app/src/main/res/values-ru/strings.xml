@@ -48,6 +48,7 @@
     <string name="arrow_back_description">Кнопка для возврата назад</string>
     <string name="search_button_description">Кнопка для поиска</string>
     <string name="close_search_button_description">Кнопка для остановки поиска</string>
+    <string name="add_item_button_description">Кнопка для добавления нового элемента</string>
 
     // Scheduler
     <string name="odd_week">нечетная</string>
@@ -80,6 +81,8 @@
 
     <string name="previous_week_button_description">Кнопка для перехода на предыдущю неделю</string>
     <string name="next_week_button_description">Кнопка для перехода на следующую неделю</string>
+    <string name="previous_month_button_description">Кнопка для перехода на предыдущий месяц</string>
+    <string name="next_month_button_description">Кнопка для перехода на следующий месяц</string>
 
     // Popup
     <string name="ok">ОК</string>

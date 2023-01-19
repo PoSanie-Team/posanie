@@ -48,6 +48,7 @@
     <string name="arrow_back_description">Button to go back</string>
     <string name="search_button_description">Search button</string>
     <string name="close_search_button_description">Stop searching</string>
+    <string name="add_item_button_description">Button to add new item</string>
 
     // Scheduler
     <string name="odd_week">odd</string>
@@ -80,6 +81,8 @@
 
     <string name="previous_week_button_description">Button to go to previous week</string>
     <string name="next_week_button_description">Button to go to next week</string>
+    <string name="previous_month_button_description">Button to go to previous month</string>
+    <string name="next_month_button_description">Button to go to next month</string>
 
     // Popup
     <string name="ok">OK</string>
