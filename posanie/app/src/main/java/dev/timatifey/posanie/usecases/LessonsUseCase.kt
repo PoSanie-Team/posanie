@@ -217,9 +217,6 @@ class LessonsUseCaseImpl @Inject constructor(
         withContext(Dispatchers.IO) {
             try {
                 val lessonsToDays = lessonsApi.getLessonsByGroupId(groupId, date)
-                if (lessonsToDays.isEmpty()) {
-                    return@withContext Result.Error(Exception())
-                }
                 val result = mutableMapOf<WeekDay, List<Lesson>>()
                 lessonsToDays.forEach { (day, lessons) ->
                     result[day] = lessons.map { lesson -> lessonMapper.dataToDomain(lesson) }
@@ -237,9 +234,6 @@ class LessonsUseCaseImpl @Inject constructor(
         withContext(Dispatchers.IO) {
             try {
                 val lessonsToDays = lessonsApi.getLessonsByTeacherId(teacherId, date)
-                if (lessonsToDays.isEmpty()) {
-                    return@withContext Result.Error(Exception())
-                }
                 val result = mutableMapOf<WeekDay, List<Lesson>>()
                 lessonsToDays.forEach { (day, lessons) ->
                     result[day] = lessons.map { lesson -> lessonMapper.dataToDomain(lesson) }
