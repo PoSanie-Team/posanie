@@ -35,7 +35,7 @@ interface SchedulerDao {
     fun upsertSchedulerDay(schedulerDay: SchedulerDay)
 
     @Query("DELETE FROM ${SchedulerDay.TABLE_NAME} WHERE id IN (:schedulerDayIds)")
-    fun deleteSchedulersDayByIds(schedulerDayIds: List<Long>)
+    fun deleteSchedulersDaysByIds(schedulerDayIds: List<Long>)
 
     // Lessons
     @Query("SELECT * FROM ${Lesson.TABLE_NAME} WHERE id IN (:lessonIds)")
@@ -45,5 +45,5 @@ interface SchedulerDao {
     fun upsertLessons(lessons: List<Lesson>)
 
     @Query("DELETE FROM ${Lesson.TABLE_NAME} WHERE id IN (:lessonIds)")
-    fun deleteLessonsByIds(lessonIds: List<Int>)
+    fun deleteLessonsByIds(lessonIds: List<Long>)
 }
