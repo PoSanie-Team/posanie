@@ -294,7 +294,6 @@ fun LessonItem(modifier: Modifier = Modifier, lesson: Lesson) {
 
         }
     }
-
 }
 
 @Preview

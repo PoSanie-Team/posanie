@@ -19,6 +19,7 @@ import java.util.*
 import javax.inject.Inject
 import kotlin.IllegalArgumentException
 import dev.timatifey.posanie.model.Result
+import dev.timatifey.posanie.ui.ConnectionState
 
 enum class WeekDay(@StringRes val shortNameId: Int) {
     MONDAY(R.string.monday_short_name),
@@ -128,6 +129,7 @@ private data class SchedulerViewModelState(
     val mondayDate: Calendar,
     val selectedDate: Calendar,
     val selectedDay: WeekDay,
+    val connectionState: ConnectionState,
     val isLoading: Int = 0,
     val errorMessages: List<ErrorMessage> = emptyList(),
 ) {
@@ -152,6 +154,7 @@ private data class SchedulerViewModelState(
                 mondayDate = mondayDate,
                 selectedDate = todayDate,
                 selectedDay = today,
+                connectionState = ConnectionState.AVAILABLE,
                 isLoading = 0,
                 hasSchedule = false
             )
@@ -266,6 +269,7 @@ class SchedulerViewModel @Inject constructor(
     }
 
     fun setNextMonday() {
+        if (viewModelState.value.connectionState == ConnectionState.UNAVAILABLE) return
         val d = viewModelState.value.mondayDate.get(Calendar.DAY_OF_MONTH)
         val m = viewModelState.value.mondayDate.get(Calendar.MONTH)
         val y = viewModelState.value.mondayDate.get(Calendar.YEAR)
@@ -273,6 +277,7 @@ class SchedulerViewModel @Inject constructor(
     }
 
     fun setPreviousMonday() {
+        if (viewModelState.value.connectionState == ConnectionState.UNAVAILABLE) return
         val d = viewModelState.value.mondayDate.get(Calendar.DAY_OF_MONTH)
         val m = viewModelState.value.mondayDate.get(Calendar.MONTH)
         val y = viewModelState.value.mondayDate.get(Calendar.YEAR)
@@ -296,41 +301,49 @@ class SchedulerViewModel @Inject constructor(
         }
     }
 
-    fun getLessons() {
+    fun updateConnectionState(connectionState: ConnectionState) {
+        viewModelState.update { state -> state.copy(connectionState = connectionState) }
+    }
+
+    private suspend fun getLessons() {
         viewModelState.update { it.copy(isLoading = it.isLoading + 1) }
 
-        viewModelScope.launch {
-            val group: Group? = groupsUseCase.getPickedGroup().successOr(null)
-            val teacher: Teacher? = teachersUseCase.getPickedTeacher().successOr(null)
+        val group: Group? = groupsUseCase.getPickedGroup().successOr(null)
+        val teacher: Teacher? = teachersUseCase.getPickedTeacher().successOr(null)
 
-            val lessonsResult: Result<Map<WeekDay, List<Lesson>>>
-            val isOddResult: Result<Boolean>
-            val mondayDateResult: Result<Calendar>
+        val lessonsResult: Result<Map<WeekDay, List<Lesson>>>
+        val isOddResult: Result<Boolean>
+        val mondayDateResult: Result<Calendar>
 
-            if (group != null) {
-                lessonsResult = lessonsUseCase.getLessonsByGroupId(group.id)
-                isOddResult = lessonsUseCase.getGroupSchedulerWeekOddness(group.id)
-                mondayDateResult = lessonsUseCase.getGroupSchedulerWeekMonday(group.id)
-            } else if (teacher != null) {
-                lessonsResult = lessonsUseCase.getLessonsByTeacherId(teacher.id)
-                isOddResult = lessonsUseCase.getTeacherSchedulerWeekOddness(teacher.id)
-                mondayDateResult = lessonsUseCase.getTeacherSchedulerWeekMonday(teacher.id)
-            } else {
-                viewModelState.update { it.copy(isLoading = it.isLoading - 1, hasSchedule = false) }
-                return@launch
-            }
-            val newLessonToDays = lessonsResult.successOr(emptyMap())
-            val weekIsOdd = isOddResult.successOr(false)
-            val mondayDate = mondayDateResult.successOr(viewModelState.value.mondayDate)
-            viewModelState.update { state ->
-                return@update state.copy(
-                    hasSchedule = true,
-                    weekIsOdd = weekIsOdd,
-                    mondayDate = mondayDate,
-                    lessonsToDays = newLessonToDays,
-                    isLoading = state.isLoading - 1,
-                )
-            }
+        if (group != null) {
+            lessonsResult = lessonsUseCase.getLessonsByGroupId(group.id)
+            isOddResult = lessonsUseCase.getGroupSchedulerWeekOddness(group.id)
+            mondayDateResult = lessonsUseCase.getGroupSchedulerWeekMonday(group.id)
+        } else if (teacher != null) {
+            lessonsResult = lessonsUseCase.getLessonsByTeacherId(teacher.id)
+            isOddResult = lessonsUseCase.getTeacherSchedulerWeekOddness(teacher.id)
+            mondayDateResult = lessonsUseCase.getTeacherSchedulerWeekMonday(teacher.id)
+        } else {
+            viewModelState.update { it.copy(isLoading = it.isLoading - 1, hasSchedule = false) }
+            return
+        }
+        val newLessonToDays = lessonsResult.successOr(emptyMap())
+        val weekIsOdd = isOddResult.successOr(false)
+        val mondayDate = mondayDateResult.successOr(viewModelState.value.mondayDate)
+        val day = mondayDate.get(Calendar.DAY_OF_MONTH) + viewModelState.value.selectedDay.ordinal
+        val month = mondayDate.get(Calendar.MONTH)
+        val year = mondayDate.get(Calendar.YEAR)
+        val selectedDate = Calendar.getInstance()
+        selectedDate.set(year, month, day)
+        viewModelState.update { state ->
+            return@update state.copy(
+                hasSchedule = true,
+                weekIsOdd = weekIsOdd,
+                mondayDate = mondayDate,
+                selectedDate = selectedDate,
+                lessonsToDays = newLessonToDays,
+                isLoading = state.isLoading - 1,
+            )
         }
     }
 
@@ -366,7 +379,7 @@ class SchedulerViewModel @Inject constructor(
                         hasSchedule = true,
                         weekIsOdd = weekIsOdd,
                         lessonsToDays = newLessonToDays,
-                        isLoading = state.isLoading - 1,
+                        isLoading = state.isLoading - 1
                     )
                 }
                 if (group != null) {
@@ -388,7 +401,9 @@ class SchedulerViewModel @Inject constructor(
             } else {
                 getLessons()
                 viewModelState.update { state ->
-                    return@update state.copy(isLoading = state.isLoading - 1,)
+                    return@update state.copy(
+                        isLoading = state.isLoading - 1
+                    )
                 }
             }
         }
