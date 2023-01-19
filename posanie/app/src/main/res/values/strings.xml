@@ -39,8 +39,8 @@
 
     // Picker
     <string name="faculties">Faculties</string>
-    <string name="no_faculties_error">No faculties found.</string>
-    <string name="no_groups_error">No groups found.</string>
+    <string name="no_faculties">No faculties found.</string>
+    <string name="no_groups">No groups found.</string>
     <string name="level">%1$d year</string>
     <string name="groups">Groups</string>
     <string name="no_local_groups">You have no groups. Please add.</string>
@@ -50,6 +50,10 @@
     <string name="no_teachers_found">Can\'t find any teachers. Please try another search query.</string>
     <string name="teacher_search_prompt">Type teacher name</string>
     <string name="faculty_search_prompt">Type faculty name</string>
+
+    <string name="no_faculties_error_message">Cannot load faculties.</string>
+    <string name="no_groups_error_message">Cannot load groups.</string>
+    <string name="no_teachers_error_message">Cannot load teachers.</string>
 
     <string name="arrow_back_description">Button to go back</string>
     <string name="search_button_description">Search button</string>
@@ -81,6 +85,8 @@
     <string name="october_full_name">October</string>
     <string name="november_full_name">November</string>
     <string name="december_full_name">December</string>
+
+    <string name="no_lessons_error_message">Cannot load today lessons.</string>
 
     <string name="previous_week_button_description">Button to go to previous week</string>
     <string name="next_week_button_description">Button to go to next week</string>

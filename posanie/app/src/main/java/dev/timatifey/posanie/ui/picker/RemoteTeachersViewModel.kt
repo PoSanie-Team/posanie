@@ -71,18 +71,19 @@ class RemoteTeachersViewModel @Inject constructor(
                     is Result.Success -> {
                         return@update state.copy(
                             remoteTeachers = result.data,
+                            errorMessages = emptyList(),
                             isLoading = false
                         )
                     }
                     is Result.Error -> {
-                        val errorMessages = state.errorMessages + ErrorMessage(
+                        val errorMessages = listOf(ErrorMessage(
                             id = UUID.randomUUID().mostSignificantBits,
-                            messageId = R.string.load_error
-                        )
+                            messageId = R.string.no_teachers_error_message
+                        ))
                         return@update state.copy(
                             remoteTeachers = emptyList(),
+                            errorMessages = errorMessages,
                             isLoading = false,
-                            errorMessages = errorMessages
                         )
                     }
                 }

@@ -9,6 +9,7 @@ import dev.timatifey.posanie.model.Result
 import dev.timatifey.posanie.model.domain.Kind
 import dev.timatifey.posanie.model.domain.Type
 import dev.timatifey.posanie.model.domain.GroupsLevel
+import dev.timatifey.posanie.ui.ConnectionState
 import dev.timatifey.posanie.usecases.GroupsUseCase
 import dev.timatifey.posanie.utils.ErrorMessage
 import kotlinx.coroutines.flow.*
@@ -73,14 +74,15 @@ class RemoteGroupsViewModel @Inject constructor(
                     is Result.Success -> {
                         return@update state.copy(
                             remoteGroups = result.data,
-                            filteredRemoteGroups = result.data
+                            filteredRemoteGroups = result.data,
+                            errorMessages = emptyList(),
                         )
                     }
                     is Result.Error -> {
-                        val errorMessages = state.errorMessages + ErrorMessage(
+                        val errorMessages = listOf(ErrorMessage(
                             id = UUID.randomUUID().mostSignificantBits,
-                            messageId = R.string.load_error
-                        )
+                            messageId = R.string.no_groups_error_message
+                        ))
                         return@update state.copy(
                             remoteGroups = emptyMap(),
                             filteredRemoteGroups = emptyMap(),

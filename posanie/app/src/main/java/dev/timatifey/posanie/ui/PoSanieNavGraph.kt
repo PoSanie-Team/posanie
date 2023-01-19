@@ -53,6 +53,7 @@ fun PoSanieNavGraph(
             SchedulerRoute(schedulerViewModel = schedulerViewModel, createPopup = createPopup)
         }
         pickerNavGraph(
+            context = context,
             navController = navController,
             pickerViewModel = pickerViewModel,
             route = BottomNavItems.Picker.route,
@@ -64,7 +65,7 @@ fun PoSanieNavGraph(
     }
 }
 
-private fun registerConnectivityListener(context: Context, onNetworkStateChange: (ConnectionState) -> Unit) {
+fun registerConnectivityListener(context: Context, onNetworkStateChange: (ConnectionState) -> Unit) {
     val connectivityManager = getSystemService(context, ConnectivityManager::class.java)
     val networkRequest = NetworkRequest.Builder()
         .addCapability(NetworkCapabilities.NET_CAPABILITY_INTERNET)
@@ -82,6 +83,7 @@ private fun registerConnectivityListener(context: Context, onNetworkStateChange:
 }
 
 fun NavGraphBuilder.pickerNavGraph(
+    context: Context,
     navController: NavHostController,
     pickerViewModel: PickerViewModel,
     route: String = BottomNavItems.Picker.route,
@@ -103,6 +105,7 @@ fun NavGraphBuilder.pickerNavGraph(
             )
         }
         remoteNavGraph(
+            context = context,
             navController = navController,
             pickerViewModel = pickerViewModel,
             route = PickerNavItems.Remote.route
@@ -111,6 +114,7 @@ fun NavGraphBuilder.pickerNavGraph(
 }
 
 fun NavGraphBuilder.remoteNavGraph(
+    context: Context,
     navController: NavHostController,
     pickerViewModel: PickerViewModel,
     route: String = PickerNavItems.Remote.route
@@ -154,6 +158,7 @@ fun NavGraphBuilder.remoteNavGraph(
             val facultyName = facultiesViewModel.getFaculty(facultyId)?.title ?: ""
 
             RemoteGroupsRoute(
+                context = context,
                 navController = navController,
                 pickerViewModel = pickerViewModel,
                 facultyId = facultyId,

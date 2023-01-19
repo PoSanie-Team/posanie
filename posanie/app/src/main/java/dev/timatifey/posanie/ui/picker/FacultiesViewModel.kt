@@ -79,14 +79,15 @@ class FacultiesViewModel @Inject constructor(
                     is Result.Success -> {
                         state.copy(
                             faculties = result.data,
+                            errorMessages = emptyList(),
                             isLoading = false
                         )
                     }
                     is Result.Error -> {
-                        val errorMessages = state.errorMessages + ErrorMessage(
+                        val errorMessages = listOf(ErrorMessage(
                             id = UUID.randomUUID().mostSignificantBits,
-                            messageId = R.string.load_error
-                        )
+                            messageId = R.string.no_faculties_error_message
+                        ))
                         state.copy(
                             faculties = null,
                             errorMessages = errorMessages,
