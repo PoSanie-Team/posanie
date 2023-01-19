@@ -61,29 +61,24 @@ fun SchedulerScreen(
                 )
             }
         ) { paddingValues ->
-            if (schedulerUiState.hasSchedule) {
-                val weekState = WeekState(
-                    dayListState = weekDayListState,
-                    errorMessages = schedulerUiState.errorMessages,
-                    isLoading = schedulerUiState.isLoading
-                )
-                val weekScroller = createWeekScroller(
-                    schedulerViewModel = schedulerViewModel,
-                    coroutineScope = coroutineScope,
-                    weekDayListState = weekDayListState
-                )
-                ScrollableWeek(
-                    modifier = Modifier.padding(paddingValues),
-                    state = weekState,
-                    lessonsToDays = lessonsToDays,
-                    weekScroller = weekScroller,
-                    fetchLessons = schedulerViewModel::fetchLessons
-                )
-            } else {
-                Box(modifier = Modifier.padding(paddingValues)) {
-                    MessageText(text = stringResource(R.string.no_schedule_selected))
-                }
-            }
+            val weekState = WeekState(
+                dayListState = weekDayListState,
+                errorMessages = schedulerUiState.errorMessages,
+                isLoading = schedulerUiState.isLoading,
+                hasSchedule = schedulerUiState.hasSchedule
+            )
+            val weekScroller = createWeekScroller(
+                schedulerViewModel = schedulerViewModel,
+                coroutineScope = coroutineScope,
+                weekDayListState = weekDayListState
+            )
+            ScrollableWeek(
+                modifier = Modifier.padding(paddingValues),
+                state = weekState,
+                lessonsToDays = lessonsToDays,
+                weekScroller = weekScroller,
+                fetchLessons = schedulerViewModel::fetchLessons
+            )
         }
 
         LaunchedEffect(true) {
@@ -129,6 +124,7 @@ class WeekState(
     val dayListState: LazyListState,
     val errorMessages: List<ErrorMessage>,
     val isLoading: Boolean,
+    val hasSchedule: Boolean
 )
 
 class LazyListScroller(
@@ -194,6 +190,8 @@ fun WeekView(
                 MessageText(text = stringResource(R.string.no_lessons_error_message))
             } else if (lessons.isEmpty()) {
                 MessageText(text = stringResource(R.string.no_lessons_today))
+            } else if (!state.hasSchedule) {
+                MessageText(text = stringResource(R.string.no_schedule_selected))
             } else {
                 LessonsList(
                     lessons = lessons,
