@@ -6,6 +6,10 @@ on:
       # - 'release/**'
       - '*'
 
+defaults:
+  run:
+    working-directory: ./posanie
+
 jobs:
   build:
     runs-on: ubuntu-latest
@@ -20,22 +24,22 @@ jobs:
         with:
           java-version: 1.8
       - name: build release
-        run: ./posanie/gradlew assembleRelease
+        run: ./gradlew assembleRelease
       - name: check dependencies
-        run: ./posanie/gradlew dependencyCheckAnalyze
+        run: ./gradlew dependencyCheckAnalyze
       - name: sign release build
         uses: r0adkll/sign-android-release@5aa7898f16bf66a673e990b8146e96ac1532b6eb
         env:
           ACTIONS_ALLOW_UNSECURE_COMMANDS: true
         with:
-          releaseDirectory: ./posanie/app/build/outputs/apk/release/
+          releaseDirectory: ./app/build/outputs/apk/release/
           signingKeyBase64: ${{ secrets.SIGNING_KEY_BASE64 }}
           keyStorePassword: ${{ secrets.KEYSTORE_PASSWORD }}
           alias: ${{ secrets.KEY_ALIAS }}
           keyPassword: ${{ secrets.KEY_PASSWORD }}
-          signedReleaseFile: ./posanie/app/build/outputs/apk/release/app-release.apk
+          signedReleaseFile: ./app/build/outputs/apk/release/app-release.apk
       - name: Release to GH Releases
         uses: softprops/action-gh-release@v1
         with:
-          files: ./posanie/app/build/outputs/apk/release/app-release.apk
+          files: ./app/build/outputs/apk/release/app-release.apk
           body_path: ./release_nodes.txt
