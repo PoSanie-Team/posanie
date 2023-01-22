@@ -9,9 +9,9 @@
     <application
         android:name=".PoSanieApplication"
         android:allowBackup="true"
-        android:icon="@mipmap/ic_launcher"
+        android:icon="@mipmap/posanie_ic_launcher"
         android:label="@string/app_name"
-        android:roundIcon="@mipmap/ic_launcher_round"
+        android:roundIcon="@mipmap/posanie_ic_launcher"
         android:supportsRtl="true"
         android:theme="@style/Theme.PoSanie"
         tools:targetApi="31">
