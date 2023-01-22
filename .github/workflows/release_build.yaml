@@ -26,7 +26,7 @@ jobs:
       - name: build release
         run: ./gradlew assembleRelease --no-daemon
       - name: sign release build
-        uses: r0adkll/sign-android-release@5aa7898f16bf66a673e990b8146e96ac1532b6eb
+        uses: r0adkll/sign-android-release@v1
         env:
           ACTIONS_ALLOW_UNSECURE_COMMANDS: true
         with:
