@@ -24,8 +24,7 @@ class FacultiesUseCaseImpl @Inject constructor(
         withContext(Dispatchers.IO) {
             try {
                 return@withContext Result.Success(
-                    facultiesDao.getFaculties()
-                        .map { facultyMapper.cacheToDomain(it) }
+                    facultiesDao.getFaculties().map { facultyMapper.cacheToDomain(it) }
                 )
             } catch (e: Exception) {
                 return@withContext Result.Error(e)
@@ -36,9 +35,7 @@ class FacultiesUseCaseImpl @Inject constructor(
         withContext(Dispatchers.IO) {
             try {
                 val faculties = facultiesAPI.getFacultiesList()
-                facultiesDao.upsertFaculties(
-                    faculties.map { facultyMapper.dataToCache(it) }
-                )
+                facultiesDao.upsertFaculties(faculties.map { facultyMapper.dataToCache(it) })
                 return@withContext Result.Success(
                     faculties.map { facultyMapper.dataToDomain(it) }
                 )
