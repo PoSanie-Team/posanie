@@ -44,5 +44,5 @@ jobs:
         uses: softprops/action-gh-release@v0.1.15
         with:
           files: ./app/build/outputs/apk/release/app-release.apk
-          body_path: ./release_nodes.txt
+          body_path: ./posanie/release_notes.txt
           tag_name: ${{ env.release_tag }}
