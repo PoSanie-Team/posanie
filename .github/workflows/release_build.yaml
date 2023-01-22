@@ -2,7 +2,8 @@ name: build release app, sign it and publish to GH Releases
 
 on:
   push:
-    tag:
+    branch:
+      # - "release/**'
       - "**"
 
 defaults:
@@ -35,8 +36,13 @@ jobs:
           alias: posanie
           keyPassword: ${{ secrets.KEY_PASSWORD }}
           signedReleaseFile: ./posanie/app/build/outputs/apk/release/app-release.apk
+      - name: create new release tag
+        uses: amitsingh-007/next-release-tag@v2.2.0
+        with:
+          github_token: ${{ secrets.GITHUB_TOKEN }}
       - name: Release to GH Releases
         uses: softprops/action-gh-release@v0.1.15
         with:
           files: ./app/build/outputs/apk/release/app-release.apk
           body_path: ./release_nodes.txt
+          tag_name: ${{ env.release_tag }}
