@@ -54,14 +54,12 @@ class LessonsUseCaseImpl @Inject constructor(
     override suspend fun getLessonsByGroupId(groupId: Long): Result<Map<WeekDay, List<Lesson>>> =
         withContext(Dispatchers.IO) {
             val schedulerWeek = schedulerDao.getSchedulerWeekByGroupId(groupId)
-                ?: return@withContext Result.Error(NotFoundException())
             return@withContext getLessonsFromSchedulerWeek(schedulerWeek)
         }
 
     override suspend fun getLessonsByTeacherId(teacherId: Long): Result<Map<WeekDay, List<Lesson>>> =
         withContext(Dispatchers.IO) {
             val schedulerWeek = schedulerDao.getSchedulerWeekByTeacherId(teacherId)
-                ?: return@withContext Result.Error(NotFoundException())
             return@withContext getLessonsFromSchedulerWeek(schedulerWeek)
         }
 
@@ -172,7 +170,6 @@ class LessonsUseCaseImpl @Inject constructor(
     override suspend fun getGroupSchedulerWeekOddness(groupId: Long): Result<Boolean> =
         withContext(Dispatchers.IO) {
             val schedulerWeek = schedulerDao.getSchedulerWeekByGroupId(groupId)
-                ?: return@withContext Result.Error(NotFoundException())
             val weekIsOdd = schedulerWeek.isOdd != 0
             return@withContext Result.Success(weekIsOdd)
         }
@@ -180,7 +177,6 @@ class LessonsUseCaseImpl @Inject constructor(
     override suspend fun getTeacherSchedulerWeekOddness(teacherId: Long): Result<Boolean> =
         withContext(Dispatchers.IO) {
             val schedulerWeek = schedulerDao.getSchedulerWeekByTeacherId(teacherId)
-                ?: return@withContext Result.Error(NotFoundException())
             val weekIsOdd = schedulerWeek.isOdd != 0
             return@withContext Result.Success(weekIsOdd)
         }
@@ -188,14 +184,12 @@ class LessonsUseCaseImpl @Inject constructor(
     override suspend fun getGroupSchedulerWeekMonday(groupId: Long): Result<Calendar> =
         withContext(Dispatchers.IO) {
             val schedulerWeek = schedulerDao.getSchedulerWeekByGroupId(groupId)
-                ?: return@withContext Result.Error(NotFoundException())
             return@withContext Result.Success(schedulerWeek.mondayDate)
         }
 
     override suspend fun getTeacherSchedulerWeekMonday(teacherId: Long): Result<Calendar> =
         withContext(Dispatchers.IO) {
             val schedulerWeek = schedulerDao.getSchedulerWeekByTeacherId(teacherId)
-                ?: return@withContext Result.Error(NotFoundException())
             return@withContext Result.Success(schedulerWeek.mondayDate)
         }
 
@@ -247,7 +241,7 @@ class LessonsUseCaseImpl @Inject constructor(
     override suspend fun fetchWeekOddnessByGroupId(groupId: Long, date: String): Result<Boolean> =
         withContext(Dispatchers.IO) {
             try {
-                val isOdd = lessonsApi.weekOddnessByGroupId(groupId, date)
+                val isOdd = lessonsApi.isWeekOddByGroupId(groupId, date)
                 return@withContext Result.Success(isOdd)
             } catch (e: Exception) {
                 return@withContext Result.Error(e)
@@ -257,7 +251,7 @@ class LessonsUseCaseImpl @Inject constructor(
     override suspend fun fetchWeekOddnessByTeacherId(groupId: Long, date: String): Result<Boolean> =
         withContext(Dispatchers.IO) {
             try {
-                val isOdd = lessonsApi.weekOddnessByTeacherId(groupId, date)
+                val isOdd = lessonsApi.isWeekOddByTeacherId(groupId, date)
                 return@withContext Result.Success(isOdd)
             } catch (e: Exception) {
                 return@withContext Result.Error(e)
