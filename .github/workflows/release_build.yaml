@@ -2,9 +2,8 @@ name: build release app, sign it and publish to GH Releases
 
 on:
   push:
-    branches:
-      # - 'release/**'
-      - '*'
+    tag:
+      - "**"
 
 defaults:
   run:
@@ -24,20 +23,20 @@ jobs:
         with:
           java-version: 11
       - name: build release
-        run: ./gradlew assembleRelease --no-daemon
+        run: ./gradlew --no-daemon assembleRelease
       - name: sign release build
         uses: r0adkll/sign-android-release@v1
         env:
           ACTIONS_ALLOW_UNSECURE_COMMANDS: true
         with:
-          releaseDirectory: ./app/build/outputs/apk/release/
+          releaseDirectory: ./posanie/app/build/outputs/apk/release/
           signingKeyBase64: ${{ secrets.SIGNING_KEY_BASE64 }}
           keyStorePassword: ${{ secrets.KEYSTORE_PASSWORD }}
-          alias: ${{ secrets.KEY_ALIAS }}
+          alias: posanie
           keyPassword: ${{ secrets.KEY_PASSWORD }}
-          signedReleaseFile: ./app/build/outputs/apk/release/app-release.apk
+          signedReleaseFile: ./posanie/app/build/outputs/apk/release/app-release.apk
       - name: Release to GH Releases
-        uses: softprops/action-gh-release@v1
+        uses: softprops/action-gh-release@v0.1.15
         with:
           files: ./app/build/outputs/apk/release/app-release.apk
           body_path: ./release_nodes.txt
