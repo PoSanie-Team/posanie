@@ -5,6 +5,8 @@ import android.os.Bundle
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import dagger.hilt.android.AndroidEntryPoint
+import dev.timatifey.posanie.model.domain.Language
+import dev.timatifey.posanie.model.successOr
 import dev.timatifey.posanie.usecases.getLanguageFromPreferences
 import java.util.*
 
@@ -24,7 +26,7 @@ class MainActivity : ComponentActivity() {
             return
         }
 
-        val language = getLanguageFromPreferences(context = newBase)
+        val language = newBase.getLanguageFromPreferences().successOr(Language.DEFAULT)
         val config = newBase.resources.configuration
         config.setLocale(Locale(language.localeName))
 
