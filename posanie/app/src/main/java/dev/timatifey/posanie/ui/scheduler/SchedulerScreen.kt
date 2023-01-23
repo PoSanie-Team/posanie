@@ -186,12 +186,12 @@ fun WeekView(
         items(6) { i ->
             val weekDay = WeekDay.getWorkDayByOrdinal(weekdayOrdinalToCalendarFormat(i))
             val lessons = lessonsToDays[weekDay] ?: emptyList()
-            if (state.errorMessages.isNotEmpty()) {
+            if (!state.hasSchedule) {
+                MessageText(text = stringResource(R.string.no_schedule_selected))
+            } else if (state.errorMessages.isNotEmpty()) {
                 MessageText(text = stringResource(R.string.no_lessons_error_message))
             } else if (lessons.isEmpty()) {
                 MessageText(text = stringResource(R.string.no_lessons_today))
-            } else if (!state.hasSchedule) {
-                MessageText(text = stringResource(R.string.no_schedule_selected))
             } else {
                 LessonsList(
                     lessons = lessons,
@@ -249,8 +249,8 @@ suspend fun PointerInputScope.handleSwipe(
 @Composable
 fun MessageText(
     modifier: Modifier = Modifier
-        .padding(PaddingValues(horizontal = 8.dp, vertical = 16.dp))
-        .width(LocalConfiguration.current.screenWidthDp.dp),
+        .width(LocalConfiguration.current.screenWidthDp.dp)
+        .padding(PaddingValues(horizontal = 16.dp, vertical = 16.dp)),
     text: String = ""
 ) {
     Text(

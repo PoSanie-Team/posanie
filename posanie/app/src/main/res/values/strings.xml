@@ -63,7 +63,7 @@
     // Scheduler
     <string name="odd_week">odd</string>
     <string name="even_week">even</string>
-    <string name="no_schedule_selected">Please choose group or teacher first.</string>
+    <string name="no_schedule_selected">Please select group or teacher first.</string>
     <string name="no_lessons_today">No lessons today.</string>
 
     <string name="monday_short_name">MO</string>
