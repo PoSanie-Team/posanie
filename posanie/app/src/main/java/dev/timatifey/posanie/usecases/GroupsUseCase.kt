@@ -43,24 +43,20 @@ class GroupsUseCaseImpl @Inject constructor(
             return@withContext Result.Success(result)
         }
 
-    override suspend fun getPickedGroup(): Result<Group> =
-        withContext(Dispatchers.IO) {
-            groupsDao.getGroups().forEach {
-                val isPicked = it.isPicked != 0
-                if (isPicked) {
-                    return@withContext Result.Success(groupMapper.cacheToDomain(it))
-                }
+    override suspend fun getPickedGroup(): Result<Group> = withContext(Dispatchers.IO) {
+        groupsDao.getGroups().forEach {
+            val isPicked = it.isPicked != 0
+            if (isPicked) {
+                return@withContext Result.Success(groupMapper.cacheToDomain(it))
             }
-            return@withContext Result.Error(Exception("No picked groups"))
         }
+        return@withContext Result.Error(Exception("No picked groups"))
+    }
 
     override suspend fun fetchGroupsBy(facultyId: Long): Result<Map<Int, GroupsLevel>> =
         withContext(Dispatchers.IO) {
             try {
                 val groups = groupsAPI.getGroups(facultyId)
-                if (groups.isEmpty()) {
-                    return@withContext Result.Error(Exception())
-                }
                 return@withContext Result.Success(
                     groups.mapValues { entry -> groupsLevelMapper.dataToDomain(entry.value) }
                 )
@@ -83,29 +79,27 @@ class GroupsUseCaseImpl @Inject constructor(
             }
         }
 
-    override suspend fun pickGroup(group: Group?): Result<Boolean> =
-        withContext(Dispatchers.IO) {
-            try {
-                val newGroups = groupsDao.getGroups()
-                    .map { it.copy(isPicked = if (it.id == group?.id) 1 else 0) }
-                    .toMutableList()
-                groupsDao.upsertGroups(newGroups)
-                return@withContext Result.Success(true)
-            } catch (e: Exception) {
-                return@withContext Result.Error(e)
-            }
+    override suspend fun pickGroup(group: Group?): Result<Boolean> = withContext(Dispatchers.IO) {
+        try {
+            val newGroups = groupsDao.getGroups()
+                .map { it.copy(isPicked = if (it.id == group?.id) 1 else 0) }
+                .toMutableList()
+            groupsDao.upsertGroups(newGroups)
+            return@withContext Result.Success(true)
+        } catch (e: Exception) {
+            return@withContext Result.Error(e)
         }
+    }
 
-    override suspend fun deleteGroup(group: Group): Result<Boolean> =
-        withContext(Dispatchers.IO) {
-            try {
-                groupsDao.deleteGroupById(group.id)
-                deleteGroupLessonsCache(group.id)
-                return@withContext Result.Success(true)
-            } catch (e: Exception) {
-                return@withContext Result.Error(e)
-            }
+    override suspend fun deleteGroup(group: Group): Result<Boolean> = withContext(Dispatchers.IO) {
+        try {
+            groupsDao.deleteGroupById(group.id)
+            deleteGroupLessonsCache(group.id)
+            return@withContext Result.Success(true)
+        } catch (e: Exception) {
+            return@withContext Result.Error(e)
         }
+    }
 
     private suspend fun deleteGroupLessonsCache(groupId: Long) {
         val schedulerWeek = schedulerDao.getSchedulerWeekByGroupId(groupId)

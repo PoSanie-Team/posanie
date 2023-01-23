@@ -45,7 +45,7 @@ fun PoSanieNavGraph(
         composable(BottomNavItems.Scheduler.route) {
             val schedulerViewModel = hiltViewModel<SchedulerViewModel>()
             LaunchedEffect(true) {
-                registerConnectivityListener(context) { connectionState ->
+                context.setOnNetworkStateChangeListener { connectionState ->
                     schedulerViewModel.updateConnectionState(connectionState)
                 }
                 schedulerViewModel.fetchLessons()
@@ -65,24 +65,28 @@ fun PoSanieNavGraph(
     }
 }
 
-fun registerConnectivityListener(context: Context, onNetworkStateChange: (ConnectionState) -> Unit) {
-    val connectivityManager = getSystemService(context, ConnectivityManager::class.java)
+internal fun Context.setOnNetworkStateChangeListener(
+    onNetworkStateChange: (ConnectionState) -> Unit
+) {
+    val connectivityManager = getSystemService(this, ConnectivityManager::class.java)
+        ?: return
     val networkRequest = NetworkRequest.Builder()
         .addCapability(NetworkCapabilities.NET_CAPABILITY_INTERNET)
         .build()
-    val callback = object: ConnectivityManager.NetworkCallback() {
-        override fun onAvailable(network: Network) {
-            onNetworkStateChange(ConnectionState.AVAILABLE)
-        }
+    connectivityManager.registerNetworkCallback(
+        networkRequest,
+        object : ConnectivityManager.NetworkCallback() {
+            override fun onAvailable(network: Network) {
+                onNetworkStateChange(ConnectionState.AVAILABLE)
+            }
 
-        override fun onLost(network: Network) {
-            onNetworkStateChange(ConnectionState.UNAVAILABLE)
-        }
-    }
-    connectivityManager?.registerNetworkCallback(networkRequest, callback)
+            override fun onLost(network: Network) {
+                onNetworkStateChange(ConnectionState.UNAVAILABLE)
+            }
+        })
 }
 
-fun NavGraphBuilder.pickerNavGraph(
+private fun NavGraphBuilder.pickerNavGraph(
     context: Context,
     navController: NavHostController,
     pickerViewModel: PickerViewModel,
@@ -113,7 +117,7 @@ fun NavGraphBuilder.pickerNavGraph(
     }
 }
 
-fun NavGraphBuilder.remoteNavGraph(
+private fun NavGraphBuilder.remoteNavGraph(
     context: Context,
     navController: NavHostController,
     pickerViewModel: PickerViewModel,
@@ -171,7 +175,7 @@ fun NavGraphBuilder.remoteNavGraph(
 }
 
 @Composable
-fun BottomNavigationBar(
+internal fun BottomNavigationBar(
     navController: NavHostController,
     items: List<BottomNavItems>
 ) {

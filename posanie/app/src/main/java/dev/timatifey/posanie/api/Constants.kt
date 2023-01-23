@@ -2,6 +2,6 @@ package dev.timatifey.posanie.api
 
 class Constants {
     companion object {
-        const val BASE_URL = "https://ruz.spbstu.ru/"
+        const val BASE_URL = "https://ruz.spbstu.ru/api/v1/ruz"
     }
 }

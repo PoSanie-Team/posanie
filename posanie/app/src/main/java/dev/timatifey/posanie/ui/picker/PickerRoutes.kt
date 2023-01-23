@@ -5,11 +5,8 @@ import androidx.compose.runtime.*
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.viewModelScope
 import androidx.navigation.NavHostController
-import com.google.accompanist.swiperefresh.SwipeRefreshState
-import com.google.accompanist.swiperefresh.rememberSwipeRefreshState
 import dev.timatifey.posanie.model.domain.Kind
 import dev.timatifey.posanie.model.domain.Type
-import dev.timatifey.posanie.model.domain.Faculty
 import dev.timatifey.posanie.ui.*
 import kotlinx.coroutines.launch
 
@@ -86,7 +83,7 @@ fun RemoteGroupsRoute(
 ) {
     val remoteGroupsViewModel = hiltViewModel<RemoteGroupsViewModel>()
     LaunchedEffect(true) {
-        registerConnectivityListener(context) { connectionState ->
+        context.setOnNetworkStateChangeListener { connectionState ->
             if (connectionState == ConnectionState.AVAILABLE) {
                 remoteGroupsViewModel.fetchGroupsBy(facultyId)
             }

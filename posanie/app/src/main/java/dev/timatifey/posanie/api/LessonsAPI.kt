@@ -1,87 +1,89 @@
 package dev.timatifey.posanie.api
 
+import dev.timatifey.posanie.api.Constants.Companion.BASE_URL
 import dev.timatifey.posanie.model.data.Lesson
 import dev.timatifey.posanie.ui.scheduler.WeekDay
 import kotlinx.coroutines.CoroutineDispatcher
 import kotlinx.coroutines.withContext
 import org.json.JSONObject
-import org.jsoup.Jsoup
 
-class LessonsAPI(private val dispatcher: CoroutineDispatcher)  {
+class LessonsAPI(private val dispatcher: CoroutineDispatcher) {
 
-    suspend fun weekOddnessByGroupId(groupId: Long, date: String) = withContext(dispatcher) {
-        val url = "https://ruz.spbstu.ru/api/v1/ruz/scheduler/$groupId?date=$date"
-        var json = Jsoup.connect(url).ignoreContentType(true).execute().body()
-        json = json.substring(json.indexOf("{"))
-        return@withContext JSONObject(json).getJSONObject("week").getBoolean("is_odd")
-    }
-
-    suspend fun weekOddnessByTeacherId(teacherId: Long, date: String) = withContext(dispatcher) {
-        val url = "https://ruz.spbstu.ru/api/v1/ruz/teachers/$teacherId/scheduler?date=$date"
-        var json = Jsoup.connect(url).ignoreContentType(true).execute().body()
-        json = json.substring(json.indexOf("{"))
-        return@withContext JSONObject(json).getJSONObject("week").getBoolean("is_odd")
-    }
-
-    suspend fun getLessonsByGroupId(groupId: Long, date: String) = withContext(dispatcher) {
-        val url =  "https://ruz.spbstu.ru/api/v1/ruz/scheduler/$groupId?date=$date"
-        return@withContext getLessons(groupId, url)
-    }
-
-    suspend fun getLessonsByTeacherId(teacherId: Long, date: String) = withContext(dispatcher) {
-        val url = "https://ruz.spbstu.ru/api/v1/ruz/teachers/$teacherId/scheduler?date=$date"
-        return@withContext getLessons(teacherId, url)
-    }
-
-    private suspend fun getLessons(schedulerTypeId: Long, url: String) = withContext(dispatcher) {
-        val lessonsToDays = mutableMapOf<WeekDay, List<Lesson>>()
-        var json = Jsoup.connect(url).ignoreContentType(true).execute().body()
-        json = json.substring(json.indexOf("{"))
-        val daysArray = JSONObject(json).getJSONArray("days")
-        var lessonId = 0L
-        for (i in 0 until daysArray.length()) {
-            val day = daysArray.get(i) as JSONObject
-            val weekDayOrdinal = day.getInt("weekday")
-            val weekDay = WeekDay.getWorkDayByOrdinal(adjustWeekDayOrdinal(weekDayOrdinal))
-            val lessonsArray = day.getJSONArray("lessons")
-            val lessons = mutableListOf<Lesson>()
-            for (j in 0 until  lessonsArray.length()) {
-                val jsonObject = lessonsArray.optJSONObject(j)
-                val teacher = if (jsonObject.getString("teachers") != "null") {
-                    val teachers = jsonObject.getJSONArray("teachers")
-                    teachers.getJSONObject(0).getString("full_name")
-                } else ""
-                val lesson = Lesson(
-                    id = (schedulerTypeId.toString() + lessonId.toString()).toLong(),
-                    start = jsonObject.getString("time_start"),
-                    end = jsonObject.getString("time_end"),
-                    type = jsonObject.getJSONObject("typeObj").getString("name"),
-                    name = jsonObject.getString("subject"),
-                    place = getPlace(jsonObject),
-                    teacher = teacher,
-                    lmsUrl = jsonObject.getString("lms_url")
-                )
-                lessons.add(lesson)
-                lessonId++
-            }
-
-            lessonsToDays[weekDay] = lessons;
+    suspend fun isWeekOddByGroupId(groupId: Long, date: String): Boolean =
+        withContext(dispatcher) {
+            val url = "$BASE_URL/scheduler/$groupId?date=$date"
+            return@withContext url
+                .getJsonObjectIgnoringContentType()
+                .getJSONObject("week")
+                .getBoolean("is_odd")
         }
-        return@withContext lessonsToDays
+
+    suspend fun isWeekOddByTeacherId(teacherId: Long, date: String): Boolean =
+        withContext(dispatcher) {
+            val url = "$BASE_URL/teachers/$teacherId/scheduler?date=$date"
+            return@withContext url
+                .getJsonObjectIgnoringContentType()
+                .getJSONObject("week")
+                .getBoolean("is_odd")
+        }
+
+    suspend fun getLessonsByGroupId(groupId: Long, date: String): Map<WeekDay, List<Lesson>> =
+        withContext(dispatcher) {
+            val url = "$BASE_URL/scheduler/$groupId?date=$date"
+            return@withContext getLessonsBy(groupId, url)
+        }
+
+    suspend fun getLessonsByTeacherId(teacherId: Long, date: String): Map<WeekDay, List<Lesson>> =
+        withContext(dispatcher) {
+            val url = "$BASE_URL/teachers/$teacherId/scheduler?date=$date"
+            return@withContext getLessonsBy(teacherId, url)
+        }
+
+    private fun getLessonsBy(schedulerTypeId: Long, url: String): Map<WeekDay, List<Lesson>> {
+        val lessonsToDays = mutableMapOf<WeekDay, List<Lesson>>()
+        val daysArray = url.getJsonObjectIgnoringContentType().getJSONArray("days")
+        var lessonId = 0L
+        for (dayIndex in 0 until daysArray.length()) {
+            val dayObj = daysArray.get(dayIndex) as JSONObject
+            val lessonsArray = dayObj.getJSONArray("lessons")
+            val weekDay = WeekDay.getWorkDayByOrdinal(
+                dayObj.getInt("weekday").formatWeekDayOrdinal()
+            )
+            lessonsToDays[weekDay] = (0 until lessonsArray.length()).map { lessonIndex ->
+                lessonsArray
+                    .optJSONObject(lessonIndex)
+                    .toLesson(lessonId = "$schedulerTypeId${lessonId++}".toLong())
+            }
+        }
+        return lessonsToDays
     }
 
-    private fun getPlace(jsonObject: JSONObject): String {
-        val auditory = jsonObject.getJSONArray("auditories").get(0) as JSONObject
+    private fun JSONObject.toLesson(lessonId: Long): Lesson {
+        val teacherFullName = if (!isNull("teachers")) {
+            getJSONArray("teachers")
+                .getJSONObject(0)
+                .getString("full_name")
+        } else ""
+        return Lesson(
+            id = lessonId,
+            start = getString("time_start"),
+            end = getString("time_end"),
+            type = getJSONObject("typeObj").getString("name"),
+            name = getString("subject"),
+            place = getPlace(),
+            teacher = teacherFullName,
+            lmsUrl = getString("lms_url")
+        )
+    }
+
+    private fun JSONObject.getPlace(): String {
+        val auditory = getJSONArray("auditories").get(0) as JSONObject
         val auditoryNumber = auditory.getString("name")
-        val buildingName = auditory.getJSONObject("building").getString("name");
+        val buildingName = auditory.getJSONObject("building").getString("name")
         return "$buildingName, $auditoryNumber"
     }
 
-    private fun adjustWeekDayOrdinal (weekDayOrdinal: Int): Int {
-        var result = weekDayOrdinal + 1
-        if (result > 7) {
-            result = 1
-        }
-        return result
-    }
+    private fun Int.formatWeekDayOrdinal() = this % 7 + 1
 }
+
+

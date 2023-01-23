@@ -33,7 +33,6 @@ fun PoSanieApp(activity: MainActivity) {
         settingsViewModel.getLanguage()
     }
 
-
     PoSanieTheme(
         appTheme = uiState.theme,
         appColorScheme = uiState.colorScheme
@@ -46,14 +45,13 @@ fun PoSanieApp(activity: MainActivity) {
         )
         val popupDataList = remember { mutableStateListOf<PopupData>() }
 
-        Scaffold(
-            bottomBar = {
-                BottomNavigationBar(navController = navController, items = bottomNavItems)
-            },
-        ) { innerPadding ->
-            Box(
-                modifier = Modifier.padding(innerPadding)
-            ) {
+        Scaffold(bottomBar = {
+            BottomNavigationBar(
+                navController = navController,
+                items = bottomNavItems
+            )
+        }) { innerPadding ->
+            Box(modifier = Modifier.padding(innerPadding)) {
                 PoSanieNavGraph(
                     context = activity,
                     navController = navController,
@@ -81,23 +79,16 @@ class PopupData(
 )
 
 @Composable
-fun AppPopup(
-    isVisible: Boolean,
-    onDismiss: () -> Unit,
-    content: @Composable () -> Unit
-) {
+fun AppPopup(isVisible: Boolean, onDismiss: () -> Unit, content: @Composable () -> Unit) {
     if (isVisible) {
-        val shadowColor = Color.Black.copy(alpha = 0.4f)
-        Box(modifier = Modifier
-            .fillMaxSize()
-            .background(shadowColor)
-            .clickable {  }
+        Box(
+            Modifier
+                .fillMaxSize()
+                .background(Color.Black.copy(alpha = 0.4f))
+                .clickable { }
         )
     }
-    Popup(
-        alignment = Alignment.Center,
-        onDismissRequest = onDismiss
-    ) {
+    Popup(alignment = Alignment.Center, onDismissRequest = onDismiss) {
         AnimatedVisibility(
             visible = isVisible,
             enter = fadeIn(),
