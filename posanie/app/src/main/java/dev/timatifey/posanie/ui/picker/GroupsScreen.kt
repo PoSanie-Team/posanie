@@ -431,7 +431,10 @@ fun GroupItem(
         LocalMinimumTouchTargetEnforcement provides false,
     ) {
         val cardColors = if (group.isPicked) {
-            CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.secondaryContainer)
+            CardDefaults.cardColors(
+                containerColor = MaterialTheme.colorScheme.secondaryContainer,
+                contentColor = MaterialTheme.colorScheme.onBackground
+            )
         } else CardDefaults.cardColors()
         Card(
             modifier = modifier.combinedClickable(

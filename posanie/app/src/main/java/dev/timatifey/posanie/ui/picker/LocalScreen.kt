@@ -189,6 +189,7 @@ fun AddItemFAB(
         ) {
             Icon(
                 imageVector = Icons.Filled.Add,
+                tint = MaterialTheme.colorScheme.onBackground,
                 contentDescription = stringResource(R.string.add_item_button_description)
             )
         }
