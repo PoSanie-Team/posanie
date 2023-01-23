@@ -1,5 +1,7 @@
 package dev.timatifey.posanie.ui.scheduler
 
+import android.content.Context
+import android.widget.Toast
 import androidx.compose.foundation.gestures.detectDragGestures
 import androidx.compose.foundation.gestures.scrollBy
 import androidx.compose.foundation.layout.*
@@ -14,6 +16,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.input.pointer.PointerInputScope
 import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.platform.LocalConfiguration
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Preview
@@ -22,6 +25,7 @@ import com.google.accompanist.swiperefresh.SwipeRefresh
 import com.google.accompanist.swiperefresh.rememberSwipeRefreshState
 import dev.timatifey.posanie.R
 import dev.timatifey.posanie.model.domain.Lesson
+import dev.timatifey.posanie.ui.ConnectionState
 import dev.timatifey.posanie.utils.ErrorMessage
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.launch
@@ -30,6 +34,7 @@ import java.util.*
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun SchedulerScreen(
+    context: Context,
     schedulerViewModel: SchedulerViewModel,
     createPopup: (MutableState<Boolean>, @Composable () -> Unit) -> Unit
 ) {
@@ -57,7 +62,8 @@ fun SchedulerScreen(
                 SchedulerBar(
                     schedulerViewModel = schedulerViewModel,
                     schedulerUiState = schedulerUiState,
-                    openCalendar = { calendarVisibilityState.value = true }
+                    openCalendar = { calendarVisibilityState.value = true },
+                    showNoInternetConnectionToast = { showNoInternetConnectionToast(context) }
                 )
             }
         ) { paddingValues ->
@@ -68,6 +74,7 @@ fun SchedulerScreen(
                 hasSchedule = schedulerUiState.hasSchedule
             )
             val weekScroller = createWeekScroller(
+                context = context,
                 schedulerViewModel = schedulerViewModel,
                 coroutineScope = coroutineScope,
                 weekDayListState = weekDayListState
@@ -135,13 +142,36 @@ class LazyListScroller(
 )
 
 fun createWeekScroller(
+    context: Context,
     schedulerViewModel: SchedulerViewModel,
     coroutineScope: CoroutineScope,
     weekDayListState: LazyListState
 ): LazyListScroller {
     return LazyListScroller(
-        scrollToNextItem = schedulerViewModel::selectNextWeekDay,
-        scrollToPreviousItem = schedulerViewModel::selectPreviousWeekDay,
+        scrollToNextItem = {
+            val oldDay = schedulerViewModel.uiState.value.selectedDay
+            schedulerViewModel.selectNextWeekDay()
+            val newDay = schedulerViewModel.uiState.value.selectedDay
+            val connectionState = schedulerViewModel.uiState.value.connectionState
+            showConnectionToastIfNeeded(
+                context = context,
+                oldDay = oldDay,
+                newDay = newDay,
+                connectionState = connectionState
+            )
+        },
+        scrollToPreviousItem = {
+            val oldDay = schedulerViewModel.uiState.value.selectedDay
+            schedulerViewModel.selectPreviousWeekDay()
+            val newDay = schedulerViewModel.uiState.value.selectedDay
+            val connectionState = schedulerViewModel.uiState.value.connectionState
+            showConnectionToastIfNeeded(
+                context = context,
+                oldDay = oldDay,
+                newDay = newDay,
+                connectionState = connectionState
+            )
+        },
         scrollToCurrentItem = {
             coroutineScope.launch {
                 weekDayListState.animateScrollToItem(schedulerViewModel.uiState.value.selectedDay.ordinal)
@@ -297,6 +327,24 @@ fun LessonItem(modifier: Modifier = Modifier, lesson: Lesson) {
 
         }
     }
+}
+
+private fun showConnectionToastIfNeeded(
+    context: Context,
+    oldDay: WeekDay,
+    newDay: WeekDay,
+    connectionState: ConnectionState
+) {
+    val previousWeek = oldDay == WeekDay.MONDAY && newDay == WeekDay.SATURDAY
+    val nextWeek = oldDay == WeekDay.SATURDAY && newDay == WeekDay.MONDAY
+    val newWeek = nextWeek || previousWeek
+    if (newWeek && connectionState == ConnectionState.UNAVAILABLE) {
+        showNoInternetConnectionToast(context)
+    }
+}
+
+fun showNoInternetConnectionToast(context: Context) {
+    Toast.makeText(context, R.string.no_internet_connection_message, Toast.LENGTH_LONG).show()
 }
 
 @Preview

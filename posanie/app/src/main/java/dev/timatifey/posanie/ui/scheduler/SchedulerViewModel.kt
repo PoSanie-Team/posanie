@@ -118,6 +118,7 @@ data class SchedulerUiState(
     val mondayDate: Calendar,
     val selectedDate: Calendar,
     val selectedDay: WeekDay,
+    val connectionState: ConnectionState,
     val isLoading: Boolean,
     val errorMessages: List<ErrorMessage>,
 )
@@ -173,6 +174,7 @@ private data class SchedulerViewModelState(
             mondayDate = mondayDate,
             selectedDate = selectedDate,
             selectedDay = selectedDay,
+            connectionState = connectionState,
             isLoading = isLoading > 0,
             errorMessages = errorMessages,
         )
@@ -348,8 +350,9 @@ class SchedulerViewModel @Inject constructor(
                 mondayDate = mondayDate,
                 selectedDate = selectedDate,
                 lessonsToDays = newLessonToDays,
-                errorMessages = errorMessages,
+                connectionState = ConnectionState.UNAVAILABLE,
                 isLoading = state.isLoading - 1,
+                errorMessages = errorMessages
             )
         }
     }
@@ -388,8 +391,9 @@ class SchedulerViewModel @Inject constructor(
                         hasSchedule = true,
                         weekIsOdd = weekIsOdd,
                         lessonsToDays = newLessonToDays,
-                        errorMessages = emptyList(),
-                        isLoading = state.isLoading - 1
+                        connectionState = ConnectionState.AVAILABLE,
+                        isLoading = state.isLoading - 1,
+                        errorMessages = emptyList()
                     )
                 }
                 saveResults(group, teacher, isOddResult, lessonsResult)

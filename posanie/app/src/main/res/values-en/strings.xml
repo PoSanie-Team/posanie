@@ -77,6 +77,8 @@
     <string name="november_full_name">November</string>
     <string name="december_full_name">December</string>
 
+    <string name="no_internet_connection_message">Can\'t load new week (no internet connection)</string>
+
     <string name="no_lessons_error_message">Cannot load today lessons.</string>
 
     <string name="previous_week_button_description">Button to go to previous week</string>
