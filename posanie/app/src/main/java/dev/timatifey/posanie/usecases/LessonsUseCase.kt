@@ -1,5 +1,6 @@
 package dev.timatifey.posanie.usecases
 
+import android.content.res.Resources.NotFoundException
 import dev.timatifey.posanie.api.LessonsAPI
 import dev.timatifey.posanie.cache.SchedulerDao
 import dev.timatifey.posanie.model.Result
@@ -46,21 +47,26 @@ private enum class SchedulerType {
     GROUP, TEACHER
 }
 
+
 class LessonsUseCaseImpl @Inject constructor(
     private val lessonMapper: LessonMapper,
     private val schedulerDao: SchedulerDao,
     private val lessonsApi: LessonsAPI,
 ) : LessonsUseCase {
 
+    @Suppress("USELESS_ELVIS")
     override suspend fun getLessonsByGroupId(groupId: Long): Result<SchedulerMap> =
         withContext(Dispatchers.IO) {
             val schedulerWeek = schedulerDao.getSchedulerWeekByGroupId(groupId)
+                ?: return@withContext Result.Error(NotFoundException()) // can return null
             return@withContext getLessonsFromSchedulerWeek(schedulerWeek)
         }
 
+    @Suppress("USELESS_ELVIS")
     override suspend fun getLessonsByTeacherId(teacherId: Long): Result<SchedulerMap> =
         withContext(Dispatchers.IO) {
             val schedulerWeek = schedulerDao.getSchedulerWeekByTeacherId(teacherId)
+                ?: return@withContext Result.Error(NotFoundException()) // can return null
             return@withContext getLessonsFromSchedulerWeek(schedulerWeek)
         }
 
@@ -168,29 +174,37 @@ class LessonsUseCaseImpl @Inject constructor(
         return "$typePrefix$weekId${weekDay.ordinal}".toLong()
     }
 
+    @Suppress("USELESS_ELVIS")
     override suspend fun getGroupSchedulerWeekOddness(groupId: Long): Result<Boolean> =
         withContext(Dispatchers.IO) {
             val schedulerWeek = schedulerDao.getSchedulerWeekByGroupId(groupId)
+                ?: return@withContext Result.Error(NotFoundException()) // can return null
             val weekIsOdd = schedulerWeek.isOdd != 0
             return@withContext Result.Success(weekIsOdd)
         }
 
+    @Suppress("USELESS_ELVIS")
     override suspend fun getTeacherSchedulerWeekOddness(teacherId: Long): Result<Boolean> =
         withContext(Dispatchers.IO) {
             val schedulerWeek = schedulerDao.getSchedulerWeekByTeacherId(teacherId)
+                ?: return@withContext Result.Error(NotFoundException()) // can return null
             val weekIsOdd = schedulerWeek.isOdd != 0
             return@withContext Result.Success(weekIsOdd)
         }
 
+    @Suppress("USELESS_ELVIS")
     override suspend fun getGroupSchedulerWeekMonday(groupId: Long): Result<Calendar> =
         withContext(Dispatchers.IO) {
             val schedulerWeek = schedulerDao.getSchedulerWeekByGroupId(groupId)
+                ?: return@withContext Result.Error(NotFoundException()) // can return null
             return@withContext Result.Success(schedulerWeek.mondayDate)
         }
 
+    @Suppress("USELESS_ELVIS")
     override suspend fun getTeacherSchedulerWeekMonday(teacherId: Long): Result<Calendar> =
         withContext(Dispatchers.IO) {
             val schedulerWeek = schedulerDao.getSchedulerWeekByTeacherId(teacherId)
+                ?: return@withContext Result.Error(NotFoundException()) // can return null
             return@withContext Result.Success(schedulerWeek.mondayDate)
         }
 
