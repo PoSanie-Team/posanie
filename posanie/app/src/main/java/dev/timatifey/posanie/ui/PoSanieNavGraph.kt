@@ -69,10 +69,11 @@ internal fun Context.setOnNetworkStateChangeListener(
     onNetworkStateChange: (ConnectionState) -> Unit
 ) {
     val connectivityManager = getSystemService(this, ConnectivityManager::class.java)
+        ?: return
     val networkRequest = NetworkRequest.Builder()
         .addCapability(NetworkCapabilities.NET_CAPABILITY_INTERNET)
         .build()
-    connectivityManager?.registerNetworkCallback(
+    connectivityManager.registerNetworkCallback(
         networkRequest,
         object : ConnectivityManager.NetworkCallback() {
             override fun onAvailable(network: Network) {

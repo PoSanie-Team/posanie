@@ -27,23 +27,21 @@ class TeachersUseCaseImpl @Inject constructor(
     private val teachersAPI: TeachersAPI,
 ) : TeachersUseCase {
 
-    override suspend fun getLocalTeachers(): Result<List<Teacher>> =
-        withContext(Dispatchers.IO) {
-            return@withContext Result.Success(
-                teachersDao.getTeachers().map { teacher -> teacherMapper.cacheToDomain(teacher) }
-            )
-        }
+    override suspend fun getLocalTeachers(): Result<List<Teacher>> = withContext(Dispatchers.IO) {
+        return@withContext Result.Success(
+            teachersDao.getTeachers().map { teacher -> teacherMapper.cacheToDomain(teacher) }
+        )
+    }
 
-    override suspend fun getPickedTeacher(): Result<Teacher> =
-        withContext(Dispatchers.IO) {
-            teachersDao.getTeachers().forEach {
-                val isPicked = it.isPicked != 0
-                if (isPicked) {
-                    return@withContext Result.Success(teacherMapper.cacheToDomain(it))
-                }
+    override suspend fun getPickedTeacher(): Result<Teacher> = withContext(Dispatchers.IO) {
+        teachersDao.getTeachers().forEach {
+            val isPicked = it.isPicked != 0
+            if (isPicked) {
+                return@withContext Result.Success(teacherMapper.cacheToDomain(it))
             }
-            return@withContext Result.Error(Exception("No picked teachers"))
         }
+        return@withContext Result.Error(Exception("No picked teachers"))
+    }
 
     override suspend fun fetchTeachersBy(name: String): Result<List<Teacher>> =
         withContext(Dispatchers.IO) {

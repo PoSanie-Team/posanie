@@ -20,28 +20,26 @@ class FacultiesUseCaseImpl @Inject constructor(
     private val facultiesAPI: FacultiesAPI,
 ) : FacultiesUseCase {
 
-    override suspend fun getLocalFaculties(): Result<List<Faculty>> =
-        withContext(Dispatchers.IO) {
-            try {
-                return@withContext Result.Success(
-                    facultiesDao.getFaculties().map { facultyMapper.cacheToDomain(it) }
-                )
-            } catch (e: Exception) {
-                return@withContext Result.Error(e)
-            }
+    override suspend fun getLocalFaculties(): Result<List<Faculty>> = withContext(Dispatchers.IO) {
+        try {
+            return@withContext Result.Success(
+                facultiesDao.getFaculties().map { facultyMapper.cacheToDomain(it) }
+            )
+        } catch (e: Exception) {
+            return@withContext Result.Error(e)
         }
+    }
 
-    override suspend fun fetchFaculties(): Result<List<Faculty>> =
-        withContext(Dispatchers.IO) {
-            try {
-                val faculties = facultiesAPI.getFacultiesList()
-                facultiesDao.upsertFaculties(faculties.map { facultyMapper.dataToCache(it) })
-                return@withContext Result.Success(
-                    faculties.map { facultyMapper.dataToDomain(it) }
-                )
-            } catch (e: Exception) {
-                return@withContext Result.Error(e)
-            }
+    override suspend fun fetchFaculties(): Result<List<Faculty>> = withContext(Dispatchers.IO) {
+        try {
+            val faculties = facultiesAPI.getFacultiesList()
+            facultiesDao.upsertFaculties(faculties.map { facultyMapper.dataToCache(it) })
+            return@withContext Result.Success(
+                faculties.map { facultyMapper.dataToDomain(it) }
+            )
+        } catch (e: Exception) {
+            return@withContext Result.Error(e)
         }
+    }
 
 }
