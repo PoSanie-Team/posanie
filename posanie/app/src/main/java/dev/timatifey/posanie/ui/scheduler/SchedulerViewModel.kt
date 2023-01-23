@@ -415,7 +415,7 @@ class SchedulerViewModel @Inject constructor(
                 groupId = group.id,
                 mondayDate = viewModelState.value.mondayDate,
                 weekIsOdd = isOddResult.successOr(false),
-                lessonsToWeekDays = lessonsResult.successOr(emptyMap())
+                dayToLessonsMap = lessonsResult.successOr(emptyMap())
             )
         }
         if (teacher != null) {
@@ -423,7 +423,7 @@ class SchedulerViewModel @Inject constructor(
                 teacherId = teacher.id,
                 mondayDate = viewModelState.value.mondayDate,
                 weekIsOdd = isOddResult.successOr(false),
-                lessonsToWeekDays = lessonsResult.successOr(emptyMap())
+                dayToLessonsMap = lessonsResult.successOr(emptyMap())
             )
         }
     }
