@@ -38,16 +38,16 @@ val DesaturatedPinkGrey35 = Color(0xFF514347)
 val Sand80 = Color(0xFFEFBD94)
 
 // Light green
-val Green40 = Color(0xFF146E00)
-val Green90 = Color(0xFF9EF981)
+val Green40 = Color(0xFF1D5E25)
+val Green90 = Color(0xFF319B3D)
 val GreenGrey40 = Color(0xFF54624D)
 val GreenGrey90 = Color(0xFFD7E8CC)
 val DesaturatedGreenGrey95 = Color(0xFFDFE4D7)
 val Blue40 = Color(0xFF386668)
 
 // Dark green
-val Green80 = Color(0xFF83DB68)
-val Green30 = Color(0xFF0D5300)
+val Green80 = Color(0xFF319B3D)
+val Green30 = Color(0xFF16471C)
 val GreenGrey80 = Color(0xFFBBCBB1)
 val GreenGrey30 = Color(0xFF3D4B36)
 val DesaturatedGreenGrey35 = Color(0xFF43483F)

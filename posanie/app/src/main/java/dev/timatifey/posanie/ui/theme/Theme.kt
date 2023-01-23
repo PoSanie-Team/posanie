@@ -99,7 +99,7 @@ fun PoSanieTheme(
     val purpleColorScheme = if (darkTheme) DarkPurpleColorScheme else LightPurpleColorScheme
     val pinkColorScheme = if (darkTheme) DarkPinkColorScheme else LightPinkColorScheme
     val greenColorScheme = if (darkTheme) DarkGreenColorScheme else LightGreenColorScheme
-    val contrastColorScheme = if (darkTheme) ContrastColorScheme else LightPurpleColorScheme
+    val contrastColorScheme = if (darkTheme) ContrastColorScheme else LightGreenColorScheme
 
     val context = LocalContext.current
     val systemColorScheme = if (canUseDynamicColor) {
