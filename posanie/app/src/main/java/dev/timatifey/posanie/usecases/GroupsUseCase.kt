@@ -58,9 +58,6 @@ class GroupsUseCaseImpl @Inject constructor(
         withContext(Dispatchers.IO) {
             try {
                 val groups = groupsAPI.getGroups(facultyId)
-                if (groups.isEmpty()) {
-                    return@withContext Result.Error(Exception())
-                }
                 return@withContext Result.Success(
                     groups.mapValues { entry -> groupsLevelMapper.dataToDomain(entry.value) }
                 )

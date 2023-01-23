@@ -9,10 +9,9 @@ class TeachersAPI(private val dispatcher: CoroutineDispatcher) {
 
     suspend fun getTeachers(teacherName: String) = withContext(dispatcher) {
         val teachers = mutableListOf<Teacher>()
-        val jsonArray = "$BASE_URL/search/teacher?q=$teacherName"
-            .getFooterNextJsonObject()
-            .getJSONObject("searchTeacher")
-            .getJSONArray("data")
+        val json = "$BASE_URL/search/teachers?q=$teacherName".getJsonObjectIgnoringContentType()
+        if (json.isNull("teachers")) return@withContext emptyList()
+        val jsonArray = json.getJSONArray("teachers")
         for (ind in 0 until jsonArray.length()) {
             val jsonObject = jsonArray.optJSONObject(ind)
             val teacher = Teacher(

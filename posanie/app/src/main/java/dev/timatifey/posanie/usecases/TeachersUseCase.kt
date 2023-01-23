@@ -49,9 +49,6 @@ class TeachersUseCaseImpl @Inject constructor(
         withContext(Dispatchers.IO) {
             try {
                 val teachers = teachersAPI.getTeachers(name)
-                if (teachers.isEmpty()) {
-                    return@withContext Result.Error(Exception())
-                }
                 return@withContext Result.Success(
                     teachers.map { teacher -> teacherMapper.dataToDomain(teacher) }
                 )
