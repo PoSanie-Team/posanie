@@ -2,8 +2,8 @@ name: build release app, sign it and publish to GH Releases
 
 on:
   push:
-    branch:
-      - "release/**"
+    branches:
+      - 'release/**'
 
 defaults:
   run:
