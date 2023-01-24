@@ -27,7 +27,7 @@ fun SchedulerBar(
     schedulerViewModel: SchedulerViewModel,
     schedulerUiState: SchedulerUiState,
     openCalendar: () -> Unit,
-    showNoInternetConnectionToast: () -> Unit
+    showCannotLoadWeekToast: () -> Unit
 ) {
     SchedulerBar(
         selectedDate = schedulerUiState.selectedDate,
@@ -39,14 +39,14 @@ fun SchedulerBar(
             schedulerViewModel.setNextMonday()
             schedulerViewModel.selectWeekDay(WeekDay.MONDAY)
             if (schedulerViewModel.uiState.value.connectionState == ConnectionState.UNAVAILABLE) {
-                showNoInternetConnectionToast()
+                showCannotLoadWeekToast()
             }
         },
         goPreviousWeek = {
             schedulerViewModel.setPreviousMonday()
             schedulerViewModel.selectWeekDay(WeekDay.MONDAY)
             if (schedulerViewModel.uiState.value.connectionState == ConnectionState.UNAVAILABLE) {
-                showNoInternetConnectionToast()
+                showCannotLoadWeekToast()
             }
         },
         openCalendar = openCalendar

@@ -77,7 +77,8 @@
     <string name="november_full_name">Ноябрь</string>
     <string name="december_full_name">Декабрь</string>
 
-    <string name="no_internet_connection_message">Не могу загрузить новую неделю (нет интернета)</string>
+    <string name="cannot_load_new_week_message">Не могу загрузить новую неделю (нет интернета)</string>
+    <string name="cannot_update_schedule_message">Не могу обновить расписание (нет интернета)</string>
 
     <string name="no_lessons_error_message">Не могу загрузить занятия.</string>
 

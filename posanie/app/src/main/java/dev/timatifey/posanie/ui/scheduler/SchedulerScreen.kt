@@ -1,7 +1,9 @@
 package dev.timatifey.posanie.ui.scheduler
 
 import android.content.Context
+import android.os.LocaleList
 import android.widget.Toast
+import androidx.annotation.StringRes
 import androidx.compose.foundation.gestures.detectDragGestures
 import androidx.compose.foundation.gestures.scrollBy
 import androidx.compose.foundation.layout.*
@@ -16,7 +18,6 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.input.pointer.PointerInputScope
 import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.platform.LocalConfiguration
-import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Preview
@@ -63,7 +64,9 @@ fun SchedulerScreen(
                     schedulerViewModel = schedulerViewModel,
                     schedulerUiState = schedulerUiState,
                     openCalendar = { calendarVisibilityState.value = true },
-                    showNoInternetConnectionToast = { showNoInternetConnectionToast(context) }
+                    showCannotLoadWeekToast = {
+                        NoInternetConnectionToast.show(context, R.string.cannot_load_new_week_message)
+                    }
                 )
             }
         ) { paddingValues ->
@@ -84,7 +87,12 @@ fun SchedulerScreen(
                 state = weekState,
                 lessonsToDays = lessonsToDays,
                 weekScroller = weekScroller,
-                fetchLessons = schedulerViewModel::fetchLessons
+                fetchLessons = {
+                    schedulerViewModel.fetchLessons()
+                    if (schedulerUiState.connectionState == ConnectionState.UNAVAILABLE) {
+                        NoInternetConnectionToast.show(context, R.string.cannot_update_schedule_message)
+                    }
+                }
             )
         }
 
@@ -153,7 +161,7 @@ fun createWeekScroller(
             schedulerViewModel.selectNextWeekDay()
             val newDay = schedulerViewModel.uiState.value.selectedDay
             val connectionState = schedulerViewModel.uiState.value.connectionState
-            showConnectionToastIfNeeded(
+            showConnectionToastOnWeekChange(
                 context = context,
                 oldDay = oldDay,
                 newDay = newDay,
@@ -165,7 +173,7 @@ fun createWeekScroller(
             schedulerViewModel.selectPreviousWeekDay()
             val newDay = schedulerViewModel.uiState.value.selectedDay
             val connectionState = schedulerViewModel.uiState.value.connectionState
-            showConnectionToastIfNeeded(
+            showConnectionToastOnWeekChange(
                 context = context,
                 oldDay = oldDay,
                 newDay = newDay,
@@ -329,7 +337,7 @@ fun LessonItem(modifier: Modifier = Modifier, lesson: Lesson) {
     }
 }
 
-private fun showConnectionToastIfNeeded(
+private fun showConnectionToastOnWeekChange(
     context: Context,
     oldDay: WeekDay,
     newDay: WeekDay,
@@ -339,13 +347,27 @@ private fun showConnectionToastIfNeeded(
     val nextWeek = oldDay == WeekDay.SATURDAY && newDay == WeekDay.MONDAY
     val newWeek = nextWeek || previousWeek
     if (newWeek && connectionState == ConnectionState.UNAVAILABLE) {
-        showNoInternetConnectionToast(context)
+        NoInternetConnectionToast.show(context, R.string.cannot_load_new_week_message)
     }
 }
 
-fun showNoInternetConnectionToast(context: Context) {
-    Toast.makeText(context, R.string.no_internet_connection_message, Toast.LENGTH_LONG).show()
+private object NoInternetConnectionToast {
+    var toast: Toast? = null
+    @StringRes var messageRes: Int? = null
+    var locales: LocaleList? = null
+
+    fun show(context: Context, @StringRes newMessageRes: Int) {
+        val contextLocales = context.resources.configuration.locales
+        toast?.cancel()
+        if (toast == null || locales != contextLocales || messageRes != newMessageRes) {
+            toast = Toast.makeText(context, newMessageRes, Toast.LENGTH_LONG)
+            messageRes = newMessageRes
+            locales = contextLocales
+        }
+        toast?.show()
+    }
 }
+
 
 @Preview
 @Composable
