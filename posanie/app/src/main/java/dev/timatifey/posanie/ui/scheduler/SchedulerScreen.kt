@@ -1,5 +1,9 @@
 package dev.timatifey.posanie.ui.scheduler
 
+import android.content.Context
+import android.os.LocaleList
+import android.widget.Toast
+import androidx.annotation.StringRes
 import androidx.compose.foundation.gestures.detectDragGestures
 import androidx.compose.foundation.gestures.scrollBy
 import androidx.compose.foundation.layout.*
@@ -22,6 +26,7 @@ import com.google.accompanist.swiperefresh.SwipeRefresh
 import com.google.accompanist.swiperefresh.rememberSwipeRefreshState
 import dev.timatifey.posanie.R
 import dev.timatifey.posanie.model.domain.Lesson
+import dev.timatifey.posanie.ui.ConnectionState
 import dev.timatifey.posanie.utils.ErrorMessage
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.launch
@@ -30,6 +35,7 @@ import java.util.*
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun SchedulerScreen(
+    context: Context,
     schedulerViewModel: SchedulerViewModel,
     createPopup: (MutableState<Boolean>, @Composable () -> Unit) -> Unit
 ) {
@@ -57,33 +63,37 @@ fun SchedulerScreen(
                 SchedulerBar(
                     schedulerViewModel = schedulerViewModel,
                     schedulerUiState = schedulerUiState,
-                    openCalendar = { calendarVisibilityState.value = true }
+                    openCalendar = { calendarVisibilityState.value = true },
+                    showCannotLoadWeekToast = {
+                        NoInternetConnectionToast.show(context, R.string.cannot_load_new_week_message)
+                    }
                 )
             }
         ) { paddingValues ->
-            if (schedulerUiState.hasSchedule) {
-                val weekState = WeekState(
-                    dayListState = weekDayListState,
-                    errorMessages = schedulerUiState.errorMessages,
-                    isLoading = schedulerUiState.isLoading
-                )
-                val weekScroller = createWeekScroller(
-                    schedulerViewModel = schedulerViewModel,
-                    coroutineScope = coroutineScope,
-                    weekDayListState = weekDayListState
-                )
-                ScrollableWeek(
-                    modifier = Modifier.padding(paddingValues),
-                    state = weekState,
-                    lessonsToDays = lessonsToDays,
-                    weekScroller = weekScroller,
-                    fetchLessons = schedulerViewModel::fetchLessons
-                )
-            } else {
-                Box(modifier = Modifier.padding(paddingValues)) {
-                    MessageText(text = stringResource(R.string.no_schedule_selected))
+            val weekState = WeekState(
+                dayListState = weekDayListState,
+                errorMessages = schedulerUiState.errorMessages,
+                isLoading = schedulerUiState.isLoading,
+                hasSchedule = schedulerUiState.hasSchedule
+            )
+            val weekScroller = createWeekScroller(
+                context = context,
+                schedulerViewModel = schedulerViewModel,
+                coroutineScope = coroutineScope,
+                weekDayListState = weekDayListState
+            )
+            ScrollableWeek(
+                modifier = Modifier.padding(paddingValues),
+                state = weekState,
+                lessonsToDays = lessonsToDays,
+                weekScroller = weekScroller,
+                fetchLessons = {
+                    schedulerViewModel.fetchLessons()
+                    if (schedulerUiState.connectionState == ConnectionState.UNAVAILABLE) {
+                        NoInternetConnectionToast.show(context, R.string.cannot_update_schedule_message)
+                    }
                 }
-            }
+            )
         }
 
         LaunchedEffect(true) {
@@ -129,6 +139,7 @@ class WeekState(
     val dayListState: LazyListState,
     val errorMessages: List<ErrorMessage>,
     val isLoading: Boolean,
+    val hasSchedule: Boolean
 )
 
 class LazyListScroller(
@@ -139,13 +150,36 @@ class LazyListScroller(
 )
 
 fun createWeekScroller(
+    context: Context,
     schedulerViewModel: SchedulerViewModel,
     coroutineScope: CoroutineScope,
     weekDayListState: LazyListState
 ): LazyListScroller {
     return LazyListScroller(
-        scrollToNextItem = schedulerViewModel::selectNextWeekDay,
-        scrollToPreviousItem = schedulerViewModel::selectPreviousWeekDay,
+        scrollToNextItem = {
+            val oldDay = schedulerViewModel.uiState.value.selectedDay
+            schedulerViewModel.selectNextWeekDay()
+            val newDay = schedulerViewModel.uiState.value.selectedDay
+            val connectionState = schedulerViewModel.uiState.value.connectionState
+            showConnectionToastOnWeekChange(
+                context = context,
+                oldDay = oldDay,
+                newDay = newDay,
+                connectionState = connectionState
+            )
+        },
+        scrollToPreviousItem = {
+            val oldDay = schedulerViewModel.uiState.value.selectedDay
+            schedulerViewModel.selectPreviousWeekDay()
+            val newDay = schedulerViewModel.uiState.value.selectedDay
+            val connectionState = schedulerViewModel.uiState.value.connectionState
+            showConnectionToastOnWeekChange(
+                context = context,
+                oldDay = oldDay,
+                newDay = newDay,
+                connectionState = connectionState
+            )
+        },
         scrollToCurrentItem = {
             coroutineScope.launch {
                 weekDayListState.animateScrollToItem(schedulerViewModel.uiState.value.selectedDay.ordinal)
@@ -190,7 +224,9 @@ fun WeekView(
         items(6) { i ->
             val weekDay = WeekDay.getWorkDayByOrdinal(weekdayOrdinalToCalendarFormat(i))
             val lessons = lessonsToDays[weekDay] ?: emptyList()
-            if (state.errorMessages.isNotEmpty()) {
+            if (!state.hasSchedule) {
+                MessageText(text = stringResource(R.string.no_schedule_selected))
+            } else if (state.errorMessages.isNotEmpty()) {
                 MessageText(text = stringResource(R.string.no_lessons_error_message))
             } else if (lessons.isEmpty()) {
                 MessageText(text = stringResource(R.string.no_lessons_today))
@@ -251,8 +287,8 @@ suspend fun PointerInputScope.handleSwipe(
 @Composable
 fun MessageText(
     modifier: Modifier = Modifier
-        .padding(PaddingValues(horizontal = 8.dp, vertical = 16.dp))
-        .width(LocalConfiguration.current.screenWidthDp.dp),
+        .width(LocalConfiguration.current.screenWidthDp.dp)
+        .padding(PaddingValues(horizontal = 16.dp, vertical = 16.dp)),
     text: String = ""
 ) {
     Text(
@@ -300,6 +336,38 @@ fun LessonItem(modifier: Modifier = Modifier, lesson: Lesson) {
         }
     }
 }
+
+private fun showConnectionToastOnWeekChange(
+    context: Context,
+    oldDay: WeekDay,
+    newDay: WeekDay,
+    connectionState: ConnectionState
+) {
+    val previousWeek = oldDay == WeekDay.MONDAY && newDay == WeekDay.SATURDAY
+    val nextWeek = oldDay == WeekDay.SATURDAY && newDay == WeekDay.MONDAY
+    val newWeek = nextWeek || previousWeek
+    if (newWeek && connectionState == ConnectionState.UNAVAILABLE) {
+        NoInternetConnectionToast.show(context, R.string.cannot_load_new_week_message)
+    }
+}
+
+private object NoInternetConnectionToast {
+    var toast: Toast? = null
+    @StringRes var messageRes: Int? = null
+    var locales: LocaleList? = null
+
+    fun show(context: Context, @StringRes newMessageRes: Int) {
+        val contextLocales = context.resources.configuration.locales
+        toast?.cancel()
+        if (toast == null || locales != contextLocales || messageRes != newMessageRes) {
+            toast = Toast.makeText(context, newMessageRes, Toast.LENGTH_LONG)
+            messageRes = newMessageRes
+            locales = contextLocales
+        }
+        toast?.show()
+    }
+}
+
 
 @Preview
 @Composable

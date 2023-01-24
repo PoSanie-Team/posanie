@@ -142,7 +142,10 @@ fun TeacherItem(
         LocalMinimumTouchTargetEnforcement provides false,
     ) {
         val cardColors = if (teacher.isPicked) {
-            CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.secondaryContainer)
+            CardDefaults.cardColors(
+                containerColor = MaterialTheme.colorScheme.secondaryContainer,
+                contentColor = MaterialTheme.colorScheme.onBackground
+            )
         } else CardDefaults.cardColors()
         Card(
             modifier = Modifier

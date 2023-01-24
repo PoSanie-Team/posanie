@@ -14,7 +14,7 @@ enum class AppColorScheme (
     CONTRAST(4, R.string.contrast_scheme);
 
     companion object {
-        val DEFAULT = SYSTEM
+        val DEFAULT = GREEN
 
         fun getById(id: Int): AppColorScheme {
             return when(id) {

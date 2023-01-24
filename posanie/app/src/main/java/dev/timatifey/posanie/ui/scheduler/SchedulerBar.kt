@@ -1,5 +1,6 @@
 package dev.timatifey.posanie.ui.scheduler
 
+import android.content.Context
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
@@ -18,13 +19,15 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import dev.timatifey.posanie.R
+import dev.timatifey.posanie.ui.ConnectionState
 import java.util.*
 
 @Composable
 fun SchedulerBar(
     schedulerViewModel: SchedulerViewModel,
     schedulerUiState: SchedulerUiState,
-    openCalendar: () -> Unit
+    openCalendar: () -> Unit,
+    showCannotLoadWeekToast: () -> Unit
 ) {
     SchedulerBar(
         selectedDate = schedulerUiState.selectedDate,
@@ -35,10 +38,16 @@ fun SchedulerBar(
         goNextWeek = {
             schedulerViewModel.setNextMonday()
             schedulerViewModel.selectWeekDay(WeekDay.MONDAY)
+            if (schedulerViewModel.uiState.value.connectionState == ConnectionState.UNAVAILABLE) {
+                showCannotLoadWeekToast()
+            }
         },
         goPreviousWeek = {
             schedulerViewModel.setPreviousMonday()
             schedulerViewModel.selectWeekDay(WeekDay.MONDAY)
+            if (schedulerViewModel.uiState.value.connectionState == ConnectionState.UNAVAILABLE) {
+                showCannotLoadWeekToast()
+            }
         },
         openCalendar = openCalendar
     )

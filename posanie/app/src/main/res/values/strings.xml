@@ -63,7 +63,7 @@
     // Scheduler
     <string name="odd_week">odd</string>
     <string name="even_week">even</string>
-    <string name="no_schedule_selected">Please choose group or teacher first.</string>
+    <string name="no_schedule_selected">Please select group or teacher first.</string>
     <string name="no_lessons_today">No lessons today.</string>
 
     <string name="monday_short_name">MO</string>
@@ -86,6 +86,9 @@
     <string name="october_full_name">October</string>
     <string name="november_full_name">November</string>
     <string name="december_full_name">December</string>
+
+    <string name="cannot_load_new_week_message">Can\'t load new week (no internet connection)</string>
+    <string name="cannot_update_schedule_message">Can\'t update schedule (no internet connection)</string>
 
     <string name="no_lessons_error_message">Cannot load today lessons.</string>
 

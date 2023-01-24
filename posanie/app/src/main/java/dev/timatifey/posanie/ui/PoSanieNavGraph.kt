@@ -22,7 +22,6 @@ import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.currentBackStackEntryAsState
 import androidx.navigation.compose.rememberNavController
-import dagger.hilt.android.qualifiers.ActivityContext
 import dev.timatifey.posanie.ui.picker.*
 
 import dev.timatifey.posanie.ui.scheduler.SchedulerRoute
@@ -50,7 +49,11 @@ fun PoSanieNavGraph(
                 }
                 schedulerViewModel.fetchLessons()
             }
-            SchedulerRoute(schedulerViewModel = schedulerViewModel, createPopup = createPopup)
+            SchedulerRoute(
+                context = context,
+                schedulerViewModel = schedulerViewModel,
+                createPopup = createPopup
+            )
         }
         pickerNavGraph(
             context = context,

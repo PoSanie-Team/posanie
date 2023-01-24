@@ -10,7 +10,7 @@ enum class Language (
     RUSSIAN(1, "Русский", "Russian", "ru");
 
     companion object {
-        val DEFAULT = ENGLISH
+        val DEFAULT = RUSSIAN
 
         fun getById(id: Int): Language {
             return when(id) {
