@@ -72,13 +72,13 @@ private val DarkGreenColorScheme = darkColorScheme(
 )
 
 private val ContrastColorScheme = darkColorScheme(
-    primary = Purple80,
-    secondary = PurpleGrey80,
-    tertiary = Pink80,
-    primaryContainer = Purple30,
-    secondaryContainer = PurpleGrey30,
+    primary = Green80,
+    secondary = GreenGrey80,
+    tertiary = Blue80,
+    primaryContainer = Green30,
+    secondaryContainer = GreenGrey30,
     surface = Black,
-    surfaceVariant = DesaturatedPurpleGrey35,
+    surfaceVariant = DesaturatedGreenGrey35,
     background = Black
 )
 
