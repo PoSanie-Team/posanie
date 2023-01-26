@@ -105,7 +105,7 @@ fun PoSanieTheme(
     val systemColorScheme = if (canUseDynamicColor) {
         if (darkTheme) dynamicDarkColorScheme(context) else dynamicLightColorScheme(context)
     } else {
-        purpleColorScheme
+        greenColorScheme
     }
 
     val colorScheme = when(appColorScheme) {

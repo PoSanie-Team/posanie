@@ -28,13 +28,13 @@ class SettingsUseCaseImpl @Inject constructor(
         context.putInt(R.string.preference_theme, theme.id)
 
     override suspend fun getTheme(): Result<AppTheme> =
-        context.getInt(R.string.preference_theme, 0) { AppTheme.getById(it) }
+        context.getInt(R.string.preference_theme, AppTheme.DEFAULT.id) { AppTheme.getById(it) }
 
     override suspend fun saveAndPickColorScheme(colorScheme: AppColorScheme): Result<Boolean> =
         context.putInt(R.string.preference_color_scheme, colorScheme.id)
 
     override suspend fun getColorScheme(): Result<AppColorScheme> =
-        context.getInt(R.string.preference_color_scheme, 0) { AppColorScheme.getById(it) }
+        context.getInt(R.string.preference_color_scheme, AppColorScheme.DEFAULT.id) { AppColorScheme.getById(it) }
 
     override suspend fun saveAndPickLanguage(language: Language): Result<Boolean> =
         context.putInt(R.string.preference_language, language.id)
@@ -43,7 +43,7 @@ class SettingsUseCaseImpl @Inject constructor(
 }
 
 fun Context.getLanguageFromPreferences(): Result<Language> =
-    getInt(R.string.preference_language, 0) { languageId ->
+    getInt(R.string.preference_language, Language.DEFAULT.id) { languageId ->
         Language.getById(languageId)
     }
 

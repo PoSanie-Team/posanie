@@ -4,9 +4,9 @@
     <string name="app_name" translatable="false">Posanie</string>
 
     <string name="preference_file_key" translatable="false">dev.timfatifey.posanie.app_preferences</string>
-    <string name="preference_theme" translatable="false">Theme</string>
-    <string name="preference_color_scheme" translatable="false">ColorScheme</string>
-    <string name="preference_language" translatable="false">Language</string>
+    <string name="preference_theme" translatable="false">ThemePreference</string>
+    <string name="preference_color_scheme" translatable="false">ColorSchemePreference</string>
+    <string name="preference_language" translatable="false">LanguagePreference</string>
 
     // Translatable
 
