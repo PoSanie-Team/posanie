@@ -73,7 +73,7 @@ class SettingsViewModel @Inject constructor(
             val result = settingsUseCase.getTheme()
             viewModelState.update { state ->
                 return@update state.copy(
-                    theme = result.successOr(AppTheme.SYSTEM),
+                    theme = result.successOr(AppTheme.DEFAULT),
                     isLoading = false,
                 )
             }
@@ -115,7 +115,7 @@ class SettingsViewModel @Inject constructor(
             val result = settingsUseCase.getLanguage()
             viewModelState.update { state ->
                 return@update state.copy(
-                    language = result.successOr(Language.ENGLISH),
+                    language = result.successOr(Language.DEFAULT),
                     isLoading = false,
                 )
             }
