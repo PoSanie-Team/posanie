@@ -21,8 +21,7 @@ fun LocalRoute(
         createPopup = createPopup,
         onRefresh = {
             viewModel.viewModelScope.launch {
-                viewModel.getLocalGroups()
-                viewModel.getLocalTeachers()
+                viewModel.getLocalGroupsAndTeachers()
             }
         },
         goToRemote = { navController.navigate(PickerNavItems.Remote.route) }
