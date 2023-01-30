@@ -102,8 +102,7 @@ private fun NavGraphBuilder.pickerNavGraph(
     ) {
         composable(PickerNavItems.Local.route) {
             LaunchedEffect(true) {
-                pickerViewModel.getLocalGroups()
-                pickerViewModel.getLocalTeachers()
+                pickerViewModel.getLocalGroupsAndTeachers()
             }
             LocalRoute(
                 viewModel = pickerViewModel,

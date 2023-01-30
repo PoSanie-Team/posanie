@@ -36,6 +36,7 @@ fun LocalScreen(
 
     val levelsToGroups = uiState.levelsToGroups
     val teachers = uiState.teachers
+    val isLoading = uiState.isLoading
     val swipeRefreshState = rememberSwipeRefreshState(uiState.isLoading)
 
     val itemDialogVisibilityState = remember { mutableStateOf(false) }
@@ -68,8 +69,7 @@ fun LocalScreen(
         AddItemFAB(goToRemote = goToRemote)
     }
 
-    LaunchedEffect(levelsToGroups, teachers, uiState.isLoading) {
-        val isLoading = uiState.isLoading
+    LaunchedEffect(levelsToGroups, teachers, isLoading) {
         if (levelsToGroups.isEmpty() && teachers.isEmpty() && !isLoading) {
             goToRemote()
         }

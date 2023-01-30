@@ -39,13 +39,14 @@ class PickerViewModel @Inject constructor(
         val localGroups: Map<Int, GroupsLevel>? = null,
         val localTeachers: List<Teacher>? = null,
         val commandsRunning: Int = 0,
+        val isInitialized: Boolean = false,
         val errorMessages: List<ErrorMessage> = emptyList(),
     ) {
 
         fun toLocalUiState(): LocalUiState = LocalUiState(
             levelsToGroups = localGroups ?: emptyMap(),
             teachers = localTeachers ?: emptyList(),
-            isLoading = commandsRunning > 0,
+            isLoading = commandsRunning > 0 || !isInitialized,
             errorMessages = errorMessages
         )
     }
@@ -64,7 +65,15 @@ class PickerViewModel @Inject constructor(
             viewModelState.value.toLocalUiState()
         )
 
-    suspend fun getLocalGroups() {
+    suspend fun getLocalGroupsAndTeachers() {
+        viewModelState.update { it.copy(commandsRunning = it.commandsRunning + 1) }
+        getLocalGroups()
+        getLocalTeachers()
+        viewModelState.update { it.copy(commandsRunning = it.commandsRunning - 1) }
+        viewModelState.update { it.copy(isInitialized = true) }
+    }
+
+    private suspend fun getLocalGroups() {
         viewModelState.update { it.copy(commandsRunning = it.commandsRunning + 1) }
 
         val result = groupsUseCase.getLocalGroups()
@@ -76,7 +85,7 @@ class PickerViewModel @Inject constructor(
         }
     }
 
-    suspend fun getLocalTeachers() {
+    private suspend fun getLocalTeachers() {
         viewModelState.update { it.copy(commandsRunning = it.commandsRunning + 1) }
 
         val result = teachersUseCase.getLocalTeachers()
