@@ -4,33 +4,61 @@ import android.content.Context
 import android.os.LocaleList
 import android.widget.Toast
 import androidx.annotation.StringRes
+import androidx.compose.foundation.background
 import androidx.compose.foundation.gestures.detectDragGestures
 import androidx.compose.foundation.gestures.scrollBy
-import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.IntrinsicSize
+import androidx.compose.foundation.layout.PaddingValues
+import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.fillMaxHeight
+import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.LazyListState
 import androidx.compose.foundation.lazy.LazyRow
 import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.foundation.shape.RoundedCornerShape
-import androidx.compose.material3.*
-import androidx.compose.runtime.*
+import androidx.compose.material3.Card
+import androidx.compose.material3.CardDefaults
+import androidx.compose.material3.ExperimentalMaterial3Api
+import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.Scaffold
+import androidx.compose.material3.Text
+import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.MutableState
+import androidx.compose.runtime.collectAsState
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberCoroutineScope
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.input.pointer.PointerInputScope
 import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.platform.LocalConfiguration
 import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.text.font.FontStyle
+import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import com.google.accompanist.swiperefresh.SwipeRefresh
 import com.google.accompanist.swiperefresh.rememberSwipeRefreshState
 import dev.timatifey.posanie.R
+import dev.timatifey.posanie.model.domain.AppColorScheme
+import dev.timatifey.posanie.model.domain.AppTheme
 import dev.timatifey.posanie.model.domain.Lesson
 import dev.timatifey.posanie.ui.ConnectionState
+import dev.timatifey.posanie.ui.theme.PoSanieTheme
 import dev.timatifey.posanie.utils.ErrorMessage
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.launch
-import java.util.*
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -65,7 +93,10 @@ fun SchedulerScreen(
                     schedulerUiState = schedulerUiState,
                     openCalendar = { calendarVisibilityState.value = true },
                     showCannotLoadWeekToast = {
-                        NoInternetConnectionToast.show(context, R.string.cannot_load_new_week_message)
+                        NoInternetConnectionToast.show(
+                            context,
+                            R.string.cannot_load_new_week_message
+                        )
                     }
                 )
             }
@@ -90,7 +121,10 @@ fun SchedulerScreen(
                 fetchLessons = {
                     schedulerViewModel.fetchLessons()
                     if (schedulerUiState.connectionState == ConnectionState.UNAVAILABLE) {
-                        NoInternetConnectionToast.show(context, R.string.cannot_update_schedule_message)
+                        NoInternetConnectionToast.show(
+                            context,
+                            R.string.cannot_update_schedule_message
+                        )
                     }
                 }
             )
@@ -301,36 +335,108 @@ fun MessageText(
 @Composable
 fun LessonsList(modifier: Modifier = Modifier, lessons: List<Lesson>) {
     LazyColumn(modifier = modifier) {
-        items(lessons.size) { index -> LessonItem(lesson = lessons[index]) }
+        items(lessons.size) { index -> LessonItem(lesson = lessons[index], lessonIndex = index) }
     }
 }
 
 @Composable
-fun LessonItem(modifier: Modifier = Modifier, lesson: Lesson) {
-    Row(
-        modifier = modifier
-            .padding(horizontal = 8.dp, vertical = 4.dp)
-            .height(IntrinsicSize.Min)
-            .fillMaxWidth()
+fun LessonItem(modifier: Modifier = Modifier, lesson: Lesson, lessonIndex: Int) {
+    Column(
+        modifier = Modifier
+            .fillMaxHeight()
+            .padding(top = 12.dp, end = 16.dp, bottom = 4.dp),
+        verticalArrangement = Arrangement.Center
     ) {
-        Column(
-            modifier = Modifier.fillMaxHeight(),
-            verticalArrangement = Arrangement.Center
+        Row(
+            modifier = modifier
+                .padding(bottom = 8.dp)
+                .height(IntrinsicSize.Min)
+                .fillMaxWidth(),
+            verticalAlignment = Alignment.CenterVertically
         ) {
-            Text(text = lesson.start, modifier = Modifier.padding(4.dp))
-            Text(text = lesson.end, modifier = Modifier.padding(4.dp))
+            Card(
+                modifier = Modifier
+                    .padding(end = 12.dp)
+                    .background(
+                        color = MaterialTheme.colorScheme.primaryContainer,
+                        shape = RoundedCornerShape(topEnd = 16.dp, bottomEnd = 16.dp)
+                    )
+                    .padding(horizontal = 16.dp),
+                colors = CardDefaults.elevatedCardColors(
+                    containerColor = MaterialTheme.colorScheme.primaryContainer
+                ),
+            ) {
+                Text(
+                    text = (lessonIndex + 1).toString(),
+                    fontWeight = FontWeight.Medium,
+                    color = MaterialTheme.colorScheme.onSurface,
+                    modifier = Modifier.padding(4.dp),
+                )
+            }
+            Text(
+                text = lesson.start,
+                fontWeight = FontWeight.Medium,
+                color = MaterialTheme.colorScheme.onSurface,
+                modifier = Modifier.padding(4.dp)
+            )
+            Text(
+                text = "-",
+                fontWeight = FontWeight.Light,
+                color = MaterialTheme.colorScheme.onSurfaceVariant,
+                modifier = Modifier.padding(4.dp)
+            )
+            Text(
+                text = lesson.end,
+                fontWeight = FontWeight.Light,
+                color = MaterialTheme.colorScheme.onSurfaceVariant,
+                modifier = Modifier.padding(4.dp)
+            )
         }
         Card(
             modifier = Modifier
-                .padding(horizontal = 8.dp, vertical = 0.dp)
+                .padding(start = 32.dp)
                 .fillMaxSize(),
-            shape = RoundedCornerShape(4.dp),
+            colors = CardDefaults.elevatedCardColors(
+                containerColor = MaterialTheme.colorScheme.surfaceVariant
+            ),
+            shape = RoundedCornerShape(8.dp),
         ) {
-            Column(modifier = Modifier.padding(horizontal = 8.dp, vertical = 4.dp)) {
-                Text(text = lesson.name, style = MaterialTheme.typography.bodyLarge, modifier = Modifier.padding(vertical = 4.dp))
-                Text(text = lesson.type, style = MaterialTheme.typography.bodySmall, modifier = Modifier.padding(vertical = 2.dp))
-                Text(text = lesson.place, style = MaterialTheme.typography.bodySmall, modifier = Modifier.padding(vertical = 2.dp))
-                Text(text = lesson.teacher, style = MaterialTheme.typography.bodySmall, modifier = Modifier.padding(vertical = 2.dp))
+            Column(modifier = Modifier.padding(horizontal = 12.dp, vertical = 8.dp)) {
+                Text(
+                    text = lesson.name,
+                    style = MaterialTheme.typography.bodyLarge.copy(
+                        color = MaterialTheme.colorScheme.primary,
+                        fontWeight = FontWeight.ExtraBold
+                    ),
+                    modifier = Modifier.padding(vertical = 4.dp)
+                )
+                Text(
+                    text = lesson.type,
+                    style = MaterialTheme.typography.bodyMedium.copy(
+                        color = MaterialTheme.colorScheme.onSurface,
+                        fontWeight = FontWeight.Bold
+                    ),
+                    modifier = Modifier.padding(vertical = 2.dp)
+                )
+                Text(
+                    text = lesson.place,
+                    style = MaterialTheme.typography.bodySmall.copy(
+                        color = MaterialTheme.colorScheme.onSurfaceVariant,
+                        fontWeight = FontWeight.Normal
+                    ),
+                    modifier = Modifier.padding(vertical = 2.dp)
+                )
+                if (lesson.teacher.isNotEmpty()) {
+                    Text(
+                        text = lesson.teacher,
+                        style = MaterialTheme.typography.bodySmall.copy(
+                            color = MaterialTheme.colorScheme.onSurfaceVariant,
+                            fontWeight = FontWeight.Normal,
+                            fontStyle = FontStyle.Italic
+                        ),
+                        modifier = Modifier.padding(vertical = 2.dp)
+                    )
+                }
             }
 
         }
@@ -353,7 +459,8 @@ private fun showConnectionToastOnWeekChange(
 
 private object NoInternetConnectionToast {
     var toast: Toast? = null
-    @StringRes var messageRes: Int? = null
+    @StringRes
+    var messageRes: Int? = null
     var locales: LocaleList? = null
 
     fun show(context: Context, @StringRes newMessageRes: Int) {
@@ -368,20 +475,43 @@ private object NoInternetConnectionToast {
     }
 }
 
+@Composable
+fun LessonItemPreview() {
+    PoSanieTheme(appTheme = AppTheme.LIGHT, appColorScheme = AppColorScheme.GREEN) {
+        LessonItem(
+            lesson = Lesson(
+                id = 0,
+                start = "10:00",
+                end = "11:40",
+                name = "Цифровая обработка сигналов",
+                type = "Лабораторные",
+                place = "3-й учебный корпус, 401",
+                teacher = "Лупин Анатолий Викторович",
+                lmsUrl = ""
+            ),
+            lessonIndex = 0
+        )
+    }
+}
 
 @Preview
 @Composable
-fun LessonItemPreview() {
-    LessonItem(
-        lesson = Lesson(
-            id = 0,
-            start = "10:00",
-            end = "11:40",
-            name = "Цифровая обработка сигналов",
-            type = "Лабораторные",
-            place = "3-й учебный корпус, 401",
-            teacher = "Лупин Анатолий Викторович",
-            lmsUrl = ""
+fun LessonListPreview() {
+    PoSanieTheme(appTheme = AppTheme.LIGHT, appColorScheme = AppColorScheme.GREEN) {
+        LessonsList(
+            lessons = buildList { repeat(4) { add(PreviewLessonItem()) } },
+            modifier = Modifier.width(LocalConfiguration.current.screenWidthDp.dp)
         )
-    )
+    }
 }
+
+fun PreviewLessonItem() = Lesson(
+    id = 0,
+    start = "10:00",
+    end = "11:40",
+    name = "Цифровая обработка сигналов",
+    type = "Лабораторные",
+    place = "3-й учебный корпус, 401",
+    teacher = "Лупин Анатолий Викторович",
+    lmsUrl = ""
+)
