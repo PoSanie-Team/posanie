@@ -14,6 +14,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.semantics.Role
+import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
@@ -205,12 +206,14 @@ fun Day(
         ) {
             Text(
                 text = monthDay.toString(),
-                color = dayOfMonthTextColor(selected)
+                color = dayOfMonthTextColor(selected),
+                fontWeight = FontWeight.Bold,
             )
             Text(
                 text = stringResource(weekDay.shortNameId),
                 style = MaterialTheme.typography.bodySmall,
-                color = weekDayTextColor(selected)
+                color = weekDayTextColor(selected),
+                fontWeight = FontWeight.Bold,
             )
         }
     }
