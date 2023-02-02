@@ -90,7 +90,9 @@
     // Popup
     <string name="ok">ОК</string>
     <string name="cancel">Отмена</string>
-    <string name="deleteItemDescription">Вы увеерены что хотите убрать %1$s из локальных %2$s?</string>
+    <string name="deleteItemDescription">Вы уверены, что хотите убрать %1$s из локальных %2$s?</string>
     <string name="groupItemsDescription">групп</string>
     <string name="teacherItemsDescription">преподавателей</string>
+    <string name="deleteGroupTitle">Убрать группу</string>
+    <string name="deleteTeacherTitle">Убрать преподавателя</string>
 </resources>

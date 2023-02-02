@@ -103,4 +103,6 @@
     <string name="deleteItemDescription">Are you sure you want to remove %1$s from your local %2$s?</string>
     <string name="groupItemsDescription">groups</string>
     <string name="teacherItemsDescription">teachers</string>
+    <string name="deleteGroupTitle">Remove group</string>
+    <string name="deleteTeacherTitle">Remove teacher</string>
 </resources>
