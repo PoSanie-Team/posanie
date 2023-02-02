@@ -29,6 +29,9 @@ import org.junit.Rule
  */
 @RunWith(AndroidJUnit4::class)
 class ExampleInstrumentedTest {
+    @get:Rule
+    val composeTestRule = createComposeRule()
+
     @Test
     fun useAppContext() {
         // Context of the app under test.
@@ -36,22 +39,18 @@ class ExampleInstrumentedTest {
         assertEquals("dev.timatifey.posanie", appContext.packageName)
     }
 
-    @get:Rule
-    val composeTestRule = createAndroidComposeRule<MainActivity>()
-    // use createAndroidComposeRule<YourActivity>() if you need access to
-    // an activity
-
     @Test
     fun myTest() {
-        // Start the app
+        val appContext = InstrumentationRegistry.getInstrumentation().targetContext.applicationContext
         composeTestRule.setContent {
+            val fakeUseCase = FakeSettingsUseCaseImpl(appContext)
+            val viewModel = SettingsViewModel(fakeUseCase)
             PoSanieTheme(appTheme = AppTheme.DEFAULT, appColorScheme = AppColorScheme.DEFAULT) {
-                val viewModel = composeTestRule.activity.viewModels<SettingsViewModel>().value
                 SettingsScreen(settingsViewModel = viewModel, recreateActivity = {})
             }
         }
 
-        val themeText = composeTestRule.activity.getText(R.string.theme).toString()
+        val themeText = appContext.getString(R.string.theme)
         composeTestRule.onNodeWithText(themeText).assertIsDisplayed()
     }
 }
