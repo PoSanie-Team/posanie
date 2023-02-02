@@ -267,7 +267,9 @@ fun WeekView(
             } else {
                 LessonsList(
                     lessons = lessons,
-                    modifier = Modifier.width(LocalConfiguration.current.screenWidthDp.dp)
+                    modifier = Modifier
+                        .width(LocalConfiguration.current.screenWidthDp.dp)
+                        .padding(bottom = 8.dp)
                 )
             }
         }
