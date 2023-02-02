@@ -380,7 +380,7 @@ fun LessonItem(modifier: Modifier = Modifier, lesson: Lesson, lessonIndex: Int) 
                 modifier = Modifier.padding(4.dp)
             )
             Text(
-                text = "-",
+                text = "—",
                 fontWeight = FontWeight.Light,
                 color = MaterialTheme.colorScheme.onSurfaceVariant,
                 modifier = Modifier.padding(4.dp)

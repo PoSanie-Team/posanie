@@ -1,8 +1,11 @@
 package dev.timatifey.posanie.ui.settings
 
+import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
+import androidx.compose.material3.Card
+import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.RadioButton
 import androidx.compose.material3.Switch
@@ -28,7 +31,6 @@ fun SettingsScreen(
     Column(
         modifier = Modifier
             .verticalScroll(rememberScrollState())
-            .padding(horizontal = 8.dp)
     ) {
         ThemeSettings(
             selectedTheme = uiState.theme,
@@ -54,11 +56,7 @@ fun ThemeSettings(
     onThemeClick: (AppTheme) -> Unit
 ) {
     Column(modifier = Modifier.fillMaxWidth()) {
-        Text(
-            text = stringResource(R.string.theme),
-            style = MaterialTheme.typography.titleLarge,
-            modifier = Modifier.padding(horizontal = 4.dp, vertical = 8.dp)
-        )
+        SettingsTitle(stringResource(R.string.theme))
         for (theme in AppTheme.values()) {
             ThemeOption(
                 theme = theme,
@@ -71,7 +69,7 @@ fun ThemeSettings(
 
 @Composable
 fun ThemeOption(
-    modifier: Modifier = Modifier.padding(horizontal = 4.dp, vertical = 2.dp),
+    modifier: Modifier = Modifier.padding(horizontal = 16.dp, vertical = 2.dp),
     theme: AppTheme,
     selected: Boolean,
     onClick: () -> Unit
@@ -93,11 +91,7 @@ fun ColorSchemeSettings(
     onColorSchemeClick: (AppColorScheme) -> Unit
 ) {
     Column(modifier = Modifier.fillMaxWidth()) {
-        Text(
-            text = stringResource(R.string.color_scheme),
-            style = MaterialTheme.typography.titleLarge,
-            modifier = Modifier.padding(horizontal = 4.dp, vertical = 8.dp)
-        )
+        SettingsTitle(stringResource(R.string.color_scheme))
         for (colorScheme in AppColorScheme.values()) {
             ColorSchemeOption(
                 colorScheme = colorScheme,
@@ -110,7 +104,7 @@ fun ColorSchemeSettings(
 
 @Composable
 fun ColorSchemeOption(
-    modifier: Modifier = Modifier.padding(horizontal = 4.dp, vertical = 2.dp),
+    modifier: Modifier = Modifier.padding(horizontal = 16.dp, vertical = 2.dp),
     colorScheme: AppColorScheme,
     selected: Boolean,
     onClick: () -> Unit
@@ -132,11 +126,7 @@ fun LanguageSettings(
     onLanguageClick: (Language) -> Unit
 ) {
     Column(modifier = Modifier.fillMaxWidth()) {
-        Text(
-            text = stringResource(R.string.language),
-            style = MaterialTheme.typography.titleLarge,
-            modifier = Modifier.padding(horizontal = 4.dp, vertical = 8.dp)
-        )
+        SettingsTitle(stringResource(R.string.language))
         for (language in Language.values()) {
             LanguageOption(
                 language = language,
@@ -149,7 +139,7 @@ fun LanguageSettings(
 
 @Composable
 fun LanguageOption(
-    modifier: Modifier = Modifier.padding(horizontal = 4.dp, vertical = 2.dp),
+    modifier: Modifier = Modifier.padding(horizontal = 16.dp, vertical = 2.dp),
     language: Language,
     selected: Boolean,
     onClick: () -> Unit
@@ -211,5 +201,27 @@ fun SettingsOption(
     ) {
         optionDescription()
         selector()
+    }
+}
+
+@Composable
+fun SettingsTitle(text: String) {
+    Card(
+        modifier = Modifier
+            .background(
+                color = MaterialTheme.colorScheme.primaryContainer,
+            )
+            .padding(horizontal = 16.dp),
+        colors = CardDefaults.elevatedCardColors(
+            containerColor = MaterialTheme.colorScheme.primaryContainer
+        ),
+    ) {
+        Text(
+            text = text,
+            style = MaterialTheme.typography.titleLarge,
+            modifier = Modifier
+                .padding(horizontal = 4.dp, vertical = 4.dp)
+                .fillMaxWidth()
+        )
     }
 }

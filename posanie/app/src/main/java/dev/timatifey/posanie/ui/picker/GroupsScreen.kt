@@ -432,8 +432,8 @@ fun GroupItem(
     ) {
         val cardColors = if (group.isPicked) {
             CardDefaults.cardColors(
-                containerColor = MaterialTheme.colorScheme.primaryContainer,
-                contentColor = MaterialTheme.colorScheme.onSurface
+                containerColor = MaterialTheme.colorScheme.primary,
+                contentColor = MaterialTheme.colorScheme.inverseOnSurface
             )
         } else CardDefaults.cardColors()
         Card(

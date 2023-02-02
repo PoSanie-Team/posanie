@@ -1,5 +1,6 @@
 package dev.timatifey.posanie.ui.picker
 
+import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
@@ -130,7 +131,7 @@ fun localGroupsAndTeachers(
     Column(
         modifier = Modifier
             .verticalScroll(rememberScrollState())
-            .padding(horizontal = 8.dp)
+            .padding(bottom = 8.dp)
     ) {
         ContentWithHint(
             contentName = stringResource(R.string.groups),
@@ -144,6 +145,7 @@ fun localGroupsAndTeachers(
                 )
             }
         )
+        Spacer(Modifier.padding(8.dp))
         ContentWithHint(
             contentName = stringResource(R.string.teachers),
             needHint = teachers.isEmpty(),
@@ -168,9 +170,13 @@ fun ContentWithHint(
 ) {
     ScheduleTypeTitle(contentName)
     if (needHint) {
-        MessageText(text = hint)
+        MessageText(
+            Modifier.padding(16.dp),
+            text = hint)
     } else {
-        content()
+        Box(Modifier.padding(8.dp)) {
+            content()
+        }
     }
 }
 
@@ -198,13 +204,24 @@ fun AddItemFAB(
 
 @Composable
 fun ScheduleTypeTitle(text: String) {
-    Text(
-        text = text,
-        style = MaterialTheme.typography.titleLarge,
+    Card(
         modifier = Modifier
-            .padding(horizontal = 4.dp, vertical = 4.dp)
-            .fillMaxWidth()
-    )
+            .background(
+                color = MaterialTheme.colorScheme.primaryContainer,
+            )
+            .padding(horizontal = 16.dp),
+        colors = CardDefaults.elevatedCardColors(
+            containerColor = MaterialTheme.colorScheme.primaryContainer
+        ),
+    ) {
+        Text(
+            text = text,
+            style = MaterialTheme.typography.titleLarge,
+            modifier = Modifier
+                .padding(horizontal = 4.dp, vertical = 4.dp)
+                .fillMaxWidth()
+        )
+    }
 }
 
 @Composable
@@ -234,7 +251,11 @@ fun LocalGroupsList(
             Column {
                 Text(
                     text = stringResource(R.string.level, level),
-                    modifier = Modifier.padding(4.dp)
+                    modifier = Modifier.padding(
+                        horizontal = 16.dp,
+                        vertical = 8.dp
+                    ),
+                    style = MaterialTheme.typography.titleMedium,
                 )
                 GroupsLevelList(
                     list = levelsToGroups[level]?.getGroups() ?: emptyList(),
