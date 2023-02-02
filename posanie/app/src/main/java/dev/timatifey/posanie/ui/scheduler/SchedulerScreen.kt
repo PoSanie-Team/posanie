@@ -360,18 +360,18 @@ fun LessonItem(modifier: Modifier = Modifier, lesson: Lesson, lessonIndex: Int) 
                 modifier = Modifier
                     .padding(end = 12.dp)
                     .background(
-                        color = MaterialTheme.colorScheme.primaryContainer,
+                        color = MaterialTheme.colorScheme.secondary,
                         shape = RoundedCornerShape(topEnd = 16.dp, bottomEnd = 16.dp)
                     )
                     .padding(horizontal = 16.dp),
                 colors = CardDefaults.elevatedCardColors(
-                    containerColor = MaterialTheme.colorScheme.primaryContainer
+                    containerColor = MaterialTheme.colorScheme.secondary
                 ),
             ) {
                 Text(
                     text = (lessonIndex + 1).toString(),
                     fontWeight = FontWeight.Medium,
-                    color = MaterialTheme.colorScheme.onSurface,
+                    color = MaterialTheme.colorScheme.onSecondary,
                     modifier = Modifier.padding(4.dp),
                 )
             }

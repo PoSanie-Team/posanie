@@ -209,16 +209,17 @@ fun SettingsTitle(text: String) {
     Card(
         modifier = Modifier
             .background(
-                color = MaterialTheme.colorScheme.primaryContainer,
+                color = MaterialTheme.colorScheme.secondary,
             )
             .padding(horizontal = 16.dp),
         colors = CardDefaults.elevatedCardColors(
-            containerColor = MaterialTheme.colorScheme.primaryContainer
+            containerColor = MaterialTheme.colorScheme.secondary
         ),
     ) {
         Text(
             text = text,
             style = MaterialTheme.typography.titleLarge,
+            color = MaterialTheme.colorScheme.onSecondary,
             modifier = Modifier
                 .padding(horizontal = 4.dp, vertical = 4.dp)
                 .fillMaxWidth()
