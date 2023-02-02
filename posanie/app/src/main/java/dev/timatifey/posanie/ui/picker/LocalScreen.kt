@@ -105,9 +105,11 @@ fun createDeleteItemPopupDialog(
             is Teacher -> stringResource(R.string.teacherItemsDescription)
         }
         PopupDialog(
-            modifier = Modifier
-                .width(300.dp)
-                .height(200.dp),
+            title = when (itemToDelete) {
+                is Group -> stringResource(R.string.deleteGroupTitle)
+                is Teacher -> stringResource(R.string.deleteTeacherTitle)
+            },
+            modifier = Modifier.width(300.dp).wrapContentHeight(unbounded = true),
             description = stringResource(R.string.deleteItemDescription, itemName, itemType),
             onConfirm = {
                 when (itemToDelete) {
