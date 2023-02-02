@@ -79,7 +79,7 @@ fun DialogBar(
 @Composable
 fun DialogButton(
     modifier: Modifier = Modifier
-        .padding(horizontal = 8.dp, vertical = 4.dp),
+        .padding(horizontal = 24.dp, vertical = 4.dp),
     text: String,
     textColor: Color = Color.Unspecified,
     onClick: () -> Unit
