@@ -65,7 +65,7 @@ fun DialogBar(
     ) {
         DialogButton(
             text = cancelButtonText,
-            textColor = MaterialTheme.colorScheme.error,
+            textColor = MaterialTheme.colorScheme.primary,
             onClick = onCancel
         )
         DialogButton(
