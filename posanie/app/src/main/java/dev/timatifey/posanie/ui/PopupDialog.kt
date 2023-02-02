@@ -79,7 +79,6 @@ fun DialogBar(
 @Composable
 fun DialogButton(
     modifier: Modifier = Modifier
-        .requiredWidth(80.dp)
         .padding(horizontal = 8.dp, vertical = 4.dp),
     text: String,
     textColor: Color = Color.Unspecified,
