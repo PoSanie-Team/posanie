@@ -33,7 +33,7 @@ jobs:
         env:
           ACTIONS_ALLOW_UNSECURE_COMMANDS: true
         with:
-          releaseDirectory: ./posanie/app/build/outputs/apk/release/
+          releaseDirectory: ./posanie/app/build/outputs/apk/debug/
           signingKeyBase64: ${{ secrets.SIGNING_KEY_BASE64 }}
           keyStorePassword: ${{ secrets.KEYSTORE_PASSWORD }}
           alias: posanie
