@@ -26,7 +26,7 @@ jobs:
         with:
           java-version: 11
       - name: build release
-        run: ./gradlew --no-daemon assembleRelease
+        run: ./gradlew --no-daemon assembleDebug
       - name: sign release build
         id: sign_app
         uses: r0adkll/sign-android-release@v1
