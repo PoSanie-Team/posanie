@@ -8,4 +8,5 @@
 .externalNativeBuild
 .cxx
 local.properties
-posanie/app/release
+posanie/app/release/
+posanie/app/debug/
