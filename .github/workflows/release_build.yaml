@@ -63,7 +63,7 @@ jobs:
 
       - name: Patch version for beta-builds
         run: |
-          echo -n $(cat version.txt | sed -e "s/.*/version=&/") >> ./version_patched
+          echo -n $(cat version.txt | sed -e "s/.*/&/") >> ./version_patched
           echo -n "-$BRANCH_NAME-" >> ./version_patched
           echo -n $(date '+%m.%d.%Y-%H.%M.%S') >> ./version_patched
         if: ${{ env.is_release == 'false' }}
