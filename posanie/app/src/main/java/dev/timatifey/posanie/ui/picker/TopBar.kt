@@ -1,10 +1,13 @@
 package dev.timatifey.posanie.ui.picker
 
 import android.view.KeyEvent
-import androidx.annotation.StringRes
 import androidx.compose.animation.*
 import androidx.compose.foundation.background
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.lazy.LazyRow
+import androidx.compose.foundation.lazy.items
+import androidx.compose.foundation.selection.selectableGroup
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.BasicTextField
 import androidx.compose.foundation.text.KeyboardActions
@@ -14,10 +17,7 @@ import androidx.compose.material.icons.filled.ArrowBack
 import androidx.compose.material.icons.filled.Close
 import androidx.compose.material.icons.filled.Search
 import androidx.compose.material3.*
-import androidx.compose.runtime.Composable
-import androidx.compose.runtime.LaunchedEffect
-import androidx.compose.runtime.MutableState
-import androidx.compose.runtime.remember
+import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.shadow
@@ -29,6 +29,7 @@ import androidx.compose.ui.input.key.onKeyEvent
 import androidx.compose.ui.layout.SubcomposeLayout
 import androidx.compose.ui.platform.LocalFocusManager
 import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.semantics.Role
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.text.input.KeyboardType
@@ -161,6 +162,142 @@ fun GroupsTopBarCategory(
             kindId = kindId,
             items = typeNavItems
         )
+    }
+}
+
+@Composable
+fun GroupKindNavigationBar(
+    modifier: Modifier = Modifier,
+    navController: NavHostController,
+    viewModel: RemoteGroupsViewModel,
+    facultyId: Long,
+    items: List<KindNavItems>
+) {
+    CategoryNavigationBar(
+        modifier = modifier
+    ) {
+        val uiState by viewModel.uiState.collectAsState()
+        val selectedKind = uiState.selectedKind
+        LazyRow {
+            items(items = items) { tab ->
+                val tabRoute = RemoteNavItems.Groups.routeBy(facultyId, tab.kind.id)
+                CategoryBarTextItem(
+                    text = stringResource(tab.nameId),
+                    selected = selectedKind == tab.kind,
+                    onClick = {
+                        navController.navigate(tabRoute) {
+                            launchSingleTop = true
+                        }
+                    }
+                )
+
+            }
+        }
+    }
+}
+
+@Composable
+fun GroupTypeNavigationBar(
+    modifier: Modifier = Modifier,
+    navController: NavHostController,
+    viewModel: RemoteGroupsViewModel,
+    facultyId: Long,
+    kindId: Long,
+    items: List<TypeNavItems>
+) {
+    CategoryNavigationBar(
+        modifier = modifier
+    ) {
+        val uiState by viewModel.uiState.collectAsState()
+        val selectedType = uiState.selectedType
+        LazyRow {
+            items(items = items) { tab ->
+                val tabRoute = if (selectedType != tab.type) {
+                    RemoteNavItems.Groups.routeBy(facultyId, kindId, tab.type.id)
+                } else {
+                    RemoteNavItems.Groups.routeBy(facultyId, kindId, Type.DEFAULT.id)
+                }
+                CategoryBarTextItem(
+                    text = stringResource(tab.nameId),
+                    selected = selectedType == tab.type,
+                    onClick = {
+                        navController.navigate(tabRoute) {
+                            launchSingleTop = true
+                        }
+                    }
+                )
+
+            }
+        }
+    }
+}
+
+@Composable
+fun CategoryBarTextItem(
+    modifier: Modifier = Modifier,
+    text: String,
+    selected: Boolean,
+    onClick: () -> Unit,
+    enabled: Boolean = true
+) {
+    Surface(
+        shape = RoundedCornerShape(4.dp),
+    ) {
+        Box(
+            modifier
+                .clickable(
+                    onClick = onClick,
+                    enabled = enabled,
+                    role = Role.Tab
+                )
+                .background(tabColor(selected))
+                .padding(PaddingValues(horizontal = 8.dp, vertical = 4.dp)),
+            contentAlignment = Alignment.Center
+        ) {
+            Text(text = text, color = textColor(selected))
+        }
+    }
+}
+
+@Composable
+fun tabColor(selected: Boolean): Color {
+    return if (selected) {
+        MaterialTheme.colorScheme.primary
+    } else {
+        Color.Transparent
+    }
+}
+
+@Composable
+fun textColor(selected: Boolean): Color {
+    return if (selected) {
+        MaterialTheme.colorScheme.onPrimary
+    } else {
+        MaterialTheme.colorScheme.onBackground
+    }
+}
+
+@Composable
+fun CategoryNavigationBar(
+    modifier: Modifier = Modifier,
+    containerColor: Color = MaterialTheme.colorScheme.surface,
+    contentColor: Color = MaterialTheme.colorScheme.contentColorFor(containerColor),
+    tonalElevation: Dp = NavigationBarDefaults.Elevation,
+    content: @Composable () -> Unit
+) {
+    Surface(
+        color = containerColor,
+        contentColor = contentColor,
+        tonalElevation = tonalElevation,
+        modifier = modifier.selectableGroup()
+    ) {
+        Box(
+            modifier = modifier
+                .fillMaxWidth()
+                .padding(8.dp)
+        ) {
+            content()
+        }
     }
 }
 

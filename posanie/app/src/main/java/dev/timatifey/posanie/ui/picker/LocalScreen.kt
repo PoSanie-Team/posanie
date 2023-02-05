@@ -269,7 +269,7 @@ fun ScheduleTypeTitle(text: String) {
         fontWeight = FontWeight.Bold,
         color = MaterialTheme.colorScheme.onBackground,
         modifier = Modifier
-            .padding(horizontal = 20.dp, vertical = 4.dp)
+            .padding(horizontal = 16.dp, vertical = 4.dp)
             .fillMaxWidth()
     )
 }
@@ -299,13 +299,9 @@ fun LocalGroupsList(
         val levels = levelsToGroups.keys.toList().sorted()
         levels.forEach { level ->
             Column {
-                Text(
-                    text = stringResource(R.string.level, level),
-                    modifier = Modifier.padding(
-                        horizontal = 16.dp,
-                        vertical = 8.dp
-                    ),
-                    style = MaterialTheme.typography.titleMedium,
+                GroupsLevelTitle(
+                    level = level,
+                    paddingValues = PaddingValues(horizontal = 8.dp, vertical = 8.dp)
                 )
                 GroupsLevelList(
                     list = levelsToGroups[level]?.getGroups() ?: emptyList(),
