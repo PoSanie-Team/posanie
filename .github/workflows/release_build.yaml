@@ -32,13 +32,13 @@ jobs:
         with:
           java-version: 11
 
-      - name: build release build
+      - name: make a release build
+        if: ${{ env.is_release == 'true' }}
         run: ./gradlew --no-daemon assembleRelease
-        if: ${{ env.is_release }}
 
-      - name: build test build
+      - name: make a beta build
+        if: ${{ env.is_release == 'false' }}
         run: ./gradlew --no-daemon assembleBeta
-        if: ${{ !env.is_release }}
 
       - name: set up a path to APK build
         run: |
@@ -48,7 +48,7 @@ jobs:
               echo "apk_path=./posanie/app/build/outputs/apk/beta/" >> $GITHUB_ENV
             fi
         env:
-          IS_RELEASE: env.is_release
+          IS_RELEASE: ${{ env.is_release }}
 
       - name: sign a build
         id: sign_app
@@ -67,7 +67,7 @@ jobs:
             cat version.txt | sed -e "s/.*/version=&/" >> $GITHUB_ENV
 
       - name: Release to GH Releases
-        uses: actions/upload-release-asset@v1
+        uses: softprops/action-gh-release@v0.1.15
         with:
           files: ${{steps.sign_app.outputs.signedReleaseFile}}
           body_path: ./posanie/release_notes.txt
