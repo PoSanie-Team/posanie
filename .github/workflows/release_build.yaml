@@ -56,18 +56,19 @@ jobs:
         env:
           ACTIONS_ALLOW_UNSECURE_COMMANDS: true
         with:
-          releaseDirectory: env.apk_path
+          releaseDirectory: ${{ env.apk_path }}
           signingKeyBase64: ${{ secrets.SIGNING_KEY_BASE64 }}
           keyStorePassword: ${{ secrets.KEYSTORE_PASSWORD }}
           alias: posanie
           keyPassword: ${{ secrets.KEY_PASSWORD }}
 
-#      - name: create new release tag
-#        run:
+      - name: set release_tag
+        run: |
+            cat version.txt | sed -e "s/.*/version=&/" >> $GITHUB_ENV
 
       - name: Release to GH Releases
-        uses: softprops/action-gh-release@v0.1.15
+        uses: actions/upload-release-asset@v1
         with:
           files: ${{steps.sign_app.outputs.signedReleaseFile}}
           body_path: ./posanie/release_notes.txt
-          tag_name: ${{ env.release_tag }}
+          tag_name: ${{ env.version }}
