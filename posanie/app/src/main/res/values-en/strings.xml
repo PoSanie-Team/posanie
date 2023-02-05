@@ -15,6 +15,7 @@
     <string name="distance">Distance</string>
 
     // Settings
+    <string name="settings_title">Settings</string>
     <string name="theme">Theme</string>
     <string name="system_theme">System</string>
     <string name="light_theme">Light</string>
@@ -28,6 +29,7 @@
     <string name="language">Language</string>
 
     // Picker
+    <string name="local_screen_title">Local groups and teachers</string>
     <string name="faculties">Faculties</string>
     <string name="no_faculties">No faculties found.</string>
     <string name="no_groups">No groups found.</string>

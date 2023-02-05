@@ -23,14 +23,14 @@ fun ScheduleTypeScreen(
 ) {
     val uiState = viewModel.localUiState.collectAsState().value
     val localScreenIsEmpty = uiState.levelsToGroups.isEmpty() && uiState.teachers.isEmpty()
-        Scaffold(
+    Scaffold(
         topBar = {
             TopBarVariants(localScreenIsEmpty = localScreenIsEmpty, onBackClick = onBackClick)
         }
     ) { paddingValues ->
-        Box (modifier = Modifier.padding(paddingValues)) {
+        Box(modifier = Modifier.padding(paddingValues)) {
             Column(
-                modifier = Modifier.padding(horizontal = 8.dp)
+                modifier = Modifier.padding(8.dp)
             ) {
                 ScheduleTypeItem(name = stringResource(R.string.groups), onClick = selectGroups)
                 ScheduleTypeItem(name = stringResource(R.string.teachers), onClick = selectTeachers)

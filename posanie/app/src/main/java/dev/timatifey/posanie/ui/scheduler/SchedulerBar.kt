@@ -11,6 +11,7 @@ import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.shadow
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.semantics.Role
@@ -81,25 +82,25 @@ fun SchedulerBar(
     goPreviousWeek: () -> Unit,
     openCalendar: () -> Unit
 ) {
-    Column(
-        modifier = Modifier
-            .fillMaxWidth()
-            .background(MaterialTheme.colorScheme.background)
-            .padding(vertical = 8.dp)
-    ) {
-        DateBar(
-            date = selectedDate,
-            oddWeek = oddWeek,
-            hasSchedule = hasSchedule,
-            goNextWeek = goNextWeek,
-            goPreviousWeek = goPreviousWeek,
-            openCalendar = openCalendar
-        )
-        WeekBar(
-            selectedDay = selectedDay,
-            weekDayToMonthDay = weekDayToMonthDay,
-            onDayClick = { day -> selectDay(day) }
-        )
+    Surface(modifier = Modifier.fillMaxWidth(), shadowElevation = 8.dp) {
+        Column(
+            modifier = Modifier
+                .padding(vertical = 8.dp)
+        ) {
+            DateBar(
+                date = selectedDate,
+                oddWeek = oddWeek,
+                hasSchedule = hasSchedule,
+                goNextWeek = goNextWeek,
+                goPreviousWeek = goPreviousWeek,
+                openCalendar = openCalendar
+            )
+            WeekBar(
+                selectedDay = selectedDay,
+                weekDayToMonthDay = weekDayToMonthDay,
+                onDayClick = { day -> selectDay(day) }
+            )
+        }
     }
 }
 
@@ -174,7 +175,9 @@ fun WeekBar(
                 weekDay = day,
                 monthDay = weekDayToMonthDay[day]!!,
                 selected = selectedDay == day,
-                modifier = Modifier.weight(1f).padding(horizontal = 2.dp),
+                modifier = Modifier
+                    .weight(1f)
+                    .padding(horizontal = 2.dp),
                 onClick = { onDayClick(day) }
             )
         }
@@ -248,7 +251,7 @@ private fun dayOfMonthTextColor(selected: Boolean): Color {
 
 @Preview
 @Composable
-fun previewSchedulerBar() {
+fun PreviewSchedulerBar() {
     SchedulerBar(
         selectedDate = Calendar.getInstance(),
         selectedDay = WeekDay.MONDAY,

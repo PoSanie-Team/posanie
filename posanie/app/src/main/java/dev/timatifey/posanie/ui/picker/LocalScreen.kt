@@ -6,6 +6,7 @@ import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Add
+import androidx.compose.material.icons.filled.ArrowBack
 import androidx.compose.material3.*
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.MutableState
@@ -13,10 +14,13 @@ import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import com.google.accompanist.swiperefresh.SwipeRefresh
+import com.google.accompanist.swiperefresh.SwipeRefreshState
 import com.google.accompanist.swiperefresh.rememberSwipeRefreshState
 import dev.timatifey.posanie.R
 import dev.timatifey.posanie.model.domain.Group
@@ -26,6 +30,7 @@ import dev.timatifey.posanie.model.domain.Teacher
 import dev.timatifey.posanie.ui.PopupDialog
 import dev.timatifey.posanie.utils.ClickListener
 
+@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun LocalScreen(
     viewModel: PickerViewModel,
@@ -59,15 +64,22 @@ fun LocalScreen(
     )
 
     if (levelsToGroups.isNotEmpty() || teachers.isNotEmpty()) {
-        SwipeRefresh(state = swipeRefreshState, onRefresh = onRefresh) {
-            localGroupsAndTeachers(
+        Scaffold(
+            topBar = {
+                TitleTopBar(title = stringResource(R.string.local_screen_title))
+            }
+        ) { paddingValues ->
+            LocalScreenContent(
+                modifier = Modifier.padding(paddingValues),
                 levelsToGroups = levelsToGroups,
                 groupClickListener = groupClickListener,
                 teachers = teachers,
-                teacherClickListener = teacherClickListener
+                teacherClickListener = teacherClickListener,
+                swipeRefreshState = swipeRefreshState,
+                onRefresh = onRefresh,
+                goToRemote = goToRemote
             )
         }
-        AddItemFAB(goToRemote = goToRemote)
     }
 
     LaunchedEffect(levelsToGroups, teachers, isLoading) {
@@ -109,7 +121,9 @@ fun createDeleteItemPopupDialog(
                 is Group -> stringResource(R.string.deleteGroupTitle)
                 is Teacher -> stringResource(R.string.deleteTeacherTitle)
             },
-            modifier = Modifier.width(300.dp).wrapContentHeight(unbounded = true),
+            modifier = Modifier
+                .width(300.dp)
+                .wrapContentHeight(unbounded = true),
             description = stringResource(R.string.deleteItemDescription, itemName, itemType),
             onConfirm = {
                 when (itemToDelete) {
@@ -124,7 +138,50 @@ fun createDeleteItemPopupDialog(
 }
 
 @Composable
-fun localGroupsAndTeachers(
+fun LocalScreenContent(
+    modifier: Modifier = Modifier,
+    levelsToGroups: Map<Int, GroupsLevel>,
+    groupClickListener: ClickListener<Group>,
+    teachers: List<Teacher>,
+    teacherClickListener: ClickListener<Teacher>,
+    swipeRefreshState: SwipeRefreshState,
+    onRefresh: () -> Unit,
+    goToRemote: () -> Unit
+) {
+    Box (modifier = modifier) {
+        RefreshableGroupsAndTeachers(
+            levelsToGroups = levelsToGroups,
+            groupClickListener = groupClickListener,
+            teachers = teachers,
+            teacherClickListener = teacherClickListener,
+            swipeRefreshState = swipeRefreshState,
+            onRefresh = onRefresh
+        )
+        AddItemFAB(goToRemote = goToRemote)
+    }
+}
+
+@Composable
+fun RefreshableGroupsAndTeachers(
+    levelsToGroups: Map<Int, GroupsLevel>,
+    groupClickListener: ClickListener<Group>,
+    teachers: List<Teacher>,
+    teacherClickListener: ClickListener<Teacher>,
+    swipeRefreshState: SwipeRefreshState,
+    onRefresh: () -> Unit
+) {
+    SwipeRefresh(state = swipeRefreshState, onRefresh = onRefresh) {
+        LocalGroupsAndTeachers(
+            levelsToGroups = levelsToGroups,
+            groupClickListener = groupClickListener,
+            teachers = teachers,
+            teacherClickListener = teacherClickListener
+        )
+    }
+}
+
+@Composable
+fun LocalGroupsAndTeachers(
     levelsToGroups: Map<Int, GroupsLevel>,
     groupClickListener: ClickListener<Group>,
     teachers: List<Teacher>,
@@ -206,25 +263,15 @@ fun AddItemFAB(
 
 @Composable
 fun ScheduleTypeTitle(text: String) {
-    Card(
+    Text(
+        text = text,
+        style = MaterialTheme.typography.titleLarge,
+        fontWeight = FontWeight.Bold,
+        color = MaterialTheme.colorScheme.onBackground,
         modifier = Modifier
-            .background(
-                color = MaterialTheme.colorScheme.secondary,
-            )
-            .padding(horizontal = 16.dp),
-        colors = CardDefaults.elevatedCardColors(
-            containerColor = MaterialTheme.colorScheme.secondary
-        ),
-    ) {
-        Text(
-            text = text,
-            style = MaterialTheme.typography.titleLarge,
-            color = MaterialTheme.colorScheme.onSecondary,
-            modifier = Modifier
-                .padding(horizontal = 4.dp, vertical = 4.dp)
-                .fillMaxWidth()
-        )
-    }
+            .padding(horizontal = 20.dp, vertical = 4.dp)
+            .fillMaxWidth()
+    )
 }
 
 @Composable

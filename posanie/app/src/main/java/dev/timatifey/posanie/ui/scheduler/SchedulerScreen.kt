@@ -81,8 +81,10 @@ fun SchedulerScreen(
         weekDayListState.scrollToItem(currentWeekDayOrdinal)
     }
 
-    coroutineScope.launch {
-        weekDayListState.animateScrollToItem(currentWeekDayOrdinal)
+    LaunchedEffect(schedulerUiState.selectedDay) {
+        coroutineScope.launch {
+            weekDayListState.animateScrollToItem(currentWeekDayOrdinal)
+        }
     }
 
     Box(modifier = Modifier.fillMaxSize()) {
@@ -406,36 +408,32 @@ fun LessonItem(modifier: Modifier = Modifier, lesson: Lesson, lessonIndex: Int) 
             Column(modifier = Modifier.padding(horizontal = 12.dp, vertical = 8.dp)) {
                 Text(
                     text = lesson.name,
-                    style = MaterialTheme.typography.bodyLarge.copy(
-                        color = MaterialTheme.colorScheme.primary,
-                        fontWeight = FontWeight.ExtraBold
-                    ),
+                    style = MaterialTheme.typography.bodyLarge,
+                    color = MaterialTheme.colorScheme.primary,
+                    fontWeight = FontWeight.Bold,
                     modifier = Modifier.padding(vertical = 4.dp)
                 )
                 Text(
                     text = lesson.type,
-                    style = MaterialTheme.typography.bodyMedium.copy(
-                        color = MaterialTheme.colorScheme.onSurface,
-                        fontWeight = FontWeight.Bold
-                    ),
+                    style = MaterialTheme.typography.bodyMedium,
+                    color = MaterialTheme.colorScheme.onSurface,
+                    fontWeight = FontWeight.Normal,
                     modifier = Modifier.padding(vertical = 2.dp)
                 )
                 Text(
                     text = lesson.place,
-                    style = MaterialTheme.typography.bodySmall.copy(
-                        color = MaterialTheme.colorScheme.onSurfaceVariant,
-                        fontWeight = FontWeight.Normal
-                    ),
+                    style = MaterialTheme.typography.bodySmall,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant,
+                    fontWeight = FontWeight.Normal,
                     modifier = Modifier.padding(vertical = 2.dp)
                 )
                 if (lesson.teacher.isNotEmpty()) {
                     Text(
                         text = lesson.teacher,
-                        style = MaterialTheme.typography.bodySmall.copy(
-                            color = MaterialTheme.colorScheme.onSurfaceVariant,
-                            fontWeight = FontWeight.Normal,
-                            fontStyle = FontStyle.Italic
-                        ),
+                        style = MaterialTheme.typography.bodySmall,
+                        color = MaterialTheme.colorScheme.onSurfaceVariant,
+                        fontWeight = FontWeight.Normal,
+                        fontStyle = FontStyle.Italic,
                         modifier = Modifier.padding(vertical = 2.dp)
                     )
                 }

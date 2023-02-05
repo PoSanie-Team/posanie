@@ -1,6 +1,7 @@
 package dev.timatifey.posanie.ui.picker
 
 import android.view.KeyEvent
+import androidx.annotation.StringRes
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.fadeIn
 import androidx.compose.animation.fadeOut
@@ -20,6 +21,7 @@ import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.MutableState
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.shadow
 import androidx.compose.ui.focus.FocusRequester
 import androidx.compose.ui.focus.focusRequester
 import androidx.compose.ui.focus.onFocusChanged
@@ -103,6 +105,7 @@ fun DefaultGroupsTopBar(
     openSearch: () -> Unit
 ) {
     SmallTopAppBar(
+        modifier = Modifier.shadow(elevation = 8.dp),
         title = {
             Text(
                 text = facultyName,
@@ -182,6 +185,7 @@ fun SearchGroupsTopBar(
     closeSearch: () -> Unit,
 ) {
     SmallTopAppBar(
+        modifier = Modifier.shadow(elevation = 8.dp),
         title = {
             val groupPrefix = Type.typeBy(typeId).prefix
             GroupsSearchField(
@@ -483,6 +487,7 @@ fun DefaultFacultiesTopBar(
     openSearch: () -> Unit
 ) {
     SmallTopAppBar(
+        modifier = Modifier.shadow(elevation = 8.dp),
         title = {
             Text(
                 text = stringResource(R.string.faculties),
@@ -666,6 +671,7 @@ fun BasicTopBar(
     actions: @Composable RowScope.() -> Unit = {}
 ) {
     SmallTopAppBar(
+        modifier = Modifier.shadow(elevation = 8.dp),
         title = content,
         navigationIcon = {
             IconButton(onClick = onBackClick) {
@@ -679,6 +685,20 @@ fun BasicTopBar(
     )
 }
 
+@Composable
+fun TitleTopBar(
+    title: String
+) {
+    BasicTopBar(
+        content = {
+            Text(
+                text = title,
+                style = MaterialTheme.typography.titleMedium
+            )
+        }
+    )
+}
+
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun BasicTopBar(
@@ -686,6 +706,7 @@ fun BasicTopBar(
     actions: @Composable RowScope.() -> Unit = {}
 ) {
     SmallTopAppBar(
+        modifier = Modifier.shadow(elevation = 8.dp),
         title = content,
         actions = actions
     )
