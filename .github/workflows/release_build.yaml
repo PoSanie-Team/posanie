@@ -31,6 +31,23 @@ jobs:
         with:
           java-version: 11
 
+      - name: Patch version for beta-builds
+        run: |
+          echo -n $(cat version.txt | sed -e "s/.*/&/") >> ./version_patched
+          echo -n "-$BRANCH_NAME-" >> ./version_patched
+          echo -n $(date '+%m.%d.%Y-%H.%M.%S') >> ./version_patched
+          mv ./version_patched ./version
+        if: ${{ env.is_release == 'false' }}
+        env:
+          BRANCH_NAME: ${{ github.ref_name }}
+
+      - name: Set version variable as a patched version
+        run: |
+          echo -n $(cat ./version | sed -e "s/.*/version=&/") >> $GITHUB_ENV
+        env:
+          IS_RELEASE: ${{ env.is_release }}
+          BRANCH_NAME: ${{ github.ref_name }}
+
       - name: Make a release build
         if: ${{ env.is_release == 'true' }}
         run: ./gradlew --no-daemon assembleRelease
@@ -60,22 +77,6 @@ jobs:
           keyStorePassword: ${{ secrets.KEYSTORE_PASSWORD }}
           alias: posanie
           keyPassword: ${{ secrets.KEY_PASSWORD }}
-
-      - name: Patch version for beta-builds
-        run: |
-          echo -n $(cat version.txt | sed -e "s/.*/&/") >> ./version_patched
-          echo -n "-$BRANCH_NAME-" >> ./version_patched
-          echo -n $(date '+%m.%d.%Y-%H.%M.%S') >> ./version_patched
-        if: ${{ env.is_release == 'false' }}
-        env:
-          BRANCH_NAME: ${{ github.ref_name }}
-
-      - name: Set version variable as a patched version
-        run: |
-            echo -n $(cat ./version_patched | sed -e "s/.*/version=&/") >> $GITHUB_ENV
-        env:
-          IS_RELEASE: ${{ env.is_release }}
-          BRANCH_NAME: ${{ github.ref_name }}
 
       - name: Release to GH Releases
         uses: softprops/action-gh-release@v0.1.15
