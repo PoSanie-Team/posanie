@@ -2,9 +2,7 @@ package dev.timatifey.posanie.ui.picker
 
 import android.view.KeyEvent
 import androidx.annotation.StringRes
-import androidx.compose.animation.AnimatedVisibility
-import androidx.compose.animation.fadeIn
-import androidx.compose.animation.fadeOut
+import androidx.compose.animation.*
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.shape.RoundedCornerShape
@@ -20,6 +18,7 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.MutableState
 import androidx.compose.runtime.remember
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.shadow
 import androidx.compose.ui.focus.FocusRequester
@@ -40,7 +39,9 @@ import androidx.compose.ui.unit.dp
 import androidx.navigation.NavHostController
 import dev.timatifey.posanie.R
 import dev.timatifey.posanie.model.domain.Type
+import dev.timatifey.posanie.ui.KindNavItems
 import dev.timatifey.posanie.ui.RemoteNavItems
+import dev.timatifey.posanie.ui.TypeNavItems
 
 enum class SearchState {
     NOT_STARTED, IN_PROGRESS, DONE
@@ -55,31 +56,110 @@ fun GroupsTopBar(
     remoteGroupsViewModel: RemoteGroupsViewModel,
     facultyId: Long,
     facultyName: String,
+    showTypes: Boolean,
     kindId: Long,
     typeId: String,
     searchState: MutableState<SearchState>,
     courseSearchState: MutableState<String>,
-    groupSearchState: MutableState<String>,
+    groupSearchState: MutableState<String>
 ) {
-    SearchGroupsTopBar(
+    Column(
+        modifier = Modifier.shadow(elevation = 8.dp)
+    ) {
+        GroupsTopBarName(
+            navController = navController,
+            remoteGroupsViewModel = remoteGroupsViewModel,
+            facultyId = facultyId,
+            facultyName = facultyName,
+            kindId = kindId,
+            typeId = typeId,
+            searchState = searchState,
+            courseSearchState = courseSearchState,
+            groupSearchState = groupSearchState
+        )
+        GroupsTopBarCategory(
+            navController = navController,
+            remoteGroupsViewModel = remoteGroupsViewModel,
+            showTypes = showTypes,
+            facultyId = facultyId,
+            kindId = kindId,
+        )
+    }
+}
+
+@Composable
+fun GroupsTopBarName(
+    navController: NavHostController,
+    remoteGroupsViewModel: RemoteGroupsViewModel,
+    facultyId: Long,
+    facultyName: String,
+    kindId: Long,
+    typeId: String,
+    searchState: MutableState<SearchState>,
+    courseSearchState: MutableState<String>,
+    groupSearchState: MutableState<String>
+) {
+    Box {
+        SearchGroupsTopBar(
+            navController = navController,
+            remoteGroupsViewModel = remoteGroupsViewModel,
+            facultyId = facultyId,
+            kindId = kindId,
+            typeId = typeId,
+            searchState = searchState,
+            courseSearchState = courseSearchState,
+            groupSearchState = groupSearchState
+        )
+        AnimatedVisibility(
+            visible = searchState.value == SearchState.NOT_STARTED,
+            enter = fadeIn(),
+            exit = fadeOut()
+        ) {
+            DefaultGroupsTopBar(
+                navController = navController,
+                facultyName = facultyName,
+                searchState = searchState
+            )
+        }
+    }
+}
+
+@Composable
+fun GroupsTopBarCategory(
+    navController: NavHostController,
+    remoteGroupsViewModel: RemoteGroupsViewModel,
+    showTypes: Boolean,
+    facultyId: Long,
+    kindId: Long,
+) {
+    val kindNavItems = listOf(
+        KindNavItems.Bachelor,
+        KindNavItems.Master,
+        KindNavItems.Specialist,
+        KindNavItems.Postgraduate,
+    )
+    val typeNavItems = listOf(
+        TypeNavItems.Common,
+        TypeNavItems.Evening,
+        TypeNavItems.Distance
+    )
+    GroupKindNavigationBar(
         navController = navController,
-        remoteGroupsViewModel = remoteGroupsViewModel,
+        viewModel = remoteGroupsViewModel,
         facultyId = facultyId,
-        kindId = kindId,
-        typeId = typeId,
-        searchState = searchState,
-        courseSearchState = courseSearchState,
-        groupSearchState = groupSearchState
+        items = kindNavItems
     )
     AnimatedVisibility(
-        visible = searchState.value == SearchState.NOT_STARTED,
-        enter = fadeIn(),
-        exit = fadeOut()
+        visible = showTypes,
+        enter = expandVertically(expandFrom = Alignment.Top),
+        exit = shrinkVertically()
     ) {
-        DefaultGroupsTopBar(
+        GroupTypeNavigationBar(
             navController = navController,
-            facultyName = facultyName,
-            searchState = searchState
+            viewModel = remoteGroupsViewModel,
+            facultyId = facultyId,
+            kindId = kindId,
+            items = typeNavItems
         )
     }
 }
@@ -105,7 +185,6 @@ fun DefaultGroupsTopBar(
     openSearch: () -> Unit
 ) {
     SmallTopAppBar(
-        modifier = Modifier.shadow(elevation = 8.dp),
         title = {
             Text(
                 text = facultyName,
@@ -185,7 +264,6 @@ fun SearchGroupsTopBar(
     closeSearch: () -> Unit,
 ) {
     SmallTopAppBar(
-        modifier = Modifier.shadow(elevation = 8.dp),
         title = {
             val groupPrefix = Type.typeBy(typeId).prefix
             GroupsSearchField(

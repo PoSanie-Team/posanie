@@ -63,6 +63,7 @@ fun RemoteGroupsScreen(
                 remoteGroupsViewModel = remoteGroupsViewModel,
                 facultyId = facultyId,
                 facultyName = facultyName,
+                showTypes = searchState.value != SearchState.NOT_STARTED,
                 kindId = kindId,
                 typeId = typeId,
                 searchState = searchState,
@@ -71,73 +72,18 @@ fun RemoteGroupsScreen(
             )
         },
         content = { innerPadding ->
-            RemoteGroupsContent(
-                innerPadding = innerPadding,
-                navController = navController,
-                pickerViewModel = pickerViewModel,
-                remoteGroupsViewModel = remoteGroupsViewModel,
-                facultyId = facultyId,
-                kindId = kindId,
-                typeId = typeId,
-                showTypes = searchState.value != SearchState.NOT_STARTED
-            )
+            Box(modifier = Modifier.padding(innerPadding)) {
+                RemoteGroupsList(
+                    navController = navController,
+                    pickerViewModel = pickerViewModel,
+                    remoteGroupsViewModel = remoteGroupsViewModel,
+                    facultyId = facultyId,
+                    kindId = kindId,
+                    typeId = typeId,
+                )
+            }
         }
     )
-}
-
-@Composable
-fun RemoteGroupsContent(
-    innerPadding: PaddingValues,
-    navController: NavHostController,
-    pickerViewModel: PickerViewModel,
-    remoteGroupsViewModel: RemoteGroupsViewModel,
-    showTypes: Boolean,
-    facultyId: Long,
-    kindId: Long,
-    typeId: String
-) {
-    val kindNavItems = listOf(
-        KindNavItems.Bachelor,
-        KindNavItems.Master,
-        KindNavItems.Specialist,
-        KindNavItems.Postgraduate,
-    )
-    val typeNavItems = listOf(
-        TypeNavItems.Common,
-        TypeNavItems.Evening,
-        TypeNavItems.Distance
-    )
-    Column(
-        Modifier.padding(innerPadding)
-    ) {
-        GroupKindNavigationBar(
-            navController = navController,
-            viewModel = remoteGroupsViewModel,
-            facultyId = facultyId,
-            items = kindNavItems
-        )
-        AnimatedVisibility (
-            visible = showTypes,
-            enter = expandVertically(expandFrom = Alignment.Top),
-            exit = shrinkVertically()
-        ) {
-            GroupTypeNavigationBar(
-                navController = navController,
-                viewModel = remoteGroupsViewModel,
-                facultyId = facultyId,
-                kindId = kindId,
-                items = typeNavItems
-            )
-        }
-        RemoteGroupsList(
-            pickerViewModel = pickerViewModel,
-            remoteGroupsViewModel = remoteGroupsViewModel,
-            navController = navController,
-            facultyId = facultyId,
-            kindId = kindId,
-            typeId = typeId
-        )
-    }
 }
 
 @Composable
