@@ -1,9 +1,14 @@
-name: build release app, sign it and publish to GH Releases
+name: 'make a release or test build, sign it and publish to GH Releases'
 
 on:
+  workflow_dispatch:
   push:
     branches:
       - 'release/**'
+      - '**'
+
+env:
+  is_release: ${{ startsWith(github.ref, 'refs/heads/release/') }}
 
 defaults:
   run:
@@ -21,27 +26,45 @@ jobs:
         uses: actions/checkout@v2
         with:
           fetch-depth: 0
+
       - name: set up JDK 11
         uses: actions/setup-java@v1
         with:
           java-version: 11
-      - name: build release
-        run: ./gradlew --no-daemon assembleDebug
-      - name: sign release build
+
+      - name: build release build
+        run: ./gradlew --no-daemon assembleRelease
+        if: ${{ env.is_release }}
+
+      - name: build test build
+        run: ./gradlew --no-daemon assembleBeta
+        if: ${{ !env.is_release }}
+
+      - name: set up a path to APK build
+        run: |
+            if [ "$IS_RELEASE" = true ]; then
+              echo "apk_path=./posanie/app/build/outputs/apk/release/" >> $GITHUB_ENV
+            else
+              echo "apk_path=./posanie/app/build/outputs/apk/beta/" >> $GITHUB_ENV
+            fi
+        env:
+          IS_RELEASE: env.is_release
+
+      - name: sign a build
         id: sign_app
         uses: r0adkll/sign-android-release@v1
         env:
           ACTIONS_ALLOW_UNSECURE_COMMANDS: true
         with:
-          releaseDirectory: ./posanie/app/build/outputs/apk/debug/
+          releaseDirectory: env.apk_path
           signingKeyBase64: ${{ secrets.SIGNING_KEY_BASE64 }}
           keyStorePassword: ${{ secrets.KEYSTORE_PASSWORD }}
           alias: posanie
           keyPassword: ${{ secrets.KEY_PASSWORD }}
-      - name: create new release tag
-        uses: amitsingh-007/next-release-tag@v2.2.0
-        with:
-          github_token: ${{ secrets.GITHUB_TOKEN }}
+
+#      - name: create new release tag
+#        run:
+
       - name: Release to GH Releases
         uses: softprops/action-gh-release@v0.1.15
         with:

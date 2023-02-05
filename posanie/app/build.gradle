@@ -9,11 +9,15 @@ android {
     compileSdk 33
 
     defaultConfig {
+        String versionFilePath = project.rootDir.toPath().resolve("version.txt")
+        File versionFile = new File(versionFilePath)
+        String version = versionFile.readLines()[0]
+
         applicationId "dev.timatifey.posanie"
         minSdk 21
         targetSdk 32
         versionCode 17
-        versionName "1.4.0"
+        versionName version
 
         testInstrumentationRunner "androidx.test.runner.AndroidJUnitRunner"
         vectorDrawables {
@@ -34,9 +38,9 @@ android {
                 }
             }
         }
-        debug {
+        beta {
             applicationIdSuffix ".dev"
-            versionNameSuffix '-debug'
+            versionNameSuffix '-beta'
             minifyEnabled false
             proguardFiles getDefaultProguardFile("proguard-android-optimize.txt"), "proguard-rules.pro"
             applicationVariants.all { variant ->
