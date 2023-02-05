@@ -61,13 +61,18 @@ jobs:
           alias: posanie
           keyPassword: ${{ secrets.KEY_PASSWORD }}
 
-      - name: Set release_tag
+      - name: Patch version for beta-builds
         run: |
-            echo -n $(cat version.txt | sed -e "s/.*/version=&/") >> $GITHUB_ENV
-            if [ "$IS_RELEASE" = false ]; then
-              echo -n "-$BRANCH_NAME-" >> $GITHUB_ENV
-              echo -n $(date '+%m.%d.%Y-%H.%M.%S') >> $GITHUB_ENV
-            fi
+          echo -n $(cat version.txt | sed -e "s/.*/version=&/") >> ./version_patched
+          echo -n "-$BRANCH_NAME-" >> ./version_patched
+          echo -n $(date '+%m.%d.%Y-%H.%M.%S') >> ./version_patched
+        if: ${{ env.is_release == 'false' }}
+        env:
+          BRANCH_NAME: ${{ github.ref_name }}
+
+      - name: Set version variable as a patched version
+        run: |
+            echo -n $(cat ./version_patched | sed -e "s/.*/version=&/") >> $GITHUB_ENV
         env:
           IS_RELEASE: ${{ env.is_release }}
           BRANCH_NAME: ${{ github.ref_name }}
