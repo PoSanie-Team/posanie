@@ -227,7 +227,7 @@ fun ContentWithHint(
     hint: String,
     content: @Composable () -> Unit
 ) {
-    Column(modifier = Modifier.padding(horizontal = 16.dp, vertical = 8.dp)) {
+    Column(modifier = Modifier.padding(horizontal = 8.dp, vertical = 8.dp)) {
         ScheduleTypeTitle(text = contentName, paddingValues = PaddingValues(0.dp))
         if (needHint) {
             MessageText(

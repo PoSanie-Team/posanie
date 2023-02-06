@@ -30,7 +30,7 @@ fun ScheduleTypeScreen(
     ) { paddingValues ->
         Box(modifier = Modifier.padding(paddingValues)) {
             Column(
-                modifier = Modifier.padding(horizontal = 16.dp, vertical = 8.dp)
+                modifier = Modifier.padding(horizontal = 8.dp, vertical = 8.dp)
             ) {
                 ScheduleTypeItem(name = stringResource(R.string.groups), onClick = selectGroups)
                 ScheduleTypeItem(name = stringResource(R.string.teachers), onClick = selectTeachers)

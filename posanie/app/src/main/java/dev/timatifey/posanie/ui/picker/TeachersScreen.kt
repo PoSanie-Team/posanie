@@ -124,7 +124,7 @@ fun ScrollableTeachersList(
     clickListener: ClickListener<Teacher>,
 ) {
     LazyColumn(
-        modifier = modifier.padding(4.dp)
+        modifier = modifier.padding(8.dp)
     ) {
         items(teachersList) { teacher ->
             TeacherItem(teacher = teacher, clickListener = clickListener)

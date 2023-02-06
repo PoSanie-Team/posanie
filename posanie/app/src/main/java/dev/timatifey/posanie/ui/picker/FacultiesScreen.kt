@@ -91,7 +91,7 @@ fun FacultiesScreen(
 @Composable
 fun FacultiesList(list: List<Faculty>, onFacultyClick: (Faculty) -> Unit) {
     LazyColumn(
-        modifier = Modifier.padding(horizontal = 16.dp, vertical = 8.dp)
+        modifier = Modifier.padding(horizontal = 8.dp, vertical = 8.dp)
     ) {
         items(list) { faculty ->
             FacultyItem(faculty, onFacultyClick)

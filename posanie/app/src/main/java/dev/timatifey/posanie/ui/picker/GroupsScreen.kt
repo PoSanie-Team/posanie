@@ -171,7 +171,7 @@ fun ScrollableGroupsList(
 ) {
     LazyColumn(
         state = state,
-        contentPadding = PaddingValues(horizontal = 16.dp, vertical = 0.dp),
+        contentPadding = PaddingValues(horizontal = 8.dp, vertical = 0.dp),
     ) {
         val levels = levelsToGroups.keys.toList().sorted()
         items(levels) { level ->
