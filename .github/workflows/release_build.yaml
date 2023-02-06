@@ -34,12 +34,9 @@ jobs:
       - name: Patch version for beta-builds
         run: |
           echo -n $(cat version.txt | sed -e "s/.*/&/") >> ./version_patched
-          echo -n "-$BRANCH_NAME-" >> ./version_patched
           echo -n $(date '+%m.%d.%Y-%H.%M.%S') >> ./version_patched
           mv ./version_patched ./version
         if: ${{ env.is_release == 'false' }}
-        env:
-          BRANCH_NAME: ${{ github.ref_name }}
 
       - name: Set version variable as a patched version
         run: |
