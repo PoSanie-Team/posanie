@@ -30,7 +30,7 @@ fun ScheduleTypeScreen(
     ) { paddingValues ->
         Box(modifier = Modifier.padding(paddingValues)) {
             Column(
-                modifier = Modifier.padding(8.dp)
+                modifier = Modifier.padding(horizontal = 16.dp, vertical = 8.dp)
             ) {
                 ScheduleTypeItem(name = stringResource(R.string.groups), onClick = selectGroups)
                 ScheduleTypeItem(name = stringResource(R.string.teachers), onClick = selectTeachers)
@@ -81,7 +81,7 @@ fun ScheduleTypeItem(name: String, onClick: () -> Unit) {
         Card(
             modifier = Modifier
                 .fillMaxWidth()
-                .padding(horizontal = 4.dp, vertical = 4.dp),
+                .padding(8.dp),
             onClick = onClick,
         ) {
             Text(

@@ -12,6 +12,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.shadow
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import dev.timatifey.posanie.R
 import dev.timatifey.posanie.model.domain.AppColorScheme
@@ -36,14 +37,17 @@ fun SettingsScreen(
                 .padding(paddingValues)
                 .verticalScroll(rememberScrollState())
         ) {
+            Spacer(Modifier.padding(4.dp))
             ThemeSettings(
                 selectedTheme = uiState.theme,
                 onThemeClick = { settingsViewModel.saveAndPickTheme(it) }
             )
+            Spacer(Modifier.padding(4.dp))
             ColorSchemeSettings(
                 selectedColorScheme = uiState.colorScheme,
                 onColorSchemeClick = { settingsViewModel.saveAndPickColorScheme(it) }
             )
+            Spacer(Modifier.padding(4.dp))
             LanguageSettings(
                 selectedLanguage = uiState.language,
                 onLanguageClick = {
@@ -213,9 +217,10 @@ fun SettingsOption(
 fun SettingsTitle(text: String) {
     Text(
         text = text,
-        style = MaterialTheme.typography.titleLarge,
+        style = MaterialTheme.typography.bodyLarge,
         fontWeight = FontWeight.Bold,
-        color = MaterialTheme.colorScheme.onBackground,
+        color = MaterialTheme.colorScheme.primary,
+        textAlign = TextAlign.Center,
         modifier = Modifier
             .padding(horizontal = 16.dp, vertical = 4.dp)
             .fillMaxWidth()

@@ -91,7 +91,7 @@ fun FacultiesScreen(
 @Composable
 fun FacultiesList(list: List<Faculty>, onFacultyClick: (Faculty) -> Unit) {
     LazyColumn(
-        modifier = Modifier.padding(horizontal = 8.dp, vertical = 4.dp)
+        modifier = Modifier.padding(horizontal = 16.dp, vertical = 8.dp)
     ) {
         items(list) { faculty ->
             FacultyItem(faculty, onFacultyClick)
@@ -108,7 +108,7 @@ fun FacultyItem(faculty: Faculty, onFacultyClick: (Faculty) -> Unit) {
         Card(
             modifier = Modifier
                 .fillMaxWidth()
-                .padding(horizontal = 4.dp, vertical = 4.dp),
+                .padding(8.dp),
             onClick = { onFacultyClick(faculty) },
         ) {
             Text(
@@ -126,7 +126,7 @@ fun FacultyItem(faculty: Faculty, onFacultyClick: (Faculty) -> Unit) {
 fun FacultyListPreview() {
     FacultiesList(listOf(
         Faculty(title = "Институт Бибы и Бобы"),
-        Faculty(title = "Высшая школа Похуй"),
+        Faculty(title = "Высшая школа Неважно"),
         Faculty(title = "Институт Компьютерных Институт Компьютерных Институт Компьютерных"),
         Faculty(title = "Институт про который все забыли"),
         Faculty(title = "Очень классный гуманитарный институт!!!!!"),

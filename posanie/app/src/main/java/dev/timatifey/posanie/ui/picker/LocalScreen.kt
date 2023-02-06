@@ -6,7 +6,6 @@ import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Add
-import androidx.compose.material.icons.filled.ArrowBack
 import androidx.compose.material3.*
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.MutableState
@@ -14,9 +13,9 @@ import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import com.google.accompanist.swiperefresh.SwipeRefresh
@@ -189,9 +188,10 @@ fun LocalGroupsAndTeachers(
 ) {
     Column(
         modifier = Modifier
+            .fillMaxSize()
             .verticalScroll(rememberScrollState())
-            .padding(bottom = 8.dp)
     ) {
+        Spacer(Modifier.padding(4.dp))
         ContentWithHint(
             contentName = stringResource(R.string.groups),
             needHint = levelsToGroups.isEmpty(),
@@ -204,7 +204,7 @@ fun LocalGroupsAndTeachers(
                 )
             }
         )
-        Spacer(Modifier.padding(8.dp))
+        Spacer(Modifier.padding(4.dp))
         ContentWithHint(
             contentName = stringResource(R.string.teachers),
             needHint = teachers.isEmpty(),
@@ -227,13 +227,14 @@ fun ContentWithHint(
     hint: String,
     content: @Composable () -> Unit
 ) {
-    ScheduleTypeTitle(contentName)
-    if (needHint) {
-        MessageText(
-            Modifier.padding(16.dp),
-            text = hint)
-    } else {
-        Box(Modifier.padding(8.dp)) {
+    Column(modifier = Modifier.padding(horizontal = 16.dp, vertical = 8.dp)) {
+        ScheduleTypeTitle(text = contentName, paddingValues = PaddingValues(0.dp))
+        if (needHint) {
+            MessageText(
+                modifier = Modifier.fillMaxWidth().padding(vertical = 8.dp),
+                text = hint
+            )
+        } else {
             content()
         }
     }
@@ -262,14 +263,15 @@ fun AddItemFAB(
 }
 
 @Composable
-fun ScheduleTypeTitle(text: String) {
+fun ScheduleTypeTitle(text: String, paddingValues: PaddingValues = PaddingValues(16.dp)) {
     Text(
         text = text,
-        style = MaterialTheme.typography.titleLarge,
+        style = MaterialTheme.typography.bodyLarge,
         fontWeight = FontWeight.Bold,
-        color = MaterialTheme.colorScheme.onBackground,
+        color = MaterialTheme.colorScheme.primary,
+        textAlign = TextAlign.Center,
         modifier = Modifier
-            .padding(horizontal = 16.dp, vertical = 4.dp)
+            .padding(paddingValues)
             .fillMaxWidth()
     )
 }
@@ -281,7 +283,7 @@ fun LocalTeachersList(
     clickListener: ClickListener<Teacher>,
 ) {
     Column(
-        modifier = modifier.padding(4.dp)
+        modifier = modifier.padding(top = 8.dp)
     ) {
         teachersList.forEach { teacher ->
             TeacherItem(teacher = teacher, clickListener = clickListener)
@@ -299,10 +301,7 @@ fun LocalGroupsList(
         val levels = levelsToGroups.keys.toList().sorted()
         levels.forEach { level ->
             Column {
-                GroupsLevelTitle(
-                    level = level,
-                    paddingValues = PaddingValues(horizontal = 8.dp, vertical = 8.dp)
-                )
+                GroupsLevelTitle(level = level)
                 GroupsLevelList(
                     list = levelsToGroups[level]?.getGroups() ?: emptyList(),
                     groupsInRow = groupsInRow,
@@ -315,9 +314,7 @@ fun LocalGroupsList(
 
 @Composable
 fun MessageText(
-    modifier: Modifier = Modifier
-        .padding(4.dp)
-        .fillMaxWidth(),
+    modifier: Modifier = Modifier,
     text: String = ""
 ) {
     Text(

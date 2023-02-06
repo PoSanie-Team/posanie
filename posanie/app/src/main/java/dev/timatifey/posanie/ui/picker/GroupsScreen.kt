@@ -190,7 +190,7 @@ fun ScrollableGroupsList(
 @Composable
 fun GroupsLevelTitle(
     level: Int,
-    paddingValues: PaddingValues = PaddingValues(horizontal = 16.dp, vertical = 8.dp)
+    paddingValues: PaddingValues = PaddingValues(8.dp)
 ) {
     Text(
         text = stringResource(R.string.level, level),
@@ -235,7 +235,7 @@ fun GroupsRow(
                 twoLines = groupsInRow > 1,
                 modifier = Modifier
                     .weight(1f)
-                    .padding(4.dp),
+                    .padding(8.dp),
                 clickListener = clickListener
             )
         }
