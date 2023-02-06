@@ -271,7 +271,7 @@ fun tabColor(selected: Boolean): Color {
 @Composable
 fun textColor(selected: Boolean): Color {
     return if (selected) {
-        MaterialTheme.colorScheme.onPrimary
+        MaterialTheme.colorScheme.inverseOnSurface
     } else {
         MaterialTheme.colorScheme.onBackground
     }
