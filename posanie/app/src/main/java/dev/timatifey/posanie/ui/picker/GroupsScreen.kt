@@ -239,6 +239,9 @@ fun GroupsRow(
                 clickListener = clickListener
             )
         }
+        for (i in row.size until groupsInRow) {
+            Box(modifier = Modifier.weight(1f).padding(8.dp))
+        }
     }
 }
 
