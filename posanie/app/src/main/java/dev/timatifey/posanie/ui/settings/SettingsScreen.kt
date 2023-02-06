@@ -14,6 +14,7 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
+import dev.timatifey.posanie.BuildConfig
 import dev.timatifey.posanie.R
 import dev.timatifey.posanie.model.domain.AppColorScheme
 import dev.timatifey.posanie.model.domain.AppTheme
@@ -55,6 +56,8 @@ fun SettingsScreen(
                     recreateActivity()
                 }
             )
+            Spacer(Modifier.padding(16.dp))
+            AppVersionLabel()
         }
     }
 }
@@ -240,5 +243,22 @@ fun TopBar(
                 style = MaterialTheme.typography.titleMedium
             )
         }
+    )
+}
+
+@Composable
+fun AppVersionLabel() {
+    val appName = stringResource(R.string.app_name)
+    val versionName = BuildConfig.VERSION_NAME
+    val text = "$appName: $versionName"
+    Text(
+        text = text,
+        style = MaterialTheme.typography.bodyMedium,
+        fontWeight = FontWeight.Normal,
+        color = MaterialTheme.colorScheme.onSurfaceVariant,
+        textAlign = TextAlign.Center,
+        modifier = Modifier
+            .padding(horizontal = 16.dp, vertical = 8.dp)
+            .fillMaxWidth()
     )
 }
