@@ -1,9 +1,13 @@
-name: build release app, sign it and publish to GH Releases
+name: 'make a release or test build, sign it and publish to GH Releases'
 
 on:
+  workflow_dispatch:
   push:
     branches:
       - 'release/**'
+
+env:
+  is_release: ${{ startsWith(github.ref, 'refs/heads/release/') }}
 
 defaults:
   run:
@@ -17,34 +21,66 @@ jobs:
       contents: write
 
     steps:
-      - name: checkout
+      - name: Checkout
         uses: actions/checkout@v2
         with:
           fetch-depth: 0
-      - name: set up JDK 11
+
+      - name: Set up JDK 11
         uses: actions/setup-java@v1
         with:
           java-version: 11
-      - name: build release
-        run: ./gradlew --no-daemon assembleDebug
-      - name: sign release build
+
+      - name: Patch version for beta-builds
+        run: |
+          echo -n $(cat version.txt | sed -e "s/.*/&/") >> ./version_patched
+          echo -n "-$BRANCH_NAME-" >> ./version_patched
+          echo -n $(date '+%m.%d.%Y-%H.%M.%S') >> ./version_patched
+          mv ./version_patched ./version
+        if: ${{ env.is_release == 'false' }}
+        env:
+          BRANCH_NAME: ${{ github.ref_name }}
+
+      - name: Set version variable as a patched version
+        run: |
+          echo -n $(cat ./version | sed -e "s/.*/version=&/") >> $GITHUB_ENV
+        env:
+          IS_RELEASE: ${{ env.is_release }}
+          BRANCH_NAME: ${{ github.ref_name }}
+
+      - name: Make a release build
+        if: ${{ env.is_release == 'true' }}
+        run: ./gradlew --no-daemon assembleRelease
+
+      - name: Make a beta build
+        if: ${{ env.is_release == 'false' }}
+        run: ./gradlew --no-daemon assembleBeta
+
+      - name: Set up a path to APK build
+        run: |
+            if [ "$IS_RELEASE" = true ]; then
+              echo "apk_path=./posanie/app/build/outputs/apk/release/" >> $GITHUB_ENV
+            else
+              echo "apk_path=./posanie/app/build/outputs/apk/beta/" >> $GITHUB_ENV
+            fi
+        env:
+          IS_RELEASE: ${{ env.is_release }}
+
+      - name: Sign a build
         id: sign_app
         uses: r0adkll/sign-android-release@v1
         env:
           ACTIONS_ALLOW_UNSECURE_COMMANDS: true
         with:
-          releaseDirectory: ./posanie/app/build/outputs/apk/debug/
+          releaseDirectory: ${{ env.apk_path }}
           signingKeyBase64: ${{ secrets.SIGNING_KEY_BASE64 }}
           keyStorePassword: ${{ secrets.KEYSTORE_PASSWORD }}
           alias: posanie
           keyPassword: ${{ secrets.KEY_PASSWORD }}
-      - name: create new release tag
-        uses: amitsingh-007/next-release-tag@v2.2.0
-        with:
-          github_token: ${{ secrets.GITHUB_TOKEN }}
+
       - name: Release to GH Releases
         uses: softprops/action-gh-release@v0.1.15
         with:
           files: ${{steps.sign_app.outputs.signedReleaseFile}}
           body_path: ./posanie/release_notes.txt
-          tag_name: ${{ env.release_tag }}
+          tag_name: ${{ env.version }}
