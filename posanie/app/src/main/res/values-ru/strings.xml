@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
     // Errors
-    <string name="load_error">Load error</string>
+    <string name="load_error">Ошибка загрузки</string>
 
     // Students type
     <string name="bachelor">Бакалавриат</string>
@@ -84,7 +84,7 @@
 
     <string name="no_lessons_error_message">Не могу загрузить занятия.</string>
 
-    <string name="previous_week_button_description">Кнопка для перехода на предыдущю неделю</string>
+    <string name="previous_week_button_description">Кнопка для перехода на предыдущую неделю</string>
     <string name="next_week_button_description">Кнопка для перехода на следующую неделю</string>
     <string name="previous_month_button_description">Кнопка для перехода на предыдущий месяц</string>
     <string name="next_month_button_description">Кнопка для перехода на следующий месяц</string>

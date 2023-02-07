@@ -145,15 +145,12 @@ fun WeekDate(
     oddWeek: Boolean,
     hasSchedule: Boolean
 ) {
-    val day = date.get(Calendar.DAY_OF_MONTH)
-    val formattedDay = if (day < 10) "0$day" else "$day"
-    val month = date.get(Calendar.MONTH) + 1
-    val formattedMonth = if (month < 10) "0$month" else "$month"
+    val month = date.get(Calendar.MONTH)
     val year = date.get(Calendar.YEAR)
     val week =
         if (oddWeek) stringResource(R.string.odd_week) else stringResource(R.string.even_week)
     Column(modifier = modifier, horizontalAlignment = Alignment.CenterHorizontally) {
-        Text(text = "$formattedDay.$formattedMonth.$year", textAlign = TextAlign.Center)
+        Text(text = "${stringResource(Month.getByOrdinal(month).fullNameId)} $year", textAlign = TextAlign.Center)
         Text(text = if (hasSchedule) week else "", textAlign = TextAlign.Center)
     }
 }
