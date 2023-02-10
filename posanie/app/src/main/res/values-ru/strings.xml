@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
     // Errors
-    <string name="load_error">Load error</string>
+    <string name="load_error">Ошибка загрузки</string>
 
     // Students type
     <string name="bachelor">Бакалавриат</string>
@@ -15,6 +15,7 @@
     <string name="distance">Дистанционное</string>
 
     // Settings
+    <string name="settings_title">Настройки</string>
     <string name="theme">Тема</string>
     <string name="system_theme">Системная</string>
     <string name="light_theme">Светлая</string>
@@ -28,6 +29,7 @@
     <string name="language">Язык</string>
 
     // Picker
+    <string name="local_screen_title">Сохраненные группы и преподаватели</string>
     <string name="faculties">Факультеты</string>
     <string name="no_faculties">Факультеты не найдены.</string>
     <string name="no_groups">Группы не найдены.</string>
@@ -82,7 +84,7 @@
 
     <string name="no_lessons_error_message">Не могу загрузить занятия.</string>
 
-    <string name="previous_week_button_description">Кнопка для перехода на предыдущю неделю</string>
+    <string name="previous_week_button_description">Кнопка для перехода на предыдущую неделю</string>
     <string name="next_week_button_description">Кнопка для перехода на следующую неделю</string>
     <string name="previous_month_button_description">Кнопка для перехода на предыдущий месяц</string>
     <string name="next_month_button_description">Кнопка для перехода на следующий месяц</string>

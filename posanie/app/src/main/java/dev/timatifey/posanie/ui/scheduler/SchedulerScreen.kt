@@ -81,8 +81,10 @@ fun SchedulerScreen(
         weekDayListState.scrollToItem(currentWeekDayOrdinal)
     }
 
-    coroutineScope.launch {
-        weekDayListState.animateScrollToItem(currentWeekDayOrdinal)
+    LaunchedEffect(schedulerUiState.selectedDay) {
+        coroutineScope.launch {
+            weekDayListState.animateScrollToItem(currentWeekDayOrdinal)
+        }
     }
 
     Box(modifier = Modifier.fillMaxSize()) {
@@ -346,101 +348,110 @@ fun LessonItem(modifier: Modifier = Modifier, lesson: Lesson, lessonIndex: Int) 
     Column(
         modifier = Modifier
             .fillMaxHeight()
-            .padding(top = 12.dp, end = 16.dp, bottom = 4.dp),
+            .padding(top = 12.dp, start = 8.dp, end = 8.dp, bottom = 4.dp),
         verticalArrangement = Arrangement.Center
     ) {
-        Row(
-            modifier = modifier
-                .padding(bottom = 8.dp)
-                .height(IntrinsicSize.Min)
-                .fillMaxWidth(),
-            verticalAlignment = Alignment.CenterVertically
-        ) {
-            Card(
-                modifier = Modifier
-                    .padding(end = 12.dp)
-                    .background(
-                        color = MaterialTheme.colorScheme.secondary,
-                        shape = RoundedCornerShape(topEnd = 16.dp, bottomEnd = 16.dp)
-                    )
-                    .padding(horizontal = 16.dp),
-                colors = CardDefaults.elevatedCardColors(
-                    containerColor = MaterialTheme.colorScheme.secondary
-                ),
-            ) {
-                Text(
-                    text = (lessonIndex + 1).toString(),
-                    fontWeight = FontWeight.Medium,
-                    color = MaterialTheme.colorScheme.onSecondary,
-                    modifier = Modifier.padding(4.dp),
-                )
-            }
-            Text(
-                text = lesson.start,
-                fontWeight = FontWeight.Medium,
-                color = MaterialTheme.colorScheme.onSurface,
-                modifier = Modifier.padding(4.dp)
-            )
-            Text(
-                text = "—",
-                fontWeight = FontWeight.Light,
-                color = MaterialTheme.colorScheme.onSurfaceVariant,
-                modifier = Modifier.padding(4.dp)
-            )
-            Text(
-                text = lesson.end,
-                fontWeight = FontWeight.Light,
-                color = MaterialTheme.colorScheme.onSurfaceVariant,
-                modifier = Modifier.padding(4.dp)
-            )
-        }
-        Card(
-            modifier = Modifier
-                .padding(start = 32.dp)
-                .fillMaxSize(),
-            colors = CardDefaults.elevatedCardColors(
-                containerColor = MaterialTheme.colorScheme.surfaceVariant
-            ),
-            shape = RoundedCornerShape(8.dp),
-        ) {
-            Column(modifier = Modifier.padding(horizontal = 12.dp, vertical = 8.dp)) {
-                Text(
-                    text = lesson.name,
-                    style = MaterialTheme.typography.bodyLarge.copy(
-                        color = MaterialTheme.colorScheme.primary,
-                        fontWeight = FontWeight.ExtraBold
-                    ),
-                    modifier = Modifier.padding(vertical = 4.dp)
-                )
-                Text(
-                    text = lesson.type,
-                    style = MaterialTheme.typography.bodyMedium.copy(
-                        color = MaterialTheme.colorScheme.onSurface,
-                        fontWeight = FontWeight.Bold
-                    ),
-                    modifier = Modifier.padding(vertical = 2.dp)
-                )
-                Text(
-                    text = lesson.place,
-                    style = MaterialTheme.typography.bodySmall.copy(
-                        color = MaterialTheme.colorScheme.onSurfaceVariant,
-                        fontWeight = FontWeight.Normal
-                    ),
-                    modifier = Modifier.padding(vertical = 2.dp)
-                )
-                if (lesson.teacher.isNotEmpty()) {
-                    Text(
-                        text = lesson.teacher,
-                        style = MaterialTheme.typography.bodySmall.copy(
-                            color = MaterialTheme.colorScheme.onSurfaceVariant,
-                            fontWeight = FontWeight.Normal,
-                            fontStyle = FontStyle.Italic
-                        ),
-                        modifier = Modifier.padding(vertical = 2.dp)
-                    )
-                }
-            }
+        LessonTime(modifier = modifier, lesson = lesson)
+        LessonCard(lesson = lesson)
+    }
+}
 
+@Composable
+fun LessonTime(modifier: Modifier = Modifier, lesson: Lesson) {
+    Row(
+        modifier = modifier
+            .padding(start = 8.dp, bottom = 8.dp)
+            .height(IntrinsicSize.Min)
+            .fillMaxWidth(),
+        verticalAlignment = Alignment.CenterVertically
+    ) {
+        Text(
+            text = lesson.start,
+            fontWeight = FontWeight.Medium,
+            color = MaterialTheme.colorScheme.onSurface,
+            modifier = Modifier.padding(4.dp)
+        )
+        Text(
+            text = "—",
+            fontWeight = FontWeight.Light,
+            color = MaterialTheme.colorScheme.onSurfaceVariant,
+            modifier = Modifier.padding(4.dp)
+        )
+        Text(
+            text = lesson.end,
+            fontWeight = FontWeight.Light,
+            color = MaterialTheme.colorScheme.onSurfaceVariant,
+            modifier = Modifier.padding(4.dp)
+        )
+    }
+}
+
+@Composable
+fun LessonIndexLabel(lessonIndex: Int) {
+    Card(
+        modifier = Modifier
+            .padding(end = 12.dp)
+            .background(
+                color = MaterialTheme.colorScheme.secondary,
+                shape = RoundedCornerShape(topEnd = 16.dp, bottomEnd = 16.dp)
+            )
+            .padding(horizontal = 16.dp),
+        colors = CardDefaults.elevatedCardColors(
+            containerColor = MaterialTheme.colorScheme.secondary
+        ),
+    ) {
+        Text(
+            text = (lessonIndex + 1).toString(),
+            fontWeight = FontWeight.Medium,
+            color = MaterialTheme.colorScheme.onSecondary,
+            modifier = Modifier.padding(4.dp),
+        )
+    }
+}
+
+@Composable
+fun LessonCard(lesson: Lesson) {
+    Card(
+        modifier = Modifier
+            .padding(horizontal = 8.dp)
+            .fillMaxSize(),
+        colors = CardDefaults.elevatedCardColors(
+            containerColor = MaterialTheme.colorScheme.surfaceVariant
+        ),
+        shape = RoundedCornerShape(8.dp),
+    ) {
+        Column(modifier = Modifier.padding(horizontal = 12.dp, vertical = 8.dp)) {
+            Text(
+                text = lesson.name,
+                style = MaterialTheme.typography.bodyLarge,
+                color = MaterialTheme.colorScheme.primary,
+                fontWeight = FontWeight.Bold,
+                modifier = Modifier.padding(vertical = 4.dp)
+            )
+            Text(
+                text = lesson.type,
+                style = MaterialTheme.typography.bodyMedium,
+                color = MaterialTheme.colorScheme.onSurface,
+                fontWeight = FontWeight.Normal,
+                modifier = Modifier.padding(vertical = 2.dp)
+            )
+            Text(
+                text = lesson.place,
+                style = MaterialTheme.typography.bodySmall,
+                color = MaterialTheme.colorScheme.onSurfaceVariant,
+                fontWeight = FontWeight.Normal,
+                modifier = Modifier.padding(vertical = 2.dp)
+            )
+            if (lesson.teacher.isNotEmpty()) {
+                Text(
+                    text = lesson.teacher,
+                    style = MaterialTheme.typography.bodySmall,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant,
+                    fontWeight = FontWeight.Normal,
+                    fontStyle = FontStyle.Italic,
+                    modifier = Modifier.padding(vertical = 2.dp)
+                )
+            }
         }
     }
 }

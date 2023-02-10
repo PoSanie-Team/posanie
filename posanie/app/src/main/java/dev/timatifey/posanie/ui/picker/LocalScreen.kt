@@ -14,9 +14,12 @@ import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import com.google.accompanist.swiperefresh.SwipeRefresh
+import com.google.accompanist.swiperefresh.SwipeRefreshState
 import com.google.accompanist.swiperefresh.rememberSwipeRefreshState
 import dev.timatifey.posanie.R
 import dev.timatifey.posanie.model.domain.Group
@@ -26,6 +29,7 @@ import dev.timatifey.posanie.model.domain.Teacher
 import dev.timatifey.posanie.ui.PopupDialog
 import dev.timatifey.posanie.utils.ClickListener
 
+@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun LocalScreen(
     viewModel: PickerViewModel,
@@ -59,15 +63,22 @@ fun LocalScreen(
     )
 
     if (levelsToGroups.isNotEmpty() || teachers.isNotEmpty()) {
-        SwipeRefresh(state = swipeRefreshState, onRefresh = onRefresh) {
-            localGroupsAndTeachers(
+        Scaffold(
+            topBar = {
+                TitleTopBar(title = stringResource(R.string.local_screen_title))
+            }
+        ) { paddingValues ->
+            LocalScreenContent(
+                modifier = Modifier.padding(paddingValues),
                 levelsToGroups = levelsToGroups,
                 groupClickListener = groupClickListener,
                 teachers = teachers,
-                teacherClickListener = teacherClickListener
+                teacherClickListener = teacherClickListener,
+                swipeRefreshState = swipeRefreshState,
+                onRefresh = onRefresh,
+                goToRemote = goToRemote
             )
         }
-        AddItemFAB(goToRemote = goToRemote)
     }
 
     LaunchedEffect(levelsToGroups, teachers, isLoading) {
@@ -109,7 +120,9 @@ fun createDeleteItemPopupDialog(
                 is Group -> stringResource(R.string.deleteGroupTitle)
                 is Teacher -> stringResource(R.string.deleteTeacherTitle)
             },
-            modifier = Modifier.width(300.dp).wrapContentHeight(unbounded = true),
+            modifier = Modifier
+                .width(300.dp)
+                .wrapContentHeight(unbounded = true),
             description = stringResource(R.string.deleteItemDescription, itemName, itemType),
             onConfirm = {
                 when (itemToDelete) {
@@ -124,7 +137,50 @@ fun createDeleteItemPopupDialog(
 }
 
 @Composable
-fun localGroupsAndTeachers(
+fun LocalScreenContent(
+    modifier: Modifier = Modifier,
+    levelsToGroups: Map<Int, GroupsLevel>,
+    groupClickListener: ClickListener<Group>,
+    teachers: List<Teacher>,
+    teacherClickListener: ClickListener<Teacher>,
+    swipeRefreshState: SwipeRefreshState,
+    onRefresh: () -> Unit,
+    goToRemote: () -> Unit
+) {
+    Box (modifier = modifier) {
+        RefreshableGroupsAndTeachers(
+            levelsToGroups = levelsToGroups,
+            groupClickListener = groupClickListener,
+            teachers = teachers,
+            teacherClickListener = teacherClickListener,
+            swipeRefreshState = swipeRefreshState,
+            onRefresh = onRefresh
+        )
+        AddItemFAB(goToRemote = goToRemote)
+    }
+}
+
+@Composable
+fun RefreshableGroupsAndTeachers(
+    levelsToGroups: Map<Int, GroupsLevel>,
+    groupClickListener: ClickListener<Group>,
+    teachers: List<Teacher>,
+    teacherClickListener: ClickListener<Teacher>,
+    swipeRefreshState: SwipeRefreshState,
+    onRefresh: () -> Unit
+) {
+    SwipeRefresh(state = swipeRefreshState, onRefresh = onRefresh) {
+        LocalGroupsAndTeachers(
+            levelsToGroups = levelsToGroups,
+            groupClickListener = groupClickListener,
+            teachers = teachers,
+            teacherClickListener = teacherClickListener
+        )
+    }
+}
+
+@Composable
+fun LocalGroupsAndTeachers(
     levelsToGroups: Map<Int, GroupsLevel>,
     groupClickListener: ClickListener<Group>,
     teachers: List<Teacher>,
@@ -132,9 +188,10 @@ fun localGroupsAndTeachers(
 ) {
     Column(
         modifier = Modifier
+            .fillMaxSize()
             .verticalScroll(rememberScrollState())
-            .padding(bottom = 8.dp)
     ) {
+        Spacer(Modifier.padding(4.dp))
         ContentWithHint(
             contentName = stringResource(R.string.groups),
             needHint = levelsToGroups.isEmpty(),
@@ -147,7 +204,7 @@ fun localGroupsAndTeachers(
                 )
             }
         )
-        Spacer(Modifier.padding(8.dp))
+        Spacer(Modifier.padding(4.dp))
         ContentWithHint(
             contentName = stringResource(R.string.teachers),
             needHint = teachers.isEmpty(),
@@ -170,13 +227,14 @@ fun ContentWithHint(
     hint: String,
     content: @Composable () -> Unit
 ) {
-    ScheduleTypeTitle(contentName)
-    if (needHint) {
-        MessageText(
-            Modifier.padding(16.dp),
-            text = hint)
-    } else {
-        Box(Modifier.padding(8.dp)) {
+    Column(modifier = Modifier.padding(horizontal = 8.dp, vertical = 8.dp)) {
+        ScheduleTypeTitle(text = contentName, paddingValues = PaddingValues(0.dp))
+        if (needHint) {
+            MessageText(
+                modifier = Modifier.fillMaxWidth().padding(vertical = 8.dp),
+                text = hint
+            )
+        } else {
             content()
         }
     }
@@ -205,26 +263,17 @@ fun AddItemFAB(
 }
 
 @Composable
-fun ScheduleTypeTitle(text: String) {
-    Card(
+fun ScheduleTypeTitle(text: String, paddingValues: PaddingValues = PaddingValues(16.dp)) {
+    Text(
+        text = text,
+        style = MaterialTheme.typography.bodyLarge,
+        fontWeight = FontWeight.Bold,
+        color = MaterialTheme.colorScheme.primary,
+        textAlign = TextAlign.Center,
         modifier = Modifier
-            .background(
-                color = MaterialTheme.colorScheme.secondary,
-            )
-            .padding(horizontal = 16.dp),
-        colors = CardDefaults.elevatedCardColors(
-            containerColor = MaterialTheme.colorScheme.secondary
-        ),
-    ) {
-        Text(
-            text = text,
-            style = MaterialTheme.typography.titleLarge,
-            color = MaterialTheme.colorScheme.onSecondary,
-            modifier = Modifier
-                .padding(horizontal = 4.dp, vertical = 4.dp)
-                .fillMaxWidth()
-        )
-    }
+            .padding(paddingValues)
+            .fillMaxWidth()
+    )
 }
 
 @Composable
@@ -234,7 +283,7 @@ fun LocalTeachersList(
     clickListener: ClickListener<Teacher>,
 ) {
     Column(
-        modifier = modifier.padding(4.dp)
+        modifier = modifier.padding(top = 8.dp)
     ) {
         teachersList.forEach { teacher ->
             TeacherItem(teacher = teacher, clickListener = clickListener)
@@ -252,14 +301,7 @@ fun LocalGroupsList(
         val levels = levelsToGroups.keys.toList().sorted()
         levels.forEach { level ->
             Column {
-                Text(
-                    text = stringResource(R.string.level, level),
-                    modifier = Modifier.padding(
-                        horizontal = 16.dp,
-                        vertical = 8.dp
-                    ),
-                    style = MaterialTheme.typography.titleMedium,
-                )
+                GroupsLevelTitle(level = level)
                 GroupsLevelList(
                     list = levelsToGroups[level]?.getGroups() ?: emptyList(),
                     groupsInRow = groupsInRow,
@@ -272,9 +314,7 @@ fun LocalGroupsList(
 
 @Composable
 fun MessageText(
-    modifier: Modifier = Modifier
-        .padding(4.dp)
-        .fillMaxWidth(),
+    modifier: Modifier = Modifier,
     text: String = ""
 ) {
     Text(

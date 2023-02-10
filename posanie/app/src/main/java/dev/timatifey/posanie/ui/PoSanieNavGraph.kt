@@ -9,6 +9,7 @@ import android.os.Looper
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.res.painterResource
 import androidx.core.content.ContextCompat.getSystemService
 
@@ -192,6 +193,13 @@ internal fun BottomNavigationBar(
                         contentDescription = null
                     )
                 },
+                colors = NavigationBarItemDefaults.colors(
+                    selectedIconColor = MaterialTheme.colorScheme.inverseOnSurface,
+                    selectedTextColor = MaterialTheme.colorScheme.inverseOnSurface,
+                    indicatorColor = MaterialTheme.colorScheme.primary,
+                    unselectedIconColor = MaterialTheme.colorScheme.onBackground,
+                    unselectedTextColor = MaterialTheme.colorScheme.onBackground,
+                ),
                 selected = currentDestination?.hierarchy?.any { it.route == screen.route } == true,
                 onClick = {
                     navController.navigate(screen.route) {

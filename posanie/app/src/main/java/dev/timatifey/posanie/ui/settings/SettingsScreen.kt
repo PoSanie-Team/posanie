@@ -4,23 +4,23 @@ import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
-import androidx.compose.material3.Card
-import androidx.compose.material3.CardDefaults
-import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.RadioButton
-import androidx.compose.material3.Switch
-import androidx.compose.material3.Text
+import androidx.compose.material3.*
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.shadow
 import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
+import dev.timatifey.posanie.BuildConfig
 import dev.timatifey.posanie.R
 import dev.timatifey.posanie.model.domain.AppColorScheme
 import dev.timatifey.posanie.model.domain.AppTheme
 import dev.timatifey.posanie.model.domain.Language
 
+@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun SettingsScreen(
     settingsViewModel: SettingsViewModel,
@@ -28,25 +28,37 @@ fun SettingsScreen(
 ) {
     val uiState = settingsViewModel.uiState.collectAsState().value
 
-    Column(
-        modifier = Modifier
-            .verticalScroll(rememberScrollState())
-    ) {
-        ThemeSettings(
-            selectedTheme = uiState.theme,
-            onThemeClick = { settingsViewModel.saveAndPickTheme(it) }
-        )
-        ColorSchemeSettings(
-            selectedColorScheme = uiState.colorScheme,
-            onColorSchemeClick = { settingsViewModel.saveAndPickColorScheme(it) }
-        )
-        LanguageSettings(
-            selectedLanguage = uiState.language,
-            onLanguageClick = {
-                settingsViewModel.saveAndPickLanguage(it)
-                recreateActivity()
-            }
-        )
+    Scaffold(
+        topBar = {
+            TopBar(title = stringResource(R.string.settings_title))
+        }
+    ) { paddingValues ->
+        Column(
+            modifier = Modifier
+                .padding(paddingValues)
+                .verticalScroll(rememberScrollState())
+        ) {
+            Spacer(Modifier.padding(4.dp))
+            ThemeSettings(
+                selectedTheme = uiState.theme,
+                onThemeClick = { settingsViewModel.saveAndPickTheme(it) }
+            )
+            Spacer(Modifier.padding(4.dp))
+            ColorSchemeSettings(
+                selectedColorScheme = uiState.colorScheme,
+                onColorSchemeClick = { settingsViewModel.saveAndPickColorScheme(it) }
+            )
+            Spacer(Modifier.padding(4.dp))
+            LanguageSettings(
+                selectedLanguage = uiState.language,
+                onLanguageClick = {
+                    settingsViewModel.saveAndPickLanguage(it)
+                    recreateActivity()
+                }
+            )
+            Spacer(Modifier.padding(16.dp))
+            AppVersionLabel()
+        }
     }
 }
 
@@ -206,23 +218,47 @@ fun SettingsOption(
 
 @Composable
 fun SettingsTitle(text: String) {
-    Card(
+    Text(
+        text = text,
+        style = MaterialTheme.typography.bodyLarge,
+        fontWeight = FontWeight.Bold,
+        color = MaterialTheme.colorScheme.primary,
+        textAlign = TextAlign.Center,
         modifier = Modifier
-            .background(
-                color = MaterialTheme.colorScheme.secondary,
+            .padding(horizontal = 16.dp, vertical = 4.dp)
+            .fillMaxWidth()
+    )
+}
+
+@OptIn(ExperimentalMaterial3Api::class)
+@Composable
+fun TopBar(
+    title: String
+) {
+    SmallTopAppBar(
+        modifier = Modifier.shadow(elevation = 8.dp),
+        title = {
+            Text(
+                text = title,
+                style = MaterialTheme.typography.titleMedium
             )
-            .padding(horizontal = 16.dp),
-        colors = CardDefaults.elevatedCardColors(
-            containerColor = MaterialTheme.colorScheme.secondary
-        ),
-    ) {
-        Text(
-            text = text,
-            style = MaterialTheme.typography.titleLarge,
-            color = MaterialTheme.colorScheme.onSecondary,
-            modifier = Modifier
-                .padding(horizontal = 4.dp, vertical = 4.dp)
-                .fillMaxWidth()
-        )
-    }
+        }
+    )
+}
+
+@Composable
+fun AppVersionLabel() {
+    val appName = stringResource(R.string.app_name)
+    val versionName = BuildConfig.VERSION_NAME
+    val text = "$appName: $versionName"
+    Text(
+        text = text,
+        style = MaterialTheme.typography.bodyMedium,
+        fontWeight = FontWeight.Normal,
+        color = MaterialTheme.colorScheme.onSurfaceVariant,
+        textAlign = TextAlign.Center,
+        modifier = Modifier
+            .padding(horizontal = 16.dp, vertical = 8.dp)
+            .fillMaxWidth()
+    )
 }

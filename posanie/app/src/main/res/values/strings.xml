@@ -25,6 +25,7 @@
     <string name="distance">Distance</string>
 
     // Settings
+    <string name="settings_title">Settings</string>
     <string name="theme">Theme</string>
     <string name="system_theme">System</string>
     <string name="light_theme">Light</string>
@@ -38,16 +39,17 @@
     <string name="language">Language</string>
 
     // Picker
+    <string name="local_screen_title">Local groups and teachers</string>
     <string name="faculties">Faculties</string>
     <string name="no_faculties">No faculties found.</string>
     <string name="no_groups">No groups found.</string>
     <string name="level">%1$d year</string>
     <string name="groups">Groups</string>
-    <string name="no_local_groups">You have no groups. Please add.</string>
+    <string name="no_local_groups">You have no groups. Please add one.</string>
     <string name="teachers">Teachers</string>
-    <string name="no_local_teachers">You have no teachers. Please add.</string>
+    <string name="no_local_teachers">You have no teachers. Please add one.</string>
     <string name="schedule_type_title">"What do you want to add?"</string>
-    <string name="no_teachers_found">Can\'t find any teachers. Please try another search query.</string>
+    <string name="no_teachers_found">Cannot find any teachers. Please try another search query.</string>
     <string name="teacher_search_prompt">Type teacher name</string>
     <string name="faculty_search_prompt">Type faculty name</string>
 
@@ -57,13 +59,13 @@
 
     <string name="arrow_back_description">Button to go back</string>
     <string name="search_button_description">Search button</string>
-    <string name="close_search_button_description">Stop searching</string>
+    <string name="close_search_button_description">Stop searching button</string>
     <string name="add_item_button_description">Button to add new item</string>
 
     // Scheduler
     <string name="odd_week">odd</string>
     <string name="even_week">even</string>
-    <string name="no_schedule_selected">Please select group or teacher first.</string>
+    <string name="no_schedule_selected">Please select a group or a teacher first.</string>
     <string name="no_lessons_today">No lessons today.</string>
 
     <string name="monday_short_name">MO</string>
@@ -87,8 +89,8 @@
     <string name="november_full_name">November</string>
     <string name="december_full_name">December</string>
 
-    <string name="cannot_load_new_week_message">Can\'t load new week (no internet connection)</string>
-    <string name="cannot_update_schedule_message">Can\'t update schedule (no internet connection)</string>
+    <string name="cannot_load_new_week_message">Cannot load new week (no internet connection)</string>
+    <string name="cannot_update_schedule_message">Cannot update schedule (no internet connection)</string>
 
     <string name="no_lessons_error_message">Cannot load today lessons.</string>
 
