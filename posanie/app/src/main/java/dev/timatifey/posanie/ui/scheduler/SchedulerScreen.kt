@@ -43,6 +43,8 @@ import androidx.compose.ui.input.pointer.PointerInputScope
 import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.platform.LocalConfiguration
 import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.semantics.contentDescription
+import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.text.font.FontStyle
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
@@ -421,26 +423,36 @@ fun LessonCard(lesson: Lesson) {
         shape = RoundedCornerShape(8.dp),
     ) {
         Column(modifier = Modifier.padding(horizontal = 12.dp, vertical = 8.dp)) {
+            val nameTextDescription = stringResource(R.string.lesson_name_text_description)
+            val typeTextDescription = stringResource(R.string.lesson_type_text_description)
+            val placeTextDescription = stringResource(R.string.lesson_place_text_description)
+            val teacherTextDescription = stringResource(R.string.lesson_teacher_text_description)
             Text(
                 text = lesson.name,
                 style = MaterialTheme.typography.bodyLarge,
                 color = MaterialTheme.colorScheme.primary,
                 fontWeight = FontWeight.Bold,
-                modifier = Modifier.padding(vertical = 4.dp)
+                modifier = Modifier.padding(vertical = 4.dp).semantics {
+                    contentDescription = nameTextDescription
+                }
             )
             Text(
                 text = lesson.type,
                 style = MaterialTheme.typography.bodyMedium,
                 color = MaterialTheme.colorScheme.onSurface,
                 fontWeight = FontWeight.Normal,
-                modifier = Modifier.padding(vertical = 2.dp)
+                modifier = Modifier.padding(vertical = 2.dp).semantics {
+                    contentDescription = typeTextDescription
+                }
             )
             Text(
                 text = lesson.place,
                 style = MaterialTheme.typography.bodySmall,
                 color = MaterialTheme.colorScheme.onSurfaceVariant,
                 fontWeight = FontWeight.Normal,
-                modifier = Modifier.padding(vertical = 2.dp)
+                modifier = Modifier.padding(vertical = 2.dp).semantics {
+                    contentDescription = placeTextDescription
+                }
             )
             if (lesson.teacher.isNotEmpty()) {
                 Text(
@@ -449,7 +461,9 @@ fun LessonCard(lesson: Lesson) {
                     color = MaterialTheme.colorScheme.onSurfaceVariant,
                     fontWeight = FontWeight.Normal,
                     fontStyle = FontStyle.Italic,
-                    modifier = Modifier.padding(vertical = 2.dp)
+                    modifier = Modifier.padding(vertical = 2.dp).semantics {
+                        contentDescription = teacherTextDescription
+                    }
                 )
             }
         }

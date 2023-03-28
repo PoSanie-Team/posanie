@@ -1,13 +1,98 @@
 package dev.timatifey.posanie
 
 import dev.timatifey.posanie.model.Result
+import dev.timatifey.posanie.model.domain.Lesson
+import dev.timatifey.posanie.ui.scheduler.WeekDay
 import dev.timatifey.posanie.usecases.DayToLessonsMap
 import dev.timatifey.posanie.usecases.LessonsUseCase
 import java.util.*
 
 class FakeLessonsUseCase: LessonsUseCase {
     override suspend fun getLessonsByGroupId(groupId: Long): Result<DayToLessonsMap> {
-        TODO("Not yet implemented")
+        val result = mutableMapOf<WeekDay, List<Lesson>>()
+        var currentId = 0L
+        result[WeekDay.MONDAY] = listOf(
+            Lesson(
+                id = currentId++,
+                start = "12:00",
+                end = "13:40",
+                name = "Тестирование программного обеспечения",
+                type = "Лекции",
+                place = "3-й учебный корпус, 401",
+                teacher = "Ерошкин Александр Владимирович",
+                lmsUrl = "https://dl.spbstu.ru//course/view.php?id=4744"
+            )
+        )
+        result[WeekDay.TUESDAY] = listOf(
+            Lesson(
+                id = currentId++,
+                start = "10:00",
+                end = "11:40",
+                name = "Разработка сетевых приложений",
+                type = "Лабораторные",
+                place = "3-й учебный корпус, 303",
+                teacher = "",
+                lmsUrl = "https://dl.spbstu.ru//course/view.php?id=4744"
+            ),
+            Lesson(
+                id = currentId++,
+                start = "13:00",
+                end = "15:40",
+                name = "Разработка сетевых приложений",
+                type = "Лабораторные",
+                place = "3-й учебный корпус, 402",
+                teacher = "Новопашенный Андрей Гелиевич",
+                lmsUrl = "https://dl.spbstu.ru//course/view.php?id=4744"
+            )
+        )
+        result[WeekDay.WEDNESDAY] = listOf(
+            Lesson(
+                id = currentId++,
+                start = "8:30",
+                end = "17:20",
+                name = "Военная подготовка",
+                type = "Практика",
+                place = "Военная кафедра",
+                teacher = "",
+                lmsUrl = "https://dl.spbstu.ru//course/view.php?id=4744"
+            )
+        )
+        result[WeekDay.THURSDAY] = listOf(
+            Lesson(
+                id = currentId++,
+                start = "14:00",
+                end = "15:40",
+                name = "Системный анализ и принятие решений",
+                type = "Лекции",
+                place = "11-й учебный корпус, 143",
+                teacher = "Сиднев Александр Георгиевич",
+                lmsUrl = "https://dl.spbstu.ru//course/view.php?id=4744"
+            ),
+            Lesson(
+                id = currentId++,
+                start = "16:00",
+                end = "17:40",
+                name = "Защита информации",
+                type = "Лекции",
+                place = "3-й учебный корпус, 401",
+                teacher = "Новопашенный Андрей Гелиевич",
+                lmsUrl = "https://dl.spbstu.ru//course/view.php?id=4744"
+            )
+        )
+        result[WeekDay.FRIDAY] = emptyList()
+        result[WeekDay.SATURDAY] = listOf(
+            Lesson(
+                id = currentId++,
+                start = "12:00",
+                end = "14:40",
+                name = "Системный анализ и принятие решений",
+                type = "Практика",
+                place = "3-й учебный корпус, 401",
+                teacher = "Сабонис Сергей Станиславович",
+                lmsUrl = "https://dl.spbstu.ru//course/view.php?id=4744"
+            )
+        )
+        return Result.Success(result)
     }
 
     override suspend fun getLessonsByTeacherId(teacherId: Long): Result<DayToLessonsMap> {

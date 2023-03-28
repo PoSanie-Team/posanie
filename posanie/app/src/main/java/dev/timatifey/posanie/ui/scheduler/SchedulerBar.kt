@@ -149,11 +149,12 @@ fun WeekDate(
 ) {
     val month = date.get(Calendar.MONTH)
     val year = date.get(Calendar.YEAR)
+    val monthAndYearTextDescription = stringResource(R.string.month_and_year_text_description)
     val week =
         if (oddWeek) stringResource(R.string.odd_week) else stringResource(R.string.even_week)
     Column(modifier = modifier, horizontalAlignment = Alignment.CenterHorizontally) {
         Text(
-            modifier = Modifier.semantics { contentDescription = "Scheduler month and year" },
+            modifier = Modifier.semantics { contentDescription = monthAndYearTextDescription },
             text = "${stringResource(Month.getByOrdinal(month).fullNameId)} $year",
             textAlign = TextAlign.Center
         )
