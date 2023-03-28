@@ -88,6 +88,7 @@
     <string name="next_week_button_description">Кнопка для перехода на следующую неделю</string>
     <string name="previous_month_button_description">Кнопка для перехода на предыдущий месяц</string>
     <string name="next_month_button_description">Кнопка для перехода на следующий месяц</string>
+    <string name="month_and_year_text_description">Месяц и год расписания</string>
 
     // Popup
     <string name="ok">ОК</string>
