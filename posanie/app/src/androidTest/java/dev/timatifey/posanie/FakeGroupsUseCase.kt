@@ -11,7 +11,14 @@ class FakeGroupsUseCase: GroupsUseCase {
     }
 
     override suspend fun getPickedGroup(): Result<Group> {
-        return Result.Error(Exception("No picked groups"))
+        return Result.Success(Group(
+            id = 35469,
+            title = "3530901/90202",
+            kindId = 0,
+            typeId = "common",
+            level = 4,
+            isPicked = true
+        ))
     }
 
     override suspend fun fetchGroupsBy(facultyId: Long): Result<Map<Int, GroupsLevel>> {

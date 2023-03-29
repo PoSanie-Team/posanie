@@ -89,10 +89,10 @@
     <string name="previous_month_button_description">Кнопка для перехода на предыдущий месяц</string>
     <string name="next_month_button_description">Кнопка для перехода на следующий месяц</string>
     <string name="month_and_year_text_description">Месяц и год расписания</string>
-    <string name="lesson_name_text_description">Название предмета</string>
-    <string name="lesson_type_text_description">Тип занятия</string>
-    <string name="lesson_place_text_description">Место проведения занятия</string>
-    <string name="lesson_teacher_text_description">Преподаватель занятия</string>
+    <string name="lesson_name_text_description">Название предмета (id = %d)</string>
+    <string name="lesson_type_text_description">Тип занятия (id = %d)</string>
+    <string name="lesson_place_text_description">Место проведения занятия (id = %d)</string>
+    <string name="lesson_teacher_text_description">Преподаватель занятия (id = %d)</string>
 
     // Popup
     <string name="ok">ОК</string>

@@ -9,6 +9,74 @@ import java.util.*
 
 class FakeLessonsUseCase: LessonsUseCase {
     override suspend fun getLessonsByGroupId(groupId: Long): Result<DayToLessonsMap> {
+        return Result.Success(getFakeGroupLessons())
+    }
+
+    override suspend fun getLessonsByTeacherId(teacherId: Long): Result<DayToLessonsMap> {
+        return Result.Success(getFakeTeacherLessons())
+    }
+
+    override suspend fun saveGroupLessons(
+        groupId: Long,
+        mondayDate: Calendar,
+        weekIsOdd: Boolean,
+        dayToLessonsMap: DayToLessonsMap
+    ): Result<Boolean> {
+        return Result.Success(true)
+    }
+
+    override suspend fun saveTeacherLessons(
+        teacherId: Long,
+        mondayDate: Calendar,
+        weekIsOdd: Boolean,
+        dayToLessonsMap: DayToLessonsMap
+    ): Result<Boolean> {
+        return Result.Success(true)
+    }
+
+    override suspend fun getGroupSchedulerWeekOddness(groupId: Long): Result<Boolean> {
+        return Result.Success(true)
+    }
+
+    override suspend fun getTeacherSchedulerWeekOddness(teacherId: Long): Result<Boolean> {
+        return Result.Success(true)
+    }
+
+    override suspend fun getGroupSchedulerWeekMonday(groupId: Long): Result<Calendar> {
+        val result = Calendar.getInstance()
+        result.set(2023, 2, 27)
+        return Result.Success(result)
+    }
+
+    override suspend fun getTeacherSchedulerWeekMonday(teacherId: Long): Result<Calendar> {
+        val result = Calendar.getInstance()
+        result.set(2023, 2, 27)
+        return Result.Success(result)
+    }
+
+    override suspend fun fetchLessonsByGroupId(
+        groupId: Long,
+        date: String
+    ): Result<DayToLessonsMap> {
+        return Result.Success(getFakeGroupLessons())
+    }
+
+    override suspend fun fetchLessonsByTeacherId(
+        teacherId: Long,
+        date: String
+    ): Result<DayToLessonsMap> {
+        return Result.Success(getFakeTeacherLessons())
+    }
+
+    override suspend fun fetchWeekOddnessByGroupId(groupId: Long, date: String): Result<Boolean> {
+        return Result.Success(true)
+    }
+
+    override suspend fun fetchWeekOddnessByTeacherId(groupId: Long, date: String): Result<Boolean> {
+        return Result.Success(true)
+    }
+
+    private fun getFakeGroupLessons(): DayToLessonsMap {
         val result = mutableMapOf<WeekDay, List<Lesson>>()
         var currentId = 0L
         result[WeekDay.MONDAY] = listOf(
@@ -92,66 +160,44 @@ class FakeLessonsUseCase: LessonsUseCase {
                 lmsUrl = "https://dl.spbstu.ru//course/view.php?id=4744"
             )
         )
-        return Result.Success(result)
+        return result
     }
 
-    override suspend fun getLessonsByTeacherId(teacherId: Long): Result<DayToLessonsMap> {
-        TODO("Not yet implemented")
-    }
-
-    override suspend fun saveGroupLessons(
-        groupId: Long,
-        mondayDate: Calendar,
-        weekIsOdd: Boolean,
-        dayToLessonsMap: DayToLessonsMap
-    ): Result<Boolean> {
-        TODO("Not yet implemented")
-    }
-
-    override suspend fun saveTeacherLessons(
-        teacherId: Long,
-        mondayDate: Calendar,
-        weekIsOdd: Boolean,
-        dayToLessonsMap: DayToLessonsMap
-    ): Result<Boolean> {
-        TODO("Not yet implemented")
-    }
-
-    override suspend fun getGroupSchedulerWeekOddness(groupId: Long): Result<Boolean> {
-        TODO("Not yet implemented")
-    }
-
-    override suspend fun getTeacherSchedulerWeekOddness(teacherId: Long): Result<Boolean> {
-        TODO("Not yet implemented")
-    }
-
-    override suspend fun getGroupSchedulerWeekMonday(groupId: Long): Result<Calendar> {
-        TODO("Not yet implemented")
-    }
-
-    override suspend fun getTeacherSchedulerWeekMonday(teacherId: Long): Result<Calendar> {
-        TODO("Not yet implemented")
-    }
-
-    override suspend fun fetchLessonsByGroupId(
-        groupId: Long,
-        date: String
-    ): Result<DayToLessonsMap> {
-        TODO("Not yet implemented")
-    }
-
-    override suspend fun fetchLessonsByTeacherId(
-        teacherId: Long,
-        date: String
-    ): Result<DayToLessonsMap> {
-        TODO("Not yet implemented")
-    }
-
-    override suspend fun fetchWeekOddnessByGroupId(groupId: Long, date: String): Result<Boolean> {
-        TODO("Not yet implemented")
-    }
-
-    override suspend fun fetchWeekOddnessByTeacherId(groupId: Long, date: String): Result<Boolean> {
-        TODO("Not yet implemented")
+    private fun getFakeTeacherLessons(): DayToLessonsMap {
+        val result = mutableMapOf<WeekDay, List<Lesson>>()
+        var currentId = 0L
+        result[WeekDay.SATURDAY] = listOf(
+            Lesson(
+                id = currentId++,
+                start = "09:00",
+                end = "11:40",
+                name = "Системный анализ и принятие решений",
+                type = "Практика",
+                place = "3-й учебный корпус, 401",
+                teacher = "Сабонис Сергей Станиславович",
+                lmsUrl = "https://dl.spbstu.ru//course/view.php?id=4744"
+            ),
+            Lesson(
+                id = currentId++,
+                start = "12:00",
+                end = "14:40",
+                name = "Системный анализ и принятие решений",
+                type = "Практика",
+                place = "3-й учебный корпус, 401",
+                teacher = "Сабонис Сергей Станиславович",
+                lmsUrl = "https://dl.spbstu.ru//course/view.php?id=4744"
+            ),
+            Lesson(
+                id = currentId++,
+                start = "15:00",
+                end = "16:40",
+                name = "Системный анализ и принятие решений",
+                type = "Практика",
+                place = "3-й учебный корпус, 401",
+                teacher = "Сабонис Сергей Станиславович",
+                lmsUrl = "https://dl.spbstu.ru//course/view.php?id=4744"
+            )
+        )
+        return result
     }
 }

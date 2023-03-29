@@ -2,6 +2,7 @@ package dev.timatifey.posanie
 
 import android.content.Context
 import androidx.compose.runtime.Composable
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.test.assertIsDisplayed
 import androidx.compose.ui.test.junit4.createComposeRule
 import androidx.compose.ui.test.onNodeWithContentDescription
@@ -116,14 +117,37 @@ class SchedulerTest {
     fun checkSchedulerScreenOnSunday() {
         val appContext = InstrumentationRegistry.getInstrumentation().targetContext.applicationContext
         setContent(appContext)
+
         composeTestRule.onNodeWithContentDescription(
             appContext.getString(R.string.month_and_year_text_description)
+        ).assertIsDisplayed()
+    }
+
+    @Test
+    fun checkLessonCard() {
+        val appContext = InstrumentationRegistry.getInstrumentation().targetContext.applicationContext
+        setContent(appContext)
+
+        val lessonId = 0
+        composeTestRule.onNodeWithContentDescription(
+            appContext.getString(R.string.lesson_name_text_description, lessonId)
+        ).assertIsDisplayed()
+        composeTestRule.onNodeWithContentDescription(
+            appContext.getString(R.string.lesson_type_text_description, lessonId)
+        ).assertIsDisplayed()
+        composeTestRule.onNodeWithContentDescription(
+            appContext.getString(R.string.lesson_place_text_description, lessonId)
+        ).assertIsDisplayed()
+        composeTestRule.onNodeWithContentDescription(
+            appContext.getString(R.string.lesson_teacher_text_description, lessonId)
         ).assertIsDisplayed()
     }
 
     private fun setContent(appContext: Context) {
         composeTestRule.setContent {
             val viewModel = createViewModel()
+            val mondayDate = createMondayDate()
+            viewModel.selectDate(mondayDate)
             PoSanieTheme(appTheme = AppTheme.DEFAULT, appColorScheme = AppColorScheme.DEFAULT) {
                 SchedulerScreen(context = appContext, schedulerViewModel = viewModel) { _, _ -> }
             }
@@ -137,6 +161,12 @@ class SchedulerTest {
         val sundayDate = Calendar.getInstance()
         sundayDate.set(2023, 2, 26)
         return sundayDate
+    }
+
+    private fun createMondayDate(): Calendar {
+        val mondayDate = Calendar.getInstance()
+        mondayDate.set(2023, 2, 27)
+        return mondayDate
     }
 
 }

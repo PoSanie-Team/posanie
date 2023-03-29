@@ -423,10 +423,10 @@ fun LessonCard(lesson: Lesson) {
         shape = RoundedCornerShape(8.dp),
     ) {
         Column(modifier = Modifier.padding(horizontal = 12.dp, vertical = 8.dp)) {
-            val nameTextDescription = stringResource(R.string.lesson_name_text_description)
-            val typeTextDescription = stringResource(R.string.lesson_type_text_description)
-            val placeTextDescription = stringResource(R.string.lesson_place_text_description)
-            val teacherTextDescription = stringResource(R.string.lesson_teacher_text_description)
+            val nameTextDescription = stringResource(R.string.lesson_name_text_description, lesson.id)
+            val typeTextDescription = stringResource(R.string.lesson_type_text_description, lesson.id)
+            val placeTextDescription = stringResource(R.string.lesson_place_text_description, lesson.id)
+            val teacherTextDescription = stringResource(R.string.lesson_teacher_text_description, lesson.id)
             Text(
                 text = lesson.name,
                 style = MaterialTheme.typography.bodyLarge,
