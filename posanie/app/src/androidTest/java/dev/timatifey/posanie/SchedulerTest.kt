@@ -19,7 +19,7 @@ import org.junit.Rule
 import org.junit.Test
 import org.junit.runner.RunWith
 import java.lang.Thread.sleep
-import java.util.Calendar
+import java.util.*
 
 @RunWith(AndroidJUnit4::class)
 class SchedulerTest {

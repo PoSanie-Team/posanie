@@ -2,7 +2,6 @@ package dev.timatifey.posanie.fakes
 
 import dev.timatifey.posanie.model.Result
 import dev.timatifey.posanie.model.domain.Group
-import dev.timatifey.posanie.model.domain.GroupsLevel
 import dev.timatifey.posanie.usecases.GroupsUseCase
 import org.mockito.kotlin.doReturn
 import org.mockito.kotlin.mock
