@@ -15,6 +15,7 @@ import dev.timatifey.posanie.ui.scheduler.SchedulerScreen
 import dev.timatifey.posanie.ui.scheduler.SchedulerViewModel
 import dev.timatifey.posanie.ui.scheduler.WeekDay
 import dev.timatifey.posanie.ui.theme.PoSanieTheme
+import junit.framework.Assert.assertEquals
 import org.junit.Rule
 import org.junit.Test
 import org.junit.runner.RunWith
@@ -33,7 +34,7 @@ class SchedulerTest {
 
         val workingWeekDay = WeekDay.getWorkDayByOrdinal(sundayOrdinal)
 
-        assert(workingWeekDay == WeekDay.SATURDAY)
+        assertEquals(workingWeekDay, WeekDay.SATURDAY)
     }
 
     @Test
@@ -43,13 +44,12 @@ class SchedulerTest {
 
         viewModel.selectDate(sundayDate)
         sleep(500)
-
         val mondayDate = viewModel.uiState.value.mondayDate
-        assert(mondayDate.get(Calendar.DAY_OF_WEEK) == Calendar.MONDAY)
         val selectedDate = viewModel.uiState.value.selectedDate
-        assert(selectedDate.get(Calendar.DAY_OF_WEEK) == Calendar.SATURDAY)
 
-        assert(selectedDate.get(Calendar.DAY_OF_MONTH) == sundayDate.get(Calendar.DAY_OF_MONTH) - 1)
+        assertEquals(mondayDate.get(Calendar.DAY_OF_WEEK), Calendar.MONDAY)
+        assertEquals(selectedDate.get(Calendar.DAY_OF_WEEK), Calendar.SATURDAY)
+        assertEquals(selectedDate.get(Calendar.DAY_OF_MONTH), sundayDate.get(Calendar.DAY_OF_MONTH) - 1)
     }
 
     @Test
@@ -61,10 +61,10 @@ class SchedulerTest {
         sleep(500)
         viewModel.selectPreviousWeekDay()
         sleep(500)
-
         val selectedDate = viewModel.uiState.value.selectedDate
-        assert(selectedDate.get(Calendar.DAY_OF_WEEK) == Calendar.FRIDAY)
-        assert(selectedDate.get(Calendar.DAY_OF_MONTH) == sundayDate.get(Calendar.DAY_OF_MONTH) - 2)
+
+        assertEquals(selectedDate.get(Calendar.DAY_OF_WEEK), Calendar.FRIDAY)
+        assertEquals(selectedDate.get(Calendar.DAY_OF_MONTH), sundayDate.get(Calendar.DAY_OF_MONTH) - 2)
     }
 
     @Test
@@ -76,10 +76,10 @@ class SchedulerTest {
         sleep(500)
         viewModel.selectNextWeekDay()
         sleep(500)
-
         val selectedDate = viewModel.uiState.value.selectedDate
-        assert(selectedDate.get(Calendar.DAY_OF_WEEK) == Calendar.MONDAY)
-        assert(selectedDate.get(Calendar.DAY_OF_MONTH) == sundayDate.get(Calendar.DAY_OF_MONTH) + 1)
+
+        assertEquals(selectedDate.get(Calendar.DAY_OF_WEEK), Calendar.MONDAY)
+        assertEquals(selectedDate.get(Calendar.DAY_OF_MONTH), sundayDate.get(Calendar.DAY_OF_MONTH) + 1)
     }
 
     @Test
@@ -91,10 +91,10 @@ class SchedulerTest {
         sleep(500)
         viewModel.setPreviousMonday()
         sleep(500)
-
         val selectedDate = viewModel.uiState.value.selectedDate
-        assert(selectedDate.get(Calendar.DAY_OF_WEEK) == Calendar.MONDAY)
-        assert(selectedDate.get(Calendar.DAY_OF_MONTH) == sundayDate.get(Calendar.DAY_OF_MONTH) - 13)
+
+        assertEquals(selectedDate.get(Calendar.DAY_OF_WEEK), Calendar.MONDAY)
+        assertEquals(selectedDate.get(Calendar.DAY_OF_MONTH), sundayDate.get(Calendar.DAY_OF_MONTH) - 13)
     }
 
     @Test
@@ -106,10 +106,10 @@ class SchedulerTest {
         sleep(500)
         viewModel.setNextMonday()
         sleep(500)
-
         val selectedDate = viewModel.uiState.value.selectedDate
-        assert(selectedDate.get(Calendar.DAY_OF_WEEK) == Calendar.MONDAY)
-        assert(selectedDate.get(Calendar.DAY_OF_MONTH) == sundayDate.get(Calendar.DAY_OF_MONTH) + 1)
+
+        assertEquals(selectedDate.get(Calendar.DAY_OF_WEEK), Calendar.MONDAY)
+        assertEquals(selectedDate.get(Calendar.DAY_OF_MONTH), sundayDate.get(Calendar.DAY_OF_MONTH) + 1)
     }
 
     @Test
