@@ -1,23 +1,20 @@
 package dev.timatifey.posanie
 
 import android.content.Context
-import androidx.compose.runtime.Composable
-import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.test.assertIsDisplayed
 import androidx.compose.ui.test.junit4.createComposeRule
 import androidx.compose.ui.test.onNodeWithContentDescription
-import androidx.compose.ui.test.onNodeWithText
 import androidx.test.ext.junit.runners.AndroidJUnit4
 import androidx.test.platform.app.InstrumentationRegistry
+import dev.timatifey.posanie.fakes.GroupsUseCaseMockFactory
+import dev.timatifey.posanie.fakes.LessonsUseCaseMockFactory
+import dev.timatifey.posanie.fakes.TeachersUseCaseMockFactory
 import dev.timatifey.posanie.model.domain.AppColorScheme
 import dev.timatifey.posanie.model.domain.AppTheme
 import dev.timatifey.posanie.ui.scheduler.SchedulerScreen
 import dev.timatifey.posanie.ui.scheduler.SchedulerViewModel
 import dev.timatifey.posanie.ui.scheduler.WeekDay
-import dev.timatifey.posanie.ui.settings.SettingsScreen
-import dev.timatifey.posanie.ui.settings.SettingsViewModel
 import dev.timatifey.posanie.ui.theme.PoSanieTheme
-import kotlinx.coroutines.delay
 import org.junit.Rule
 import org.junit.Test
 import org.junit.runner.RunWith
@@ -33,15 +30,17 @@ class SchedulerTest {
     @Test
     fun checkWorkDayForSunday() {
         val sundayOrdinal = 1
+
         val workingWeekDay = WeekDay.getWorkDayByOrdinal(sundayOrdinal)
+
         assert(workingWeekDay == WeekDay.SATURDAY)
     }
 
     @Test
     fun checkSunday() {
         val sundayDate = createSundayDate()
-
         val viewModel = createViewModel()
+
         viewModel.selectDate(sundayDate)
         sleep(500)
 
@@ -56,8 +55,8 @@ class SchedulerTest {
     @Test
     fun checkPreviousDayOnSunday() {
         val sundayDate = createSundayDate()
-
         val viewModel = createViewModel()
+
         viewModel.selectDate(sundayDate)
         sleep(500)
         viewModel.selectPreviousWeekDay()
@@ -71,8 +70,8 @@ class SchedulerTest {
     @Test
     fun checkNextDayOnSunday() {
         val sundayDate = createSundayDate()
-
         val viewModel = createViewModel()
+
         viewModel.selectDate(sundayDate)
         sleep(500)
         viewModel.selectNextWeekDay()
@@ -86,8 +85,8 @@ class SchedulerTest {
     @Test
     fun checkPreviousWeekOnSunday() {
         val sundayDate = createSundayDate()
-
         val viewModel = createViewModel()
+
         viewModel.selectDate(sundayDate)
         sleep(500)
         viewModel.setPreviousMonday()
@@ -101,8 +100,8 @@ class SchedulerTest {
     @Test
     fun checkNextWeekOnSunday() {
         val sundayDate = createSundayDate()
-
         val viewModel = createViewModel()
+
         viewModel.selectDate(sundayDate)
         sleep(500)
         viewModel.setNextMonday()
@@ -154,8 +153,11 @@ class SchedulerTest {
         }
     }
 
-    private fun createViewModel() =
-        SchedulerViewModel(FakeLessonsUseCase(), FakeGroupsUseCase(), FakeTeacherUseCase())
+    private fun createViewModel() = SchedulerViewModel(
+        LessonsUseCaseMockFactory.create(),
+        GroupsUseCaseMockFactory.create(),
+        TeachersUseCaseMockFactory.create()
+    )
 
     private fun createSundayDate(): Calendar {
         val sundayDate = Calendar.getInstance()

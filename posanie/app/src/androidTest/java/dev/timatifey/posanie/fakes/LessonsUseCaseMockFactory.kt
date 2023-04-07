@@ -1,79 +1,41 @@
-package dev.timatifey.posanie
+package dev.timatifey.posanie.fakes
 
 import dev.timatifey.posanie.model.Result
 import dev.timatifey.posanie.model.domain.Lesson
 import dev.timatifey.posanie.ui.scheduler.WeekDay
 import dev.timatifey.posanie.usecases.DayToLessonsMap
 import dev.timatifey.posanie.usecases.LessonsUseCase
+import org.mockito.ArgumentMatchers.*
+import org.mockito.kotlin.any
+import org.mockito.kotlin.doReturn
+import org.mockito.kotlin.mock
 import java.util.*
 
-class FakeLessonsUseCase: LessonsUseCase {
-    override suspend fun getLessonsByGroupId(groupId: Long): Result<DayToLessonsMap> {
-        return Result.Success(getFakeGroupLessons())
+object LessonsUseCaseMockFactory {
+
+    fun create(): LessonsUseCase {
+        val lessonsUseCaseMock = mock<LessonsUseCase> {
+            onBlocking { getLessonsByGroupId(anyLong()) } doReturn Result.Success(getFakeGroupLessons())
+            onBlocking { getLessonsByTeacherId(anyLong()) } doReturn Result.Success(getFakeTeacherLessons())
+            onBlocking { saveGroupLessons(anyLong(), any(), anyBoolean(), any()) } doReturn Result.Success(true)
+            onBlocking { saveTeacherLessons(anyLong(), any(), anyBoolean(), any()) } doReturn Result.Success(true)
+            onBlocking { getGroupSchedulerWeekOddness(anyLong()) } doReturn Result.Success(true)
+            onBlocking { getTeacherSchedulerWeekOddness(anyLong()) } doReturn Result.Success(true)
+            onBlocking { getGroupSchedulerWeekMonday(anyLong()) } doReturn Result.Success(getFakeMondayDate())
+            onBlocking { getTeacherSchedulerWeekMonday(anyLong()) } doReturn Result.Success(getFakeMondayDate())
+            onBlocking { fetchLessonsByGroupId(anyLong(), anyString()) } doReturn Result.Success(getFakeGroupLessons())
+            onBlocking { fetchLessonsByTeacherId(anyLong(), anyString()) } doReturn Result.Success(getFakeTeacherLessons())
+            onBlocking { fetchWeekOddnessByGroupId(anyLong(), anyString()) } doReturn Result.Success(true)
+            onBlocking { fetchWeekOddnessByTeacherId(anyLong(), anyString()) } doReturn Result.Success(true)
+        }
+
+        return lessonsUseCaseMock
     }
 
-    override suspend fun getLessonsByTeacherId(teacherId: Long): Result<DayToLessonsMap> {
-        return Result.Success(getFakeTeacherLessons())
-    }
-
-    override suspend fun saveGroupLessons(
-        groupId: Long,
-        mondayDate: Calendar,
-        weekIsOdd: Boolean,
-        dayToLessonsMap: DayToLessonsMap
-    ): Result<Boolean> {
-        return Result.Success(true)
-    }
-
-    override suspend fun saveTeacherLessons(
-        teacherId: Long,
-        mondayDate: Calendar,
-        weekIsOdd: Boolean,
-        dayToLessonsMap: DayToLessonsMap
-    ): Result<Boolean> {
-        return Result.Success(true)
-    }
-
-    override suspend fun getGroupSchedulerWeekOddness(groupId: Long): Result<Boolean> {
-        return Result.Success(true)
-    }
-
-    override suspend fun getTeacherSchedulerWeekOddness(teacherId: Long): Result<Boolean> {
-        return Result.Success(true)
-    }
-
-    override suspend fun getGroupSchedulerWeekMonday(groupId: Long): Result<Calendar> {
+    private fun getFakeMondayDate() : Calendar {
         val result = Calendar.getInstance()
         result.set(2023, 2, 27)
-        return Result.Success(result)
-    }
-
-    override suspend fun getTeacherSchedulerWeekMonday(teacherId: Long): Result<Calendar> {
-        val result = Calendar.getInstance()
-        result.set(2023, 2, 27)
-        return Result.Success(result)
-    }
-
-    override suspend fun fetchLessonsByGroupId(
-        groupId: Long,
-        date: String
-    ): Result<DayToLessonsMap> {
-        return Result.Success(getFakeGroupLessons())
-    }
-
-    override suspend fun fetchLessonsByTeacherId(
-        teacherId: Long,
-        date: String
-    ): Result<DayToLessonsMap> {
-        return Result.Success(getFakeTeacherLessons())
-    }
-
-    override suspend fun fetchWeekOddnessByGroupId(groupId: Long, date: String): Result<Boolean> {
-        return Result.Success(true)
-    }
-
-    override suspend fun fetchWeekOddnessByTeacherId(groupId: Long, date: String): Result<Boolean> {
-        return Result.Success(true)
+        return result
     }
 
     private fun getFakeGroupLessons(): DayToLessonsMap {

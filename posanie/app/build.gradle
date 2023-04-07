@@ -115,4 +115,9 @@ dependencies {
     androidTestImplementation "androidx.compose.ui:ui-test-junit4:$compose_version"
     debugImplementation "androidx.compose.ui:ui-tooling:$compose_version"
     debugImplementation "androidx.compose.ui:ui-test-manifest:$compose_version"
+
+    // mock
+    debugImplementation "org.mockito.kotlin:mockito-kotlin:4.1.0"
+    debugImplementation "org.mockito:mockito-android:5.2.0"
+
 }
