@@ -67,9 +67,9 @@ class SchedulerTest {
     }
 
     private fun createViewModel() = SchedulerViewModel(
-        fakes.LessonsUseCaseMockFactory.create(),
-        fakes.GroupsUseCaseMockFactory.create(),
-        fakes.TeachersUseCaseMockFactory.create()
+        LessonsUseCaseMockFactory.create(),
+        GroupsUseCaseMockFactory.create(),
+        TeachersUseCaseMockFactory.create()
     )
 
     private fun createMondayDate(): Calendar {

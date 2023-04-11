@@ -5,7 +5,6 @@ import dev.timatifey.posanie.ui.scheduler.WeekDay
 import fakes.GroupsUseCaseMockFactory
 import fakes.LessonsUseCaseMockFactory
 import fakes.TeachersUseCaseMockFactory
-import junit.framework.Assert
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.test.TestDispatcher
@@ -38,7 +37,6 @@ class SchedulerTest {
         val viewModel = createViewModel()
 
         viewModel.selectDate(sundayDate)
-        Thread.sleep(500)
         val mondayDate = viewModel.uiState.value.mondayDate
         val selectedDate = viewModel.uiState.value.selectedDate
 
@@ -56,9 +54,7 @@ class SchedulerTest {
         val viewModel = createViewModel()
 
         viewModel.selectDate(sundayDate)
-        Thread.sleep(500)
         viewModel.selectPreviousWeekDay()
-        Thread.sleep(500)
         val selectedDate = viewModel.uiState.value.selectedDate
 
         assertEquals(selectedDate.get(Calendar.DAY_OF_WEEK), Calendar.FRIDAY)
@@ -74,9 +70,7 @@ class SchedulerTest {
         val viewModel = createViewModel()
 
         viewModel.selectDate(sundayDate)
-        Thread.sleep(500)
         viewModel.selectNextWeekDay()
-        Thread.sleep(500)
         val selectedDate = viewModel.uiState.value.selectedDate
 
         assertEquals(selectedDate.get(Calendar.DAY_OF_WEEK), Calendar.MONDAY)
@@ -92,9 +86,7 @@ class SchedulerTest {
         val viewModel = createViewModel()
 
         viewModel.selectDate(sundayDate)
-        Thread.sleep(500)
         viewModel.setPreviousMonday()
-        Thread.sleep(500)
         val selectedDate = viewModel.uiState.value.selectedDate
 
         assertEquals(selectedDate.get(Calendar.DAY_OF_WEEK), Calendar.MONDAY)
@@ -110,9 +102,7 @@ class SchedulerTest {
         val viewModel = createViewModel()
 
         viewModel.selectDate(sundayDate)
-        Thread.sleep(500)
         viewModel.setNextMonday()
-        Thread.sleep(500)
         val selectedDate = viewModel.uiState.value.selectedDate
 
         assertEquals(selectedDate.get(Calendar.DAY_OF_WEEK), Calendar.MONDAY)
@@ -146,5 +136,5 @@ class SchedulerTest {
             Dispatchers.resetMain()
         }
     }
-    
+
 }
