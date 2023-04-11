@@ -118,6 +118,6 @@ dependencies {
 
     // mock
     debugImplementation "org.mockito.kotlin:mockito-kotlin:4.1.0"
-    debugImplementation "org.mockito:mockito-android:5.2.0"
-
+    testImplementation "org.jetbrains.kotlinx:kotlinx-coroutines-test:1.6.4"
+    androidTestImplementation "org.mockito:mockito-android:5.2.0"
 }

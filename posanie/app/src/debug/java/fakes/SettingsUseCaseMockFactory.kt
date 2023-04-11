@@ -1,4 +1,4 @@
-package dev.timatifey.posanie.fakes
+package fakes
 
 import dev.timatifey.posanie.usecases.SettingsUseCase
 import org.mockito.kotlin.mock

@@ -5,7 +5,7 @@ import androidx.compose.ui.test.junit4.createComposeRule
 import androidx.compose.ui.test.onNodeWithText
 import androidx.test.ext.junit.runners.AndroidJUnit4
 import androidx.test.platform.app.InstrumentationRegistry
-import dev.timatifey.posanie.fakes.SettingsUseCaseMockFactory
+import fakes.SettingsUseCaseMockFactory
 import dev.timatifey.posanie.model.domain.AppColorScheme
 import dev.timatifey.posanie.model.domain.AppTheme
 import dev.timatifey.posanie.ui.settings.SettingsScreen

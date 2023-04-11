@@ -1,4 +1,4 @@
-package dev.timatifey.posanie.fakes
+package fakes
 
 import dev.timatifey.posanie.model.Result
 import dev.timatifey.posanie.model.domain.Group

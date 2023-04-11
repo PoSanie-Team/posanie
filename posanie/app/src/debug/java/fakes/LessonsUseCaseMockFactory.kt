@@ -1,4 +1,4 @@
-package dev.timatifey.posanie.fakes
+package fakes
 
 import dev.timatifey.posanie.model.Result
 import dev.timatifey.posanie.model.domain.Lesson
@@ -15,16 +15,28 @@ object LessonsUseCaseMockFactory {
 
     fun create(): LessonsUseCase {
         val lessonsUseCaseMock = mock<LessonsUseCase> {
-            onBlocking { getLessonsByGroupId(anyLong()) } doReturn Result.Success(getFakeGroupLessons())
-            onBlocking { getLessonsByTeacherId(anyLong()) } doReturn Result.Success(getFakeTeacherLessons())
+            onBlocking { getLessonsByGroupId(anyLong()) } doReturn Result.Success(
+                getFakeGroupLessons()
+            )
+            onBlocking { getLessonsByTeacherId(anyLong()) } doReturn Result.Success(
+                getFakeTeacherLessons()
+            )
             onBlocking { saveGroupLessons(anyLong(), any(), anyBoolean(), any()) } doReturn Result.Success(true)
             onBlocking { saveTeacherLessons(anyLong(), any(), anyBoolean(), any()) } doReturn Result.Success(true)
             onBlocking { getGroupSchedulerWeekOddness(anyLong()) } doReturn Result.Success(true)
             onBlocking { getTeacherSchedulerWeekOddness(anyLong()) } doReturn Result.Success(true)
-            onBlocking { getGroupSchedulerWeekMonday(anyLong()) } doReturn Result.Success(getFakeMondayDate())
-            onBlocking { getTeacherSchedulerWeekMonday(anyLong()) } doReturn Result.Success(getFakeMondayDate())
-            onBlocking { fetchLessonsByGroupId(anyLong(), anyString()) } doReturn Result.Success(getFakeGroupLessons())
-            onBlocking { fetchLessonsByTeacherId(anyLong(), anyString()) } doReturn Result.Success(getFakeTeacherLessons())
+            onBlocking { getGroupSchedulerWeekMonday(anyLong()) } doReturn Result.Success(
+                getFakeMondayDate()
+            )
+            onBlocking { getTeacherSchedulerWeekMonday(anyLong()) } doReturn Result.Success(
+                getFakeMondayDate()
+            )
+            onBlocking { fetchLessonsByGroupId(anyLong(), anyString()) } doReturn Result.Success(
+                getFakeGroupLessons()
+            )
+            onBlocking { fetchLessonsByTeacherId(anyLong(), anyString()) } doReturn Result.Success(
+                getFakeTeacherLessons()
+            )
             onBlocking { fetchWeekOddnessByGroupId(anyLong(), anyString()) } doReturn Result.Success(true)
             onBlocking { fetchWeekOddnessByTeacherId(anyLong(), anyString()) } doReturn Result.Success(true)
         }
