@@ -64,6 +64,7 @@ fun SchedulerScreen(
     val schedulerUiState = schedulerViewModel.uiState.collectAsState().value
 
     val lessonsToDays = schedulerUiState.lessonsToDays
+    val expandedLesson = schedulerUiState.expandedLesson
 
     val weekDayListState = rememberLazyListState()
     val currentWeekDayOrdinal = schedulerUiState.selectedDay.ordinal
@@ -101,7 +102,8 @@ fun SchedulerScreen(
                 dayListState = weekDayListState,
                 errorMessages = schedulerUiState.errorMessages,
                 isLoading = schedulerUiState.isLoading,
-                hasSchedule = schedulerUiState.hasSchedule
+                hasSchedule = schedulerUiState.hasSchedule,
+                expandedLesson = schedulerUiState.expandedLesson
             )
             val weekScroller = createWeekScroller(
                 context = context,
@@ -113,6 +115,8 @@ fun SchedulerScreen(
                 modifier = Modifier.padding(paddingValues),
                 state = weekState,
                 lessonsToDays = lessonsToDays,
+                expandLesson = schedulerViewModel::expandLesson,
+                hideLesson = schedulerViewModel::hideLesson,
                 weekScroller = weekScroller,
                 fetchLessons = {
                     schedulerViewModel.fetchLessons()
@@ -142,6 +146,8 @@ fun ScrollableWeek(
     modifier: Modifier = Modifier,
     state: WeekState,
     lessonsToDays: Map<WeekDay, List<Lesson>>,
+    expandLesson: (Lesson) -> Unit,
+    hideLesson: (Lesson) -> Unit,
     weekScroller: LazyListScroller,
     fetchLessons: () -> Unit
 ) {
@@ -160,7 +166,9 @@ fun ScrollableWeek(
         RefreshableWeek(
             state = state,
             lessonsToDays = lessonsToDays,
-            fetchLessons = fetchLessons
+            fetchLessons = fetchLessons,
+            expandLesson = expandLesson,
+            hideLesson = hideLesson
         )
     }
 }
@@ -169,7 +177,8 @@ class WeekState(
     val dayListState: LazyListState,
     val errorMessages: List<ErrorMessage>,
     val isLoading: Boolean,
-    val hasSchedule: Boolean
+    val hasSchedule: Boolean,
+    val expandedLesson: Lesson?
 )
 
 class LazyListScroller(
@@ -227,7 +236,9 @@ fun createWeekScroller(
 fun RefreshableWeek(
     state: WeekState,
     lessonsToDays: Map<WeekDay, List<Lesson>>,
-    fetchLessons: () -> Unit
+    fetchLessons: () -> Unit,
+    expandLesson: (Lesson) -> Unit,
+    hideLesson: (Lesson) -> Unit
 ) {
     SwipeRefresh(
         modifier = Modifier
@@ -235,14 +246,21 @@ fun RefreshableWeek(
         state = rememberSwipeRefreshState(state.isLoading),
         onRefresh = fetchLessons
     ) {
-        WeekView(state = state, lessonsToDays = lessonsToDays)
+        WeekView(
+            state = state,
+            lessonsToDays = lessonsToDays,
+            expandLesson = expandLesson,
+            hideLesson = hideLesson
+        )
     }
 }
 
 @Composable
 fun WeekView(
     state: WeekState,
-    lessonsToDays: Map<WeekDay, List<Lesson>>
+    lessonsToDays: Map<WeekDay, List<Lesson>>,
+    expandLesson: (Lesson) -> Unit,
+    hideLesson: (Lesson) -> Unit
 ) {
     if (state.isLoading) return
 
@@ -262,10 +280,13 @@ fun WeekView(
                 MessageText(text = stringResource(R.string.no_lessons_today))
             } else {
                 LessonsList(
-                    lessons = lessons,
                     modifier = Modifier
                         .width(LocalConfiguration.current.screenWidthDp.dp)
-                        .padding(bottom = 8.dp)
+                        .padding(bottom = 8.dp),
+                    lessons = lessons,
+                    expandedLesson = state.expandedLesson,
+                    expandLesson = expandLesson,
+                    hideLesson = hideLesson
                 )
             }
         }
@@ -331,14 +352,35 @@ fun MessageText(
 }
 
 @Composable
-fun LessonsList(modifier: Modifier = Modifier, lessons: List<Lesson>) {
+fun LessonsList(
+    modifier: Modifier = Modifier,
+    lessons: List<Lesson>,
+    expandedLesson: Lesson?,
+    expandLesson: (Lesson) -> Unit,
+    hideLesson: (Lesson) -> Unit
+) {
     LazyColumn(modifier = modifier) {
-        items(lessons.size) { index -> LessonItem(lesson = lessons[index]) }
+        items(lessons.size) { index ->
+            val lesson = lessons[index]
+            val isExpanded = lesson == expandedLesson
+            LessonItem(
+                lesson = lesson,
+                isExpanded = isExpanded,
+                expandLesson = expandLesson,
+                hideLesson = hideLesson
+            )
+        }
     }
 }
 
 @Composable
-fun LessonItem(modifier: Modifier = Modifier, lesson: Lesson) {
+fun LessonItem(
+    modifier: Modifier = Modifier,
+    lesson: Lesson,
+    isExpanded: Boolean,
+    expandLesson: (Lesson) -> Unit,
+    hideLesson: (Lesson) -> Unit
+) {
     Column(
         modifier = Modifier
             .fillMaxHeight()
@@ -346,7 +388,12 @@ fun LessonItem(modifier: Modifier = Modifier, lesson: Lesson) {
         verticalArrangement = Arrangement.Center
     ) {
         LessonTime(modifier = modifier, lesson = lesson)
-        LessonCard(lesson = lesson, isExpanded = false, onExpand = {})
+        LessonCard(
+            lesson = lesson,
+            isExpanded = isExpanded,
+            expandLesson = expandLesson,
+            hideLesson = hideLesson
+        )
     }
 }
 
@@ -404,7 +451,12 @@ fun LessonIndexLabel(lessonIndex: Int) {
 }
 
 @Composable
-fun LessonCard(lesson: Lesson, isExpanded: Boolean, onExpand: () -> Unit) {
+fun LessonCard(
+    lesson: Lesson,
+    isExpanded: Boolean,
+    expandLesson: (Lesson) -> Unit,
+    hideLesson: (Lesson) -> Unit
+) {
     Card(
         modifier = Modifier
             .padding(horizontal = 8.dp)
@@ -469,13 +521,15 @@ fun LessonCard(lesson: Lesson, isExpanded: Boolean, onExpand: () -> Unit) {
                 )
             }
             Box(
-                modifier = Modifier.padding(top = 8.dp).fillMaxWidth(),
+                modifier = Modifier
+                    .padding(top = 8.dp)
+                    .fillMaxWidth(),
                 contentAlignment = Alignment.Center
             ) {
                 IconButton(
                     iconResource = R.drawable.ic_add,
                     iconDescription = R.string.expand_lesson_card_description,
-                    onClick = onExpand
+                    onClick = { if (isExpanded) hideLesson(lesson) else expandLesson(lesson) }
                 )
             }
         }
@@ -490,7 +544,9 @@ fun IconButton(
     onClick: () -> Unit
 ) {
     Card(
-        modifier = modifier.clip(CircleShape).clickable { onClick() },
+        modifier = modifier
+            .clip(CircleShape)
+            .clickable { onClick() },
     ) {
         Icon(
             tint = MaterialTheme.colorScheme.primary,
@@ -516,6 +572,7 @@ private fun showConnectionToastOnWeekChange(
 
 private object NoInternetConnectionToast {
     var toast: Toast? = null
+
     @StringRes
     var messageRes: Int? = null
     var locales: LocaleList? = null
@@ -545,7 +602,10 @@ fun LessonItemPreview() {
                 place = "3-й учебный корпус, 401",
                 teacher = "Лупин Анатолий Викторович",
                 lmsUrl = ""
-            )
+            ),
+            isExpanded = false,
+            expandLesson = {},
+            hideLesson = {}
         )
     }
 }
@@ -555,8 +615,11 @@ fun LessonItemPreview() {
 fun LessonListPreview() {
     PoSanieTheme(appTheme = AppTheme.LIGHT, appColorScheme = AppColorScheme.GREEN) {
         LessonsList(
+            modifier = Modifier.width(LocalConfiguration.current.screenWidthDp.dp),
             lessons = buildList { repeat(4) { add(PreviewLessonItem()) } },
-            modifier = Modifier.width(LocalConfiguration.current.screenWidthDp.dp)
+            expandedLesson = null,
+            expandLesson = {},
+            hideLesson = {}
         )
     }
 }
