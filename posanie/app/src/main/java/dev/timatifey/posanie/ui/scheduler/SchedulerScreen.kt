@@ -1,35 +1,23 @@
 package dev.timatifey.posanie.ui.scheduler
 
+import android.content.ClipDescription
 import android.content.Context
 import android.os.LocaleList
 import android.widget.Toast
+import androidx.annotation.DrawableRes
 import androidx.annotation.StringRes
 import androidx.compose.foundation.background
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.gestures.detectDragGestures
 import androidx.compose.foundation.gestures.scrollBy
-import androidx.compose.foundation.layout.Arrangement
-import androidx.compose.foundation.layout.Box
-import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.IntrinsicSize
-import androidx.compose.foundation.layout.PaddingValues
-import androidx.compose.foundation.layout.Row
-import androidx.compose.foundation.layout.fillMaxHeight
-import androidx.compose.foundation.layout.fillMaxSize
-import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.foundation.layout.height
-import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.LazyListState
 import androidx.compose.foundation.lazy.LazyRow
 import androidx.compose.foundation.lazy.rememberLazyListState
+import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
-import androidx.compose.material3.Card
-import androidx.compose.material3.CardDefaults
-import androidx.compose.material3.ExperimentalMaterial3Api
-import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.Scaffold
-import androidx.compose.material3.Text
+import androidx.compose.material3.*
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.MutableState
@@ -39,9 +27,13 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.clip
+import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.painter.Painter
 import androidx.compose.ui.input.pointer.PointerInputScope
 import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.platform.LocalConfiguration
+import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.semantics.contentDescription
 import androidx.compose.ui.semantics.semantics
@@ -341,12 +333,12 @@ fun MessageText(
 @Composable
 fun LessonsList(modifier: Modifier = Modifier, lessons: List<Lesson>) {
     LazyColumn(modifier = modifier) {
-        items(lessons.size) { index -> LessonItem(lesson = lessons[index], lessonIndex = index) }
+        items(lessons.size) { index -> LessonItem(lesson = lessons[index]) }
     }
 }
 
 @Composable
-fun LessonItem(modifier: Modifier = Modifier, lesson: Lesson, lessonIndex: Int) {
+fun LessonItem(modifier: Modifier = Modifier, lesson: Lesson) {
     Column(
         modifier = Modifier
             .fillMaxHeight()
@@ -354,7 +346,7 @@ fun LessonItem(modifier: Modifier = Modifier, lesson: Lesson, lessonIndex: Int) 
         verticalArrangement = Arrangement.Center
     ) {
         LessonTime(modifier = modifier, lesson = lesson)
-        LessonCard(lesson = lesson)
+        LessonCard(lesson = lesson, isExpanded = false, onExpand = {})
     }
 }
 
@@ -412,7 +404,7 @@ fun LessonIndexLabel(lessonIndex: Int) {
 }
 
 @Composable
-fun LessonCard(lesson: Lesson) {
+fun LessonCard(lesson: Lesson, isExpanded: Boolean, onExpand: () -> Unit) {
     Card(
         modifier = Modifier
             .padding(horizontal = 8.dp)
@@ -466,7 +458,45 @@ fun LessonCard(lesson: Lesson) {
                     }
                 )
             }
+            if (isExpanded) {
+                Text(
+                    text = "Some additional information about this lesson bla bla bla bla bla.",
+                    style = MaterialTheme.typography.bodySmall,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant,
+                    fontWeight = FontWeight.Normal,
+                    fontStyle = FontStyle.Italic,
+                    modifier = Modifier.padding(vertical = 2.dp)
+                )
+            }
+            Box(
+                modifier = Modifier.padding(top = 8.dp).fillMaxWidth(),
+                contentAlignment = Alignment.Center
+            ) {
+                IconButton(
+                    iconResource = R.drawable.ic_add,
+                    iconDescription = R.string.expand_lesson_card_description,
+                    onClick = onExpand
+                )
+            }
         }
+    }
+}
+
+@Composable
+fun IconButton(
+    modifier: Modifier = Modifier,
+    @DrawableRes iconResource: Int,
+    @StringRes iconDescription: Int,
+    onClick: () -> Unit
+) {
+    Card(
+        modifier = modifier.clip(CircleShape).clickable { onClick() },
+    ) {
+        Icon(
+            tint = MaterialTheme.colorScheme.primary,
+            painter = painterResource(iconResource),
+            contentDescription = stringResource(iconDescription)
+        )
     }
 }
 
@@ -515,8 +545,7 @@ fun LessonItemPreview() {
                 place = "3-й учебный корпус, 401",
                 teacher = "Лупин Анатолий Викторович",
                 lmsUrl = ""
-            ),
-            lessonIndex = 0
+            )
         )
     }
 }
