@@ -55,6 +55,7 @@ import dev.timatifey.posanie.utils.ErrorMessage
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.launch
 import org.intellij.lang.annotations.JdkConstants.HorizontalAlignment
+import org.mockito.kotlin.description
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -451,7 +452,6 @@ fun LessonIndexLabel(lessonIndex: Int) {
     }
 }
 
-@OptIn(ExperimentalAnimationApi::class)
 @Composable
 fun LessonCard(
     lesson: Lesson,
@@ -459,12 +459,14 @@ fun LessonCard(
     expandLesson: (Lesson) -> Unit,
     hideLesson: (Lesson) -> Unit
 ) {
+    val lessonCardDescription = stringResource(R.string.lesson_card_description, lesson.id)
     Card(
         modifier = Modifier
             .padding(horizontal = 8.dp)
             .fillMaxSize()
             .clip(RoundedCornerShape(8.dp))
-            .clickable { if (isExpanded) hideLesson(lesson) else expandLesson(lesson) },
+            .clickable { if (isExpanded) hideLesson(lesson) else expandLesson(lesson) }
+            .semantics { contentDescription = lessonCardDescription },
         colors = CardDefaults.elevatedCardColors(
             containerColor = MaterialTheme.colorScheme.surfaceVariant
         ),
@@ -475,14 +477,18 @@ fun LessonCard(
             val typeTextDescription = stringResource(R.string.lesson_type_text_description, lesson.id)
             val placeTextDescription = stringResource(R.string.lesson_place_text_description, lesson.id)
             val teacherTextDescription = stringResource(R.string.lesson_teacher_text_description, lesson.id)
+            val groupNamesDescription = stringResource(R.string.lesson_group_names_text_description, lesson.id)
             Row(
                 modifier = Modifier.fillMaxWidth(),
                 horizontalArrangement = Arrangement.SpaceBetween
             ) {
                 Text(
-                    modifier = Modifier.padding(vertical = 4.dp).weight(1f).semantics {
-                        contentDescription = nameTextDescription
-                    },
+                    modifier = Modifier
+                        .padding(vertical = 4.dp)
+                        .weight(1f)
+                        .semantics {
+                            contentDescription = nameTextDescription
+                        },
                     text = lesson.name,
                     style = MaterialTheme.typography.bodyLarge,
                     color = MaterialTheme.colorScheme.primary,
@@ -491,7 +497,7 @@ fun LessonCard(
                 ExpandIcon(
                     isExpanded = isExpanded,
                     iconResource = R.drawable.ic_keyboard_arrow_down,
-                    iconDescription = R.string.expand_lesson_card_description,
+                    iconDescription = R.string.expand_lesson_card_icon_description,
                 )
             }
             Text(
@@ -499,18 +505,22 @@ fun LessonCard(
                 style = MaterialTheme.typography.bodyMedium,
                 color = MaterialTheme.colorScheme.onSurface,
                 fontWeight = FontWeight.Normal,
-                modifier = Modifier.padding(vertical = 2.dp).semantics {
-                    contentDescription = typeTextDescription
-                }
+                modifier = Modifier
+                    .padding(vertical = 2.dp)
+                    .semantics {
+                        contentDescription = typeTextDescription
+                    }
             )
             Text(
                 text = lesson.place,
                 style = MaterialTheme.typography.bodySmall,
                 color = MaterialTheme.colorScheme.onSurfaceVariant,
                 fontWeight = FontWeight.Normal,
-                modifier = Modifier.padding(vertical = 2.dp).semantics {
-                    contentDescription = placeTextDescription
-                }
+                modifier = Modifier
+                    .padding(vertical = 2.dp)
+                    .semantics {
+                        contentDescription = placeTextDescription
+                    }
             )
             if (lesson.teacher.isNotEmpty()) {
                 Text(
@@ -519,9 +529,11 @@ fun LessonCard(
                     color = MaterialTheme.colorScheme.onSurfaceVariant,
                     fontWeight = FontWeight.Normal,
                     fontStyle = FontStyle.Italic,
-                    modifier = Modifier.padding(vertical = 2.dp).semantics {
-                        contentDescription = teacherTextDescription
-                    }
+                    modifier = Modifier
+                        .padding(vertical = 2.dp)
+                        .semantics {
+                            contentDescription = teacherTextDescription
+                        }
                 )
             }
             AnimatedVisibility(
@@ -538,7 +550,11 @@ fun LessonCard(
                     style = MaterialTheme.typography.bodySmall,
                     color = MaterialTheme.colorScheme.onSurfaceVariant,
                     fontWeight = FontWeight.Normal,
-                    modifier = Modifier.padding(vertical = 2.dp)
+                    modifier = Modifier
+                        .padding(vertical = 2.dp)
+                        .semantics {
+                            contentDescription = groupNamesDescription
+                        }
                 )
             }
         }

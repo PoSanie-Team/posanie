@@ -1,9 +1,8 @@
 package dev.timatifey.posanie
 
 import android.content.Context
-import androidx.compose.ui.test.assertIsDisplayed
+import androidx.compose.ui.test.*
 import androidx.compose.ui.test.junit4.createComposeRule
-import androidx.compose.ui.test.onNodeWithContentDescription
 import androidx.test.ext.junit.runners.AndroidJUnit4
 import androidx.test.platform.app.InstrumentationRegistry
 import dev.timatifey.posanie.model.domain.AppColorScheme
@@ -39,8 +38,11 @@ class SchedulerTest {
     fun checkLessonCard() {
         val appContext = InstrumentationRegistry.getInstrumentation().targetContext.applicationContext
         setContent(appContext)
-
         val lessonId = 0
+
+        composeTestRule.onNodeWithContentDescription(
+            appContext.getString(R.string.lesson_card_description, lessonId)
+        ).assertIsDisplayed()
         composeTestRule.onNodeWithContentDescription(
             appContext.getString(R.string.lesson_name_text_description, lessonId)
         ).assertIsDisplayed()
@@ -53,9 +55,28 @@ class SchedulerTest {
         composeTestRule.onNodeWithContentDescription(
             appContext.getString(R.string.lesson_teacher_text_description, lessonId)
         ).assertIsDisplayed()
+        composeTestRule.onAllNodesWithContentDescription(
+            appContext.getString(R.string.expand_lesson_card_icon_description)
+        ).assertCountEquals(3)
     }
 
-    private fun setContent(appContext: Context) {
+    @Test
+    fun checkLessonExpandedCard() {
+        val appContext =
+            InstrumentationRegistry.getInstrumentation().targetContext.applicationContext
+        setContent(appContext)
+        val lessonId = 0
+
+        composeTestRule.onNodeWithContentDescription(
+            appContext.getString(R.string.lesson_card_description, lessonId)
+        ).performClick()
+
+        composeTestRule.onNodeWithContentDescription(
+            appContext.getString(R.string.lesson_group_names_text_description, lessonId)
+        ).assertIsDisplayed()
+    }
+
+        private fun setContent(appContext: Context) {
         composeTestRule.setContent {
             val viewModel = createViewModel()
             val mondayDate = createMondayDate()
