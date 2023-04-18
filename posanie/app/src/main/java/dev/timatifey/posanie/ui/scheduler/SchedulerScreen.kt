@@ -7,6 +7,7 @@ import android.widget.Toast
 import androidx.annotation.DrawableRes
 import androidx.annotation.StringRes
 import androidx.compose.animation.*
+import androidx.compose.animation.core.animateFloatAsState
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.gestures.detectDragGestures
@@ -19,17 +20,13 @@ import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.*
-import androidx.compose.runtime.Composable
-import androidx.compose.runtime.LaunchedEffect
-import androidx.compose.runtime.MutableState
-import androidx.compose.runtime.collectAsState
-import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.remember
-import androidx.compose.runtime.rememberCoroutineScope
+import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.draw.rotate
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.RectangleShape
 import androidx.compose.ui.graphics.TransformOrigin
 import androidx.compose.ui.graphics.painter.Painter
 import androidx.compose.ui.input.pointer.PointerInputScope
@@ -57,6 +54,7 @@ import dev.timatifey.posanie.ui.theme.PoSanieTheme
 import dev.timatifey.posanie.utils.ErrorMessage
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.launch
+import org.intellij.lang.annotations.JdkConstants.HorizontalAlignment
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -68,7 +66,6 @@ fun SchedulerScreen(
     val schedulerUiState = schedulerViewModel.uiState.collectAsState().value
 
     val lessonsToDays = schedulerUiState.lessonsToDays
-    val expandedLesson = schedulerUiState.expandedLesson
 
     val weekDayListState = rememberLazyListState()
     val currentWeekDayOrdinal = schedulerUiState.selectedDay.ordinal
@@ -465,7 +462,9 @@ fun LessonCard(
     Card(
         modifier = Modifier
             .padding(horizontal = 8.dp)
-            .fillMaxSize(),
+            .fillMaxSize()
+            .clip(RoundedCornerShape(8.dp))
+            .clickable { if (isExpanded) hideLesson(lesson) else expandLesson(lesson) },
         colors = CardDefaults.elevatedCardColors(
             containerColor = MaterialTheme.colorScheme.surfaceVariant
         ),
@@ -476,15 +475,25 @@ fun LessonCard(
             val typeTextDescription = stringResource(R.string.lesson_type_text_description, lesson.id)
             val placeTextDescription = stringResource(R.string.lesson_place_text_description, lesson.id)
             val teacherTextDescription = stringResource(R.string.lesson_teacher_text_description, lesson.id)
-            Text(
-                text = lesson.name,
-                style = MaterialTheme.typography.bodyLarge,
-                color = MaterialTheme.colorScheme.primary,
-                fontWeight = FontWeight.Bold,
-                modifier = Modifier.padding(vertical = 4.dp).semantics {
-                    contentDescription = nameTextDescription
-                }
-            )
+            Row(
+                modifier = Modifier.fillMaxWidth(),
+                horizontalArrangement = Arrangement.SpaceBetween
+            ) {
+                Text(
+                    modifier = Modifier.padding(vertical = 4.dp).weight(1f).semantics {
+                        contentDescription = nameTextDescription
+                    },
+                    text = lesson.name,
+                    style = MaterialTheme.typography.bodyLarge,
+                    color = MaterialTheme.colorScheme.primary,
+                    fontWeight = FontWeight.Bold,
+                )
+                ExpandIcon(
+                    isExpanded = isExpanded,
+                    iconResource = R.drawable.ic_keyboard_arrow_down,
+                    iconDescription = R.string.expand_lesson_card_description,
+                )
+            }
             Text(
                 text = lesson.type,
                 style = MaterialTheme.typography.bodyMedium,
@@ -532,54 +541,24 @@ fun LessonCard(
                     modifier = Modifier.padding(vertical = 2.dp)
                 )
             }
-            Box(
-                modifier = Modifier
-                    .padding(top = 8.dp)
-                    .fillMaxWidth(),
-                contentAlignment = Alignment.Center
-            ) {
-                TwoStateIconButton(
-                    state = isExpanded,
-                    iconResourceFalse = R.drawable.ic_add,
-                    iconResourceTrue = R.drawable.ic_remove,
-                    iconDescription = R.string.expand_lesson_card_description,
-                    onClick = { if (isExpanded) hideLesson(lesson) else expandLesson(lesson) }
-                )
-            }
         }
     }
 }
 
 @Composable
-fun TwoStateIconButton(
+fun ExpandIcon(
     modifier: Modifier = Modifier,
-    state: Boolean,
-    @DrawableRes iconResourceFalse: Int,
-    @DrawableRes iconResourceTrue: Int,
-    @StringRes iconDescription: Int,
-    onClick: () -> Unit
+    isExpanded: Boolean,
+    @DrawableRes iconResource: Int,
+    @StringRes iconDescription: Int
 ) {
-    Card(
-        modifier = modifier
-            .clip(CircleShape)
-            .clickable { onClick() },
-    ) {
-        Crossfade(targetState = state) {
-            if (it) {
-                Icon(
-                    tint = MaterialTheme.colorScheme.primary,
-                    painter = painterResource(iconResourceTrue),
-                    contentDescription = stringResource(iconDescription)
-                )
-            } else {
-                Icon(
-                    tint = MaterialTheme.colorScheme.primary,
-                    painter = painterResource(iconResourceFalse),
-                    contentDescription = stringResource(iconDescription)
-                )
-            }
-        }
-    }
+    val rotation: Float by animateFloatAsState(if (isExpanded) 180f else 0f)
+    Icon(
+        modifier = modifier.rotate(rotation),
+        tint = MaterialTheme.colorScheme.primary,
+        painter = painterResource(iconResource),
+        contentDescription = stringResource(iconDescription)
+    )
 }
 
 private fun showConnectionToastOnWeekChange(
@@ -655,7 +634,7 @@ fun PreviewLessonItem() = Lesson(
     id = 0,
     start = "10:00",
     end = "11:40",
-    name = "Цифровая обработка сигналов",
+    name = "Цифровая обработка сигналов и еще очень длинное название",
     type = "Лабораторные",
     place = "3-й учебный корпус, 401",
     teacher = "Лупин Анатолий Викторович",
