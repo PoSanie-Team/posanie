@@ -8,5 +8,6 @@ data class Lesson(
     val type: String,
     val place: String,
     val teacher: String,
+    val groupNames: List<String>,
     val lmsUrl: String
 )

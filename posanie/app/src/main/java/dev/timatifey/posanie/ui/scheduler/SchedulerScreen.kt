@@ -520,12 +520,15 @@ fun LessonCard(
                 enter = expandVertically(),
                 exit = shrinkVertically()
             ) {
+                val groupNamesStringBuilder = StringBuilder()
+                groupNamesStringBuilder.append(stringResource(R.string.groups))
+                groupNamesStringBuilder.append(": ")
+                groupNamesStringBuilder.append(lesson.groupNames.joinToString(separator = ", ") { it })
                 Text(
-                    text = "Some additional information about this lesson bla bla bla bla bla.",
+                    text = groupNamesStringBuilder.toString(),
                     style = MaterialTheme.typography.bodySmall,
                     color = MaterialTheme.colorScheme.onSurfaceVariant,
                     fontWeight = FontWeight.Normal,
-                    fontStyle = FontStyle.Italic,
                     modifier = Modifier.padding(vertical = 2.dp)
                 )
             }
@@ -624,6 +627,7 @@ fun LessonItemPreview() {
                 type = "Лабораторные",
                 place = "3-й учебный корпус, 401",
                 teacher = "Лупин Анатолий Викторович",
+                groupNames = listOf("3530901/90202"),
                 lmsUrl = ""
             ),
             isExpanded = false,
@@ -640,7 +644,7 @@ fun LessonListPreview() {
         LessonsList(
             modifier = Modifier.width(LocalConfiguration.current.screenWidthDp.dp),
             lessons = buildList { repeat(4) { add(PreviewLessonItem()) } },
-            expandedLesson = null,
+            expandedLesson = PreviewLessonItem(),
             expandLesson = {},
             hideLesson = {}
         )
@@ -655,5 +659,6 @@ fun PreviewLessonItem() = Lesson(
     type = "Лабораторные",
     place = "3-й учебный корпус, 401",
     teacher = "Лупин Анатолий Викторович",
+    groupNames = listOf("3530901/90202"),
     lmsUrl = ""
 )

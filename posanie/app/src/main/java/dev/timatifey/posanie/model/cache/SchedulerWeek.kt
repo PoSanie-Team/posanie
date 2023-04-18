@@ -12,7 +12,7 @@ sealed class SchedulerWeek(
     open val mondayDate: Calendar
 )
 
-class IntListConverter {
+class LongListConverter {
 
     private val gson by lazy { GsonBuilder().create() }
     private val type = object : TypeToken<List<Long>>() {}.type
