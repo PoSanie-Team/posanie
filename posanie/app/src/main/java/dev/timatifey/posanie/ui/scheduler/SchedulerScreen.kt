@@ -535,8 +535,10 @@ fun LessonCard(
                     .fillMaxWidth(),
                 contentAlignment = Alignment.Center
             ) {
-                IconButton(
-                    iconResource = R.drawable.ic_add,
+                TwoStateIconButton(
+                    state = isExpanded,
+                    iconResourceFalse = R.drawable.ic_add,
+                    iconResourceTrue = R.drawable.ic_remove,
                     iconDescription = R.string.expand_lesson_card_description,
                     onClick = { if (isExpanded) hideLesson(lesson) else expandLesson(lesson) }
                 )
@@ -546,9 +548,11 @@ fun LessonCard(
 }
 
 @Composable
-fun IconButton(
+fun TwoStateIconButton(
     modifier: Modifier = Modifier,
-    @DrawableRes iconResource: Int,
+    state: Boolean,
+    @DrawableRes iconResourceFalse: Int,
+    @DrawableRes iconResourceTrue: Int,
     @StringRes iconDescription: Int,
     onClick: () -> Unit
 ) {
@@ -557,11 +561,21 @@ fun IconButton(
             .clip(CircleShape)
             .clickable { onClick() },
     ) {
-        Icon(
-            tint = MaterialTheme.colorScheme.primary,
-            painter = painterResource(iconResource),
-            contentDescription = stringResource(iconDescription)
-        )
+        Crossfade(targetState = state) {
+            if (it) {
+                Icon(
+                    tint = MaterialTheme.colorScheme.primary,
+                    painter = painterResource(iconResourceTrue),
+                    contentDescription = stringResource(iconDescription)
+                )
+            } else {
+                Icon(
+                    tint = MaterialTheme.colorScheme.primary,
+                    painter = painterResource(iconResourceFalse),
+                    contentDescription = stringResource(iconDescription)
+                )
+            }
+        }
     }
 }
 
