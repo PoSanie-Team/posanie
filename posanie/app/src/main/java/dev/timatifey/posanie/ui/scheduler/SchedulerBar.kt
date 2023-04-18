@@ -15,6 +15,8 @@ import androidx.compose.ui.draw.shadow
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.semantics.Role
+import androidx.compose.ui.semantics.contentDescription
+import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Preview
@@ -147,10 +149,15 @@ fun WeekDate(
 ) {
     val month = date.get(Calendar.MONTH)
     val year = date.get(Calendar.YEAR)
+    val monthAndYearTextDescription = stringResource(R.string.month_and_year_text_description)
     val week =
         if (oddWeek) stringResource(R.string.odd_week) else stringResource(R.string.even_week)
     Column(modifier = modifier, horizontalAlignment = Alignment.CenterHorizontally) {
-        Text(text = "${stringResource(Month.getByOrdinal(month).fullNameId)} $year", textAlign = TextAlign.Center)
+        Text(
+            modifier = Modifier.semantics { contentDescription = monthAndYearTextDescription },
+            text = "${stringResource(Month.getByOrdinal(month).fullNameId)} $year",
+            textAlign = TextAlign.Center
+        )
         Text(text = if (hasSchedule) week else "", textAlign = TextAlign.Center)
     }
 }

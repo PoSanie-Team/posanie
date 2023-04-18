@@ -98,6 +98,11 @@
     <string name="next_week_button_description">Button to go to next week</string>
     <string name="previous_month_button_description">Button to go to previous month</string>
     <string name="next_month_button_description">Button to go to next month</string>
+    <string name="month_and_year_text_description">Scheduler month and year</string>
+    <string name="lesson_name_text_description">Lesson name (id = %d)</string>
+    <string name="lesson_type_text_description">Lesson type (id = %d)</string>
+    <string name="lesson_place_text_description">Lesson place (id = %d)</string>
+    <string name="lesson_teacher_text_description">Lesson teacher (id = %d)</string>
 
     // Popup
     <string name="ok">OK</string>
