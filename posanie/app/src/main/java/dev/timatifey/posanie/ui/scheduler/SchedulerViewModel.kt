@@ -443,7 +443,9 @@ class SchedulerViewModel @Inject constructor(
 
     fun hideLesson(lesson: Lesson) {
         viewModelScope.launch {
-            if (lesson != viewModelState.value.expandedLesson) return@launch
+            if (lesson != viewModelState.value.expandedLesson) {
+                return@launch
+            }
             viewModelState.update { viewModelState.value.copy(expandedLesson = null) }
         }
     }
