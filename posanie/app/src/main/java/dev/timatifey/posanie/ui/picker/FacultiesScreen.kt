@@ -2,9 +2,11 @@ package dev.timatifey.posanie.ui.picker
 
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.*
+import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.clip
 import androidx.compose.ui.platform.LocalFocusManager
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.tooling.preview.Preview
@@ -108,7 +110,8 @@ fun FacultyItem(faculty: Faculty, onFacultyClick: (Faculty) -> Unit) {
         Card(
             modifier = Modifier
                 .fillMaxWidth()
-                .padding(8.dp),
+                .padding(16.dp)
+                .clip(RoundedCornerShape(8.dp)),
             onClick = { onFacultyClick(faculty) },
         ) {
             Text(

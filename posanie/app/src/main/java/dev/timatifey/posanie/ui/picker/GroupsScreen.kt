@@ -11,6 +11,7 @@ import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.semantics.Role
@@ -263,7 +264,7 @@ fun GroupItem(
             )
         } else CardDefaults.cardColors()
         Card(
-            modifier = modifier.combinedClickable(
+            modifier = modifier.clip(RoundedCornerShape(16.dp)).combinedClickable(
                 onClick = { clickListener.onClick(group) },
                 onLongClick = { clickListener.onLongClick(group) }
             ),

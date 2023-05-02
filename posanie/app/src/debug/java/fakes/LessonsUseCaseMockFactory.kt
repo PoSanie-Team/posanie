@@ -62,6 +62,7 @@ object LessonsUseCaseMockFactory {
                 type = "Лекции",
                 place = "3-й учебный корпус, 401",
                 teacher = "Ерошкин Александр Владимирович",
+                groupNames = listOf("3530901/90101, 3530901/90201, 35309091/90202, 3530901/90203"),
                 lmsUrl = "https://dl.spbstu.ru//course/view.php?id=4744"
             )
         )
@@ -74,6 +75,7 @@ object LessonsUseCaseMockFactory {
                 type = "Лабораторные",
                 place = "3-й учебный корпус, 303",
                 teacher = "",
+                groupNames = listOf("3530901/90202"),
                 lmsUrl = "https://dl.spbstu.ru//course/view.php?id=4744"
             ),
             Lesson(
@@ -84,6 +86,7 @@ object LessonsUseCaseMockFactory {
                 type = "Лабораторные",
                 place = "3-й учебный корпус, 402",
                 teacher = "Новопашенный Андрей Гелиевич",
+                groupNames = listOf("3530901/90202"),
                 lmsUrl = "https://dl.spbstu.ru//course/view.php?id=4744"
             )
         )
@@ -96,6 +99,7 @@ object LessonsUseCaseMockFactory {
                 type = "Практика",
                 place = "Военная кафедра",
                 teacher = "",
+                groupNames = listOf("3530901/90101, 3530901/90201, 35309091/90202, 3530901/90203"),
                 lmsUrl = "https://dl.spbstu.ru//course/view.php?id=4744"
             )
         )
@@ -108,6 +112,7 @@ object LessonsUseCaseMockFactory {
                 type = "Лекции",
                 place = "11-й учебный корпус, 143",
                 teacher = "Сиднев Александр Георгиевич",
+                groupNames = listOf("3530901/90101, 3530901/90201, 35309091/90202, 3530901/90203"),
                 lmsUrl = "https://dl.spbstu.ru//course/view.php?id=4744"
             ),
             Lesson(
@@ -118,6 +123,7 @@ object LessonsUseCaseMockFactory {
                 type = "Лекции",
                 place = "3-й учебный корпус, 401",
                 teacher = "Новопашенный Андрей Гелиевич",
+                groupNames = listOf("3530901/90101, 3530901/90201, 35309091/90202, 3530901/90203"),
                 lmsUrl = "https://dl.spbstu.ru//course/view.php?id=4744"
             )
         )
@@ -131,6 +137,7 @@ object LessonsUseCaseMockFactory {
                 type = "Практика",
                 place = "3-й учебный корпус, 401",
                 teacher = "Сабонис Сергей Станиславович",
+                groupNames = listOf("3530901/90202"),
                 lmsUrl = "https://dl.spbstu.ru//course/view.php?id=4744"
             )
         )
@@ -149,6 +156,7 @@ object LessonsUseCaseMockFactory {
                 type = "Практика",
                 place = "3-й учебный корпус, 401",
                 teacher = "Сабонис Сергей Станиславович",
+                groupNames = listOf("35309091/90202"),
                 lmsUrl = "https://dl.spbstu.ru//course/view.php?id=4744"
             ),
             Lesson(
@@ -159,6 +167,7 @@ object LessonsUseCaseMockFactory {
                 type = "Практика",
                 place = "3-й учебный корпус, 401",
                 teacher = "Сабонис Сергей Станиславович",
+                groupNames = listOf("35309091/90202"),
                 lmsUrl = "https://dl.spbstu.ru//course/view.php?id=4744"
             ),
             Lesson(
@@ -169,6 +178,7 @@ object LessonsUseCaseMockFactory {
                 type = "Практика",
                 place = "3-й учебный корпус, 401",
                 teacher = "Сабонис Сергей Станиславович",
+                groupNames = listOf("35309091/90202"),
                 lmsUrl = "https://dl.spbstu.ru//course/view.php?id=4744"
             )
         )

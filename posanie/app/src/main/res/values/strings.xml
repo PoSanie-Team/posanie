@@ -103,6 +103,9 @@
     <string name="lesson_type_text_description">Lesson type (id = %d)</string>
     <string name="lesson_place_text_description">Lesson place (id = %d)</string>
     <string name="lesson_teacher_text_description">Lesson teacher (id = %d)</string>
+    <string name="lesson_group_names_text_description">Lesson group names (id = %d)</string>
+    <string name="expand_lesson_card_icon_description">Expand lesson card icon</string>
+    <string name="lesson_card_description">Lesson card (id = %d)</string>
 
     // Popup
     <string name="ok">OK</string>

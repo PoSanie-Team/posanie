@@ -115,6 +115,7 @@ data class SchedulerUiState(
     val hasSchedule: Boolean = false,
     val weekIsOdd: Boolean = false,
     val lessonsToDays: Map<WeekDay, List<Lesson>>,
+    val expandedLesson: Lesson?,
     val mondayDate: Calendar,
     val selectedDate: Calendar,
     val selectedDay: WeekDay,
@@ -127,6 +128,7 @@ private data class SchedulerViewModelState(
     val hasSchedule: Boolean = false,
     val weekIsOdd: Boolean = false,
     val lessonsToDays: Map<WeekDay, List<Lesson>>? = null,
+    val expandedLesson: Lesson? = null,
     val mondayDate: Calendar,
     val selectedDate: Calendar,
     val selectedDay: WeekDay,
@@ -171,6 +173,7 @@ private data class SchedulerViewModelState(
             hasSchedule = hasSchedule,
             weekIsOdd = weekIsOdd,
             lessonsToDays = lessonsToDays ?: emptyMap(),
+            expandedLesson = expandedLesson,
             mondayDate = mondayDate,
             selectedDate = selectedDate,
             selectedDay = selectedDay,
@@ -429,6 +432,21 @@ class SchedulerViewModel @Inject constructor(
                 weekIsOdd = isOddResult.successOr(false),
                 dayToLessonsMap = lessonsResult.successOr(emptyMap())
             )
+        }
+    }
+
+    fun expandLesson(lesson: Lesson) {
+        viewModelScope.launch {
+            viewModelState.update { viewModelState.value.copy(expandedLesson = lesson) }
+        }
+    }
+
+    fun hideLesson(lesson: Lesson) {
+        viewModelScope.launch {
+            if (lesson != viewModelState.value.expandedLesson) {
+                return@launch
+            }
+            viewModelState.update { viewModelState.value.copy(expandedLesson = null) }
         }
     }
 

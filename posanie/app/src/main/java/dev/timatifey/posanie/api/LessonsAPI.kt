@@ -72,6 +72,7 @@ class LessonsAPI(private val dispatcher: CoroutineDispatcher) {
             name = getString("subject"),
             place = getPlace(),
             teacher = teacherFullName,
+            groupNames = getGroupNames(),
             lmsUrl = getString("lms_url")
         )
     }
@@ -83,7 +84,16 @@ class LessonsAPI(private val dispatcher: CoroutineDispatcher) {
         return "$buildingName, $auditoryNumber"
     }
 
+    private fun JSONObject.getGroupNames(): List<String> {
+        val groups = getJSONArray("groups")
+        val groupNames = mutableListOf<String>()
+        for (i in 0 until groups.length()) {
+            val group = groups.getJSONObject(i)
+            val groupName = group.getString("name")
+            groupNames.add(groupName)
+        }
+        return groupNames
+    }
+
     private fun Int.formatWeekDayOrdinal() = this % 7 + 1
 }
-
-

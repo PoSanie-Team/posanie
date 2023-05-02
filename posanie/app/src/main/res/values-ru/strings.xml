@@ -93,6 +93,9 @@
     <string name="lesson_type_text_description">Тип занятия (id = %d)</string>
     <string name="lesson_place_text_description">Место проведения занятия (id = %d)</string>
     <string name="lesson_teacher_text_description">Преподаватель занятия (id = %d)</string>
+    <string name="lesson_group_names_text_description">Названия групп посещающих занятия (id = %d)</string>
+    <string name="expand_lesson_card_icon_description">Иконка расширения карточки</string>
+    <string name="lesson_card_description">Lesson card (id = %d)</string>
 
     // Popup
     <string name="ok">ОК</string>

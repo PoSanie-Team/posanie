@@ -1,47 +1,33 @@
 package dev.timatifey.posanie.ui.scheduler
 
+import android.content.ClipDescription
 import android.content.Context
 import android.os.LocaleList
 import android.widget.Toast
+import androidx.annotation.DrawableRes
 import androidx.annotation.StringRes
+import androidx.compose.animation.*
+import androidx.compose.animation.core.animateFloatAsState
 import androidx.compose.foundation.background
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.gestures.detectDragGestures
 import androidx.compose.foundation.gestures.scrollBy
-import androidx.compose.foundation.layout.Arrangement
-import androidx.compose.foundation.layout.Box
-import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.IntrinsicSize
-import androidx.compose.foundation.layout.PaddingValues
-import androidx.compose.foundation.layout.Row
-import androidx.compose.foundation.layout.fillMaxHeight
-import androidx.compose.foundation.layout.fillMaxSize
-import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.foundation.layout.height
-import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.LazyListState
 import androidx.compose.foundation.lazy.LazyRow
 import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.foundation.shape.RoundedCornerShape
-import androidx.compose.material3.Card
-import androidx.compose.material3.CardDefaults
-import androidx.compose.material3.ExperimentalMaterial3Api
-import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.Scaffold
-import androidx.compose.material3.Text
-import androidx.compose.runtime.Composable
-import androidx.compose.runtime.LaunchedEffect
-import androidx.compose.runtime.MutableState
-import androidx.compose.runtime.collectAsState
-import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.remember
-import androidx.compose.runtime.rememberCoroutineScope
+import androidx.compose.material3.*
+import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.clip
+import androidx.compose.ui.draw.rotate
 import androidx.compose.ui.input.pointer.PointerInputScope
 import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.platform.LocalConfiguration
+import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.semantics.contentDescription
 import androidx.compose.ui.semantics.semantics
@@ -109,7 +95,8 @@ fun SchedulerScreen(
                 dayListState = weekDayListState,
                 errorMessages = schedulerUiState.errorMessages,
                 isLoading = schedulerUiState.isLoading,
-                hasSchedule = schedulerUiState.hasSchedule
+                hasSchedule = schedulerUiState.hasSchedule,
+                expandedLesson = schedulerUiState.expandedLesson
             )
             val weekScroller = createWeekScroller(
                 context = context,
@@ -121,6 +108,8 @@ fun SchedulerScreen(
                 modifier = Modifier.padding(paddingValues),
                 state = weekState,
                 lessonsToDays = lessonsToDays,
+                expandLesson = schedulerViewModel::expandLesson,
+                hideLesson = schedulerViewModel::hideLesson,
                 weekScroller = weekScroller,
                 fetchLessons = {
                     schedulerViewModel.fetchLessons()
@@ -150,6 +139,8 @@ fun ScrollableWeek(
     modifier: Modifier = Modifier,
     state: WeekState,
     lessonsToDays: Map<WeekDay, List<Lesson>>,
+    expandLesson: (Lesson) -> Unit,
+    hideLesson: (Lesson) -> Unit,
     weekScroller: LazyListScroller,
     fetchLessons: () -> Unit
 ) {
@@ -168,7 +159,9 @@ fun ScrollableWeek(
         RefreshableWeek(
             state = state,
             lessonsToDays = lessonsToDays,
-            fetchLessons = fetchLessons
+            fetchLessons = fetchLessons,
+            expandLesson = expandLesson,
+            hideLesson = hideLesson
         )
     }
 }
@@ -177,7 +170,8 @@ class WeekState(
     val dayListState: LazyListState,
     val errorMessages: List<ErrorMessage>,
     val isLoading: Boolean,
-    val hasSchedule: Boolean
+    val hasSchedule: Boolean,
+    val expandedLesson: Lesson?
 )
 
 class LazyListScroller(
@@ -235,7 +229,9 @@ fun createWeekScroller(
 fun RefreshableWeek(
     state: WeekState,
     lessonsToDays: Map<WeekDay, List<Lesson>>,
-    fetchLessons: () -> Unit
+    fetchLessons: () -> Unit,
+    expandLesson: (Lesson) -> Unit,
+    hideLesson: (Lesson) -> Unit
 ) {
     SwipeRefresh(
         modifier = Modifier
@@ -243,14 +239,21 @@ fun RefreshableWeek(
         state = rememberSwipeRefreshState(state.isLoading),
         onRefresh = fetchLessons
     ) {
-        WeekView(state = state, lessonsToDays = lessonsToDays)
+        WeekView(
+            state = state,
+            lessonsToDays = lessonsToDays,
+            expandLesson = expandLesson,
+            hideLesson = hideLesson
+        )
     }
 }
 
 @Composable
 fun WeekView(
     state: WeekState,
-    lessonsToDays: Map<WeekDay, List<Lesson>>
+    lessonsToDays: Map<WeekDay, List<Lesson>>,
+    expandLesson: (Lesson) -> Unit,
+    hideLesson: (Lesson) -> Unit
 ) {
     if (state.isLoading) return
 
@@ -270,10 +273,13 @@ fun WeekView(
                 MessageText(text = stringResource(R.string.no_lessons_today))
             } else {
                 LessonsList(
-                    lessons = lessons,
                     modifier = Modifier
                         .width(LocalConfiguration.current.screenWidthDp.dp)
-                        .padding(bottom = 8.dp)
+                        .padding(bottom = 8.dp),
+                    lessons = lessons,
+                    expandedLesson = state.expandedLesson,
+                    expandLesson = expandLesson,
+                    hideLesson = hideLesson
                 )
             }
         }
@@ -339,14 +345,33 @@ fun MessageText(
 }
 
 @Composable
-fun LessonsList(modifier: Modifier = Modifier, lessons: List<Lesson>) {
+fun LessonsList(
+    modifier: Modifier = Modifier,
+    lessons: List<Lesson>,
+    expandedLesson: Lesson?,
+    expandLesson: (Lesson) -> Unit,
+    hideLesson: (Lesson) -> Unit
+) {
     LazyColumn(modifier = modifier) {
-        items(lessons.size) { index -> LessonItem(lesson = lessons[index], lessonIndex = index) }
+        items(lessons.size) { index ->
+            LessonItem(
+                lesson = lessons[index],
+                isExpanded = lessons[index] == expandedLesson,
+                expandLesson = expandLesson,
+                hideLesson = hideLesson
+            )
+        }
     }
 }
 
 @Composable
-fun LessonItem(modifier: Modifier = Modifier, lesson: Lesson, lessonIndex: Int) {
+fun LessonItem(
+    modifier: Modifier = Modifier,
+    lesson: Lesson,
+    isExpanded: Boolean,
+    expandLesson: (Lesson) -> Unit,
+    hideLesson: (Lesson) -> Unit
+) {
     Column(
         modifier = Modifier
             .fillMaxHeight()
@@ -354,7 +379,12 @@ fun LessonItem(modifier: Modifier = Modifier, lesson: Lesson, lessonIndex: Int) 
         verticalArrangement = Arrangement.Center
     ) {
         LessonTime(modifier = modifier, lesson = lesson)
-        LessonCard(lesson = lesson)
+        LessonCard(
+            lesson = lesson,
+            isExpanded = isExpanded,
+            expandLesson = expandLesson,
+            hideLesson = hideLesson
+        )
     }
 }
 
@@ -412,11 +442,20 @@ fun LessonIndexLabel(lessonIndex: Int) {
 }
 
 @Composable
-fun LessonCard(lesson: Lesson) {
+fun LessonCard(
+    lesson: Lesson,
+    isExpanded: Boolean,
+    expandLesson: (Lesson) -> Unit,
+    hideLesson: (Lesson) -> Unit
+) {
+    val lessonCardDescription = stringResource(R.string.lesson_card_description, lesson.id)
     Card(
         modifier = Modifier
             .padding(horizontal = 8.dp)
-            .fillMaxSize(),
+            .fillMaxSize()
+            .clip(RoundedCornerShape(8.dp))
+            .clickable { if (isExpanded) hideLesson(lesson) else expandLesson(lesson) }
+            .semantics { contentDescription = lessonCardDescription },
         colors = CardDefaults.elevatedCardColors(
             containerColor = MaterialTheme.colorScheme.surfaceVariant
         ),
@@ -427,32 +466,50 @@ fun LessonCard(lesson: Lesson) {
             val typeTextDescription = stringResource(R.string.lesson_type_text_description, lesson.id)
             val placeTextDescription = stringResource(R.string.lesson_place_text_description, lesson.id)
             val teacherTextDescription = stringResource(R.string.lesson_teacher_text_description, lesson.id)
-            Text(
-                text = lesson.name,
-                style = MaterialTheme.typography.bodyLarge,
-                color = MaterialTheme.colorScheme.primary,
-                fontWeight = FontWeight.Bold,
-                modifier = Modifier.padding(vertical = 4.dp).semantics {
-                    contentDescription = nameTextDescription
-                }
-            )
+            val groupNamesDescription = stringResource(R.string.lesson_group_names_text_description, lesson.id)
+            Row(
+                modifier = Modifier.fillMaxWidth(),
+                horizontalArrangement = Arrangement.SpaceBetween
+            ) {
+                Text(
+                    modifier = Modifier
+                        .padding(vertical = 4.dp)
+                        .weight(1f)
+                        .semantics {
+                            contentDescription = nameTextDescription
+                        },
+                    text = lesson.name,
+                    style = MaterialTheme.typography.bodyLarge,
+                    color = MaterialTheme.colorScheme.primary,
+                    fontWeight = FontWeight.Bold,
+                )
+                ExpandIcon(
+                    isExpanded = isExpanded,
+                    iconResource = R.drawable.ic_keyboard_arrow_down,
+                    iconDescription = R.string.expand_lesson_card_icon_description,
+                )
+            }
             Text(
                 text = lesson.type,
                 style = MaterialTheme.typography.bodyMedium,
                 color = MaterialTheme.colorScheme.onSurface,
                 fontWeight = FontWeight.Normal,
-                modifier = Modifier.padding(vertical = 2.dp).semantics {
-                    contentDescription = typeTextDescription
-                }
+                modifier = Modifier
+                    .padding(vertical = 2.dp)
+                    .semantics {
+                        contentDescription = typeTextDescription
+                    }
             )
             Text(
                 text = lesson.place,
                 style = MaterialTheme.typography.bodySmall,
                 color = MaterialTheme.colorScheme.onSurfaceVariant,
                 fontWeight = FontWeight.Normal,
-                modifier = Modifier.padding(vertical = 2.dp).semantics {
-                    contentDescription = placeTextDescription
-                }
+                modifier = Modifier
+                    .padding(vertical = 2.dp)
+                    .semantics {
+                        contentDescription = placeTextDescription
+                    }
             )
             if (lesson.teacher.isNotEmpty()) {
                 Text(
@@ -461,13 +518,52 @@ fun LessonCard(lesson: Lesson) {
                     color = MaterialTheme.colorScheme.onSurfaceVariant,
                     fontWeight = FontWeight.Normal,
                     fontStyle = FontStyle.Italic,
-                    modifier = Modifier.padding(vertical = 2.dp).semantics {
-                        contentDescription = teacherTextDescription
-                    }
+                    modifier = Modifier
+                        .padding(vertical = 2.dp)
+                        .semantics {
+                            contentDescription = teacherTextDescription
+                        }
+                )
+            }
+            AnimatedVisibility(
+                visible = isExpanded,
+                enter = expandVertically(),
+                exit = shrinkVertically()
+            ) {
+                val groupNamesStringBuilder = StringBuilder()
+                groupNamesStringBuilder.append(stringResource(R.string.groups))
+                groupNamesStringBuilder.append(": ")
+                groupNamesStringBuilder.append(lesson.groupNames.joinToString(separator = ", ") { it })
+                Text(
+                    text = groupNamesStringBuilder.toString(),
+                    style = MaterialTheme.typography.bodySmall,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant,
+                    fontWeight = FontWeight.Normal,
+                    modifier = Modifier
+                        .padding(vertical = 2.dp)
+                        .semantics {
+                            contentDescription = groupNamesDescription
+                        }
                 )
             }
         }
     }
+}
+
+@Composable
+fun ExpandIcon(
+    modifier: Modifier = Modifier,
+    isExpanded: Boolean,
+    @DrawableRes iconResource: Int,
+    @StringRes iconDescription: Int
+) {
+    val rotation: Float by animateFloatAsState(if (isExpanded) 180f else 0f)
+    Icon(
+        modifier = modifier.rotate(rotation),
+        tint = MaterialTheme.colorScheme.primary,
+        painter = painterResource(iconResource),
+        contentDescription = stringResource(iconDescription)
+    )
 }
 
 private fun showConnectionToastOnWeekChange(
@@ -486,6 +582,7 @@ private fun showConnectionToastOnWeekChange(
 
 private object NoInternetConnectionToast {
     var toast: Toast? = null
+
     @StringRes
     var messageRes: Int? = null
     var locales: LocaleList? = null
@@ -514,9 +611,12 @@ fun LessonItemPreview() {
                 type = "Лабораторные",
                 place = "3-й учебный корпус, 401",
                 teacher = "Лупин Анатолий Викторович",
+                groupNames = listOf("3530901/90202"),
                 lmsUrl = ""
             ),
-            lessonIndex = 0
+            isExpanded = false,
+            expandLesson = {},
+            hideLesson = {}
         )
     }
 }
@@ -526,8 +626,11 @@ fun LessonItemPreview() {
 fun LessonListPreview() {
     PoSanieTheme(appTheme = AppTheme.LIGHT, appColorScheme = AppColorScheme.GREEN) {
         LessonsList(
+            modifier = Modifier.width(LocalConfiguration.current.screenWidthDp.dp),
             lessons = buildList { repeat(4) { add(PreviewLessonItem()) } },
-            modifier = Modifier.width(LocalConfiguration.current.screenWidthDp.dp)
+            expandedLesson = PreviewLessonItem(),
+            expandLesson = {},
+            hideLesson = {}
         )
     }
 }
@@ -536,9 +639,10 @@ fun PreviewLessonItem() = Lesson(
     id = 0,
     start = "10:00",
     end = "11:40",
-    name = "Цифровая обработка сигналов",
+    name = "Цифровая обработка сигналов и еще очень длинное название",
     type = "Лабораторные",
     place = "3-й учебный корпус, 401",
     teacher = "Лупин Анатолий Викторович",
+    groupNames = listOf("3530901/90202"),
     lmsUrl = ""
 )

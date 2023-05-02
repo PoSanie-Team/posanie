@@ -16,11 +16,12 @@ import dev.timatifey.posanie.model.cache.*
         Faculty::class,
         Teacher::class
     ],
-    version = 4
+    version = 5
 )
 @TypeConverters(
     WeekDayConverter::class,
-    IntListConverter::class,
+    LongListConverter::class,
+    StringListConverter::class,
     CalendarConverter::class
 )
 abstract class SchedulerRoomDatabase : RoomDatabase() {
