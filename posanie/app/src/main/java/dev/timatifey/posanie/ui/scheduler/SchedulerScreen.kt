@@ -354,11 +354,9 @@ fun LessonsList(
 ) {
     LazyColumn(modifier = modifier) {
         items(lessons.size) { index ->
-            val lesson = lessons[index]
-            val isExpanded = lesson == expandedLesson
             LessonItem(
-                lesson = lesson,
-                isExpanded = isExpanded,
+                lesson = lessons[index],
+                isExpanded = lessons[index] == expandedLesson,
                 expandLesson = expandLesson,
                 hideLesson = hideLesson
             )
