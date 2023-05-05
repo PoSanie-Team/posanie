@@ -96,7 +96,7 @@ fun SchedulerScreen(
                 errorMessages = schedulerUiState.errorMessages,
                 isLoading = schedulerUiState.isLoading,
                 hasSchedule = schedulerUiState.hasSchedule,
-                expandedLesson = schedulerUiState.expandedLesson
+                expandedLessons = schedulerUiState.expandedLessons
             )
             val weekScroller = createWeekScroller(
                 context = context,
@@ -171,7 +171,7 @@ class WeekState(
     val errorMessages: List<ErrorMessage>,
     val isLoading: Boolean,
     val hasSchedule: Boolean,
-    val expandedLesson: Lesson?
+    val expandedLessons: List<Lesson>
 )
 
 class LazyListScroller(
@@ -277,7 +277,7 @@ fun WeekView(
                         .width(LocalConfiguration.current.screenWidthDp.dp)
                         .padding(bottom = 8.dp),
                     lessons = lessons,
-                    expandedLesson = state.expandedLesson,
+                    expandedLessons = state.expandedLessons,
                     expandLesson = expandLesson,
                     hideLesson = hideLesson
                 )
@@ -348,7 +348,7 @@ fun MessageText(
 fun LessonsList(
     modifier: Modifier = Modifier,
     lessons: List<Lesson>,
-    expandedLesson: Lesson?,
+    expandedLessons: List<Lesson>,
     expandLesson: (Lesson) -> Unit,
     hideLesson: (Lesson) -> Unit
 ) {
@@ -356,7 +356,7 @@ fun LessonsList(
         items(lessons.size) { index ->
             LessonItem(
                 lesson = lessons[index],
-                isExpanded = lessons[index] == expandedLesson,
+                isExpanded = expandedLessons.contains(lessons[index]),
                 expandLesson = expandLesson,
                 hideLesson = hideLesson
             )
@@ -628,7 +628,7 @@ fun LessonListPreview() {
         LessonsList(
             modifier = Modifier.width(LocalConfiguration.current.screenWidthDp.dp),
             lessons = buildList { repeat(4) { add(PreviewLessonItem()) } },
-            expandedLesson = PreviewLessonItem(),
+            expandedLessons = listOf(PreviewLessonItem()),
             expandLesson = {},
             hideLesson = {}
         )

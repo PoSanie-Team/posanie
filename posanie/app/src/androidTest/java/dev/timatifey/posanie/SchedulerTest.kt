@@ -76,7 +76,7 @@ class SchedulerTest {
         ).assertIsDisplayed()
     }
 
-        private fun setContent(appContext: Context) {
+    private fun setContent(appContext: Context) {
         composeTestRule.setContent {
             val viewModel = createViewModel()
             val mondayDate = createMondayDate()

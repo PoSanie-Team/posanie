@@ -115,7 +115,7 @@ data class SchedulerUiState(
     val hasSchedule: Boolean = false,
     val weekIsOdd: Boolean = false,
     val lessonsToDays: Map<WeekDay, List<Lesson>>,
-    val expandedLesson: Lesson?,
+    val expandedLessons: List<Lesson>,
     val mondayDate: Calendar,
     val selectedDate: Calendar,
     val selectedDay: WeekDay,
@@ -128,7 +128,7 @@ private data class SchedulerViewModelState(
     val hasSchedule: Boolean = false,
     val weekIsOdd: Boolean = false,
     val lessonsToDays: Map<WeekDay, List<Lesson>>? = null,
-    val expandedLesson: Lesson? = null,
+    val expandedLessons: List<Lesson>? = null,
     val mondayDate: Calendar,
     val selectedDate: Calendar,
     val selectedDay: WeekDay,
@@ -173,7 +173,7 @@ private data class SchedulerViewModelState(
             hasSchedule = hasSchedule,
             weekIsOdd = weekIsOdd,
             lessonsToDays = lessonsToDays ?: emptyMap(),
-            expandedLesson = expandedLesson,
+            expandedLessons = expandedLessons ?: emptyList(),
             mondayDate = mondayDate,
             selectedDate = selectedDate,
             selectedDay = selectedDay,
@@ -299,7 +299,8 @@ class SchedulerViewModel @Inject constructor(
                 }
                 return@update it.copy(
                     mondayDate = newWeekMonday,
-                    selectedDate = newWeekMonday
+                    selectedDate = newWeekMonday,
+                    expandedLessons = emptyList()
                 )
             }
             fetchLessons()
@@ -437,16 +438,17 @@ class SchedulerViewModel @Inject constructor(
 
     fun expandLesson(lesson: Lesson) {
         viewModelScope.launch {
-            viewModelState.update { viewModelState.value.copy(expandedLesson = lesson) }
+            viewModelState.update {
+                viewModelState.value.copy(expandedLessons = uiState.value.expandedLessons + lesson)
+            }
         }
     }
 
     fun hideLesson(lesson: Lesson) {
         viewModelScope.launch {
-            if (lesson != viewModelState.value.expandedLesson) {
-                return@launch
+            viewModelState.update {
+                viewModelState.value.copy(expandedLessons = uiState.value.expandedLessons - lesson)
             }
-            viewModelState.update { viewModelState.value.copy(expandedLesson = null) }
         }
     }
 
