@@ -538,12 +538,9 @@ fun LessonCard(
                 enter = expandVertically(),
                 exit = shrinkVertically()
             ) {
-                val groupNamesStringBuilder = StringBuilder()
-                groupNamesStringBuilder.append(stringResource(R.string.groups))
-                groupNamesStringBuilder.append(": ")
-                groupNamesStringBuilder.append(lesson.groupNames.joinToString(separator = ", ") { it })
+                val groupNames = joinGroupsToString(lesson.groupNames)
                 Text(
-                    text = groupNamesStringBuilder.toString(),
+                    text = groupNames,
                     style = MaterialTheme.typography.bodySmall,
                     color = MaterialTheme.colorScheme.onSurfaceVariant,
                     fontWeight = FontWeight.Normal,
@@ -556,6 +553,15 @@ fun LessonCard(
             }
         }
     }
+}
+
+@Composable
+fun joinGroupsToString(groupNames: List<String>): String {
+    val groupNamesStringBuilder = StringBuilder()
+    groupNamesStringBuilder.append(stringResource(R.string.groups))
+    groupNamesStringBuilder.append(": ")
+    groupNamesStringBuilder.append(groupNames.joinToString(separator = ", ") { it })
+    return groupNamesStringBuilder.toString()
 }
 
 @Composable
