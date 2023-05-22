@@ -396,11 +396,13 @@ fun LessonItem(
 
 @Composable
 fun LessonTime(modifier: Modifier = Modifier, lesson: Lesson) {
+    val lessonTimeDescription = stringResource(R.string.lesson_time_description, lesson.id)
     Row(
         modifier = modifier
             .padding(start = 8.dp, bottom = 8.dp)
             .height(IntrinsicSize.Min)
-            .fillMaxWidth(),
+            .fillMaxWidth()
+            .semantics { contentDescription = lessonTimeDescription },
         verticalAlignment = Alignment.CenterVertically
     ) {
         Text(
