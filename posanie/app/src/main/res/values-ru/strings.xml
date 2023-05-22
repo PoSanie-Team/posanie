@@ -95,7 +95,8 @@
     <string name="lesson_teacher_text_description">Преподаватель занятия (id = %d)</string>
     <string name="lesson_group_names_text_description">Названия групп посещающих занятия (id = %d)</string>
     <string name="expand_lesson_card_icon_description">Иконка расширения карточки</string>
-    <string name="lesson_card_description">Lesson card (id = %d)</string>
+    <string name="lesson_card_description">Карточка занятия (id = %d)</string>
+    <string name="lesson_time_description">Время занятия (id = %d)</string>
 
     // Popup
     <string name="ok">ОК</string>

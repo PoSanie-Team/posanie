@@ -88,6 +88,17 @@ object LessonsUseCaseMockFactory {
                 teacher = "Новопашенный Андрей Гелиевич",
                 groupNames = listOf("3530901/90202"),
                 lmsUrl = "https://dl.spbstu.ru//course/view.php?id=4744"
+            ),
+            Lesson(
+                id = currentId++,
+                start = "13:00",
+                end = "15:40",
+                name = "Разработка сетевых приложений",
+                type = "Лабораторные",
+                place = "3-й учебный корпус, 402",
+                teacher = "Кошелев Сергей Иванович",
+                groupNames = listOf("3530901/90202"),
+                lmsUrl = "https://dl.spbstu.ru//course/view.php?id=4744"
             )
         )
         result[WeekDay.WEDNESDAY] = listOf(

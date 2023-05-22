@@ -356,6 +356,7 @@ fun LessonsList(
         items(lessons.size) { index ->
             LessonItem(
                 lesson = lessons[index],
+                previousLesson = if (index > 0) lessons[index - 1] else null,
                 isExpanded = expandedLessons.contains(lessons[index]),
                 expandLesson = expandLesson,
                 hideLesson = hideLesson
@@ -368,6 +369,7 @@ fun LessonsList(
 fun LessonItem(
     modifier: Modifier = Modifier,
     lesson: Lesson,
+    previousLesson: Lesson?,
     isExpanded: Boolean,
     expandLesson: (Lesson) -> Unit,
     hideLesson: (Lesson) -> Unit
@@ -378,7 +380,11 @@ fun LessonItem(
             .padding(top = 12.dp, start = 8.dp, end = 8.dp, bottom = 4.dp),
         verticalArrangement = Arrangement.Center
     ) {
-        LessonTime(modifier = modifier, lesson = lesson)
+        val sameTime =
+            (lesson.start == previousLesson?.start) && (lesson.end == previousLesson.end)
+        if (!sameTime) {
+            LessonTime(modifier = modifier, lesson = lesson)
+        }
         LessonCard(
             lesson = lesson,
             isExpanded = isExpanded,
@@ -390,11 +396,13 @@ fun LessonItem(
 
 @Composable
 fun LessonTime(modifier: Modifier = Modifier, lesson: Lesson) {
+    val lessonTimeDescription = stringResource(R.string.lesson_time_description, lesson.id)
     Row(
         modifier = modifier
             .padding(start = 8.dp, bottom = 8.dp)
             .height(IntrinsicSize.Min)
-            .fillMaxWidth(),
+            .fillMaxWidth()
+            .semantics { contentDescription = lessonTimeDescription },
         verticalAlignment = Alignment.CenterVertically
     ) {
         Text(
@@ -530,12 +538,9 @@ fun LessonCard(
                 enter = expandVertically(),
                 exit = shrinkVertically()
             ) {
-                val groupNamesStringBuilder = StringBuilder()
-                groupNamesStringBuilder.append(stringResource(R.string.groups))
-                groupNamesStringBuilder.append(": ")
-                groupNamesStringBuilder.append(lesson.groupNames.joinToString(separator = ", ") { it })
+                val groupNames = joinGroupsToString(lesson.groupNames)
                 Text(
-                    text = groupNamesStringBuilder.toString(),
+                    text = groupNames,
                     style = MaterialTheme.typography.bodySmall,
                     color = MaterialTheme.colorScheme.onSurfaceVariant,
                     fontWeight = FontWeight.Normal,
@@ -548,6 +553,15 @@ fun LessonCard(
             }
         }
     }
+}
+
+@Composable
+fun joinGroupsToString(groupNames: List<String>): String {
+    val groupNamesStringBuilder = StringBuilder()
+    groupNamesStringBuilder.append(stringResource(R.string.groups))
+    groupNamesStringBuilder.append(": ")
+    groupNamesStringBuilder.append(groupNames.joinToString(separator = ", ") { it })
+    return groupNamesStringBuilder.toString()
 }
 
 @Composable
@@ -614,6 +628,7 @@ fun LessonItemPreview() {
                 groupNames = listOf("3530901/90202"),
                 lmsUrl = ""
             ),
+            previousLesson = null,
             isExpanded = false,
             expandLesson = {},
             hideLesson = {}
