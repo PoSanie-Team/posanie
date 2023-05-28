@@ -27,6 +27,7 @@ import androidx.compose.ui.draw.rotate
 import androidx.compose.ui.input.pointer.PointerInputScope
 import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.platform.LocalConfiguration
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.semantics.contentDescription
@@ -354,10 +355,14 @@ fun LessonsList(
 ) {
     LazyColumn(modifier = modifier) {
         items(lessons.size) { index ->
+            val lesson = lessons[index]
+            val previousLesson = if (index > 0) lessons[index - 1] else null
+            val sameStart = previousLesson?.start == lesson.start
+            val sameEnd = previousLesson?.end == lesson.end
             LessonItem(
                 lesson = lessons[index],
-                previousLesson = if (index > 0) lessons[index - 1] else null,
-                isExpanded = expandedLessons.contains(lessons[index]),
+                sameTime = sameStart && sameEnd,
+                isExpanded = expandedLessons.contains(lesson),
                 expandLesson = expandLesson,
                 hideLesson = hideLesson
             )
@@ -369,7 +374,7 @@ fun LessonsList(
 fun LessonItem(
     modifier: Modifier = Modifier,
     lesson: Lesson,
-    previousLesson: Lesson?,
+    sameTime: Boolean,
     isExpanded: Boolean,
     expandLesson: (Lesson) -> Unit,
     hideLesson: (Lesson) -> Unit
@@ -380,8 +385,6 @@ fun LessonItem(
             .padding(top = 12.dp, start = 8.dp, end = 8.dp, bottom = 4.dp),
         verticalArrangement = Arrangement.Center
     ) {
-        val sameTime =
-            (lesson.start == previousLesson?.start) && (lesson.end == previousLesson.end)
         if (!sameTime) {
             LessonTime(modifier = modifier, lesson = lesson)
         }
@@ -538,7 +541,7 @@ fun LessonCard(
                 enter = expandVertically(),
                 exit = shrinkVertically()
             ) {
-                val groupNames = joinGroupsToString(lesson.groupNames)
+                val groupNames = joinGroupsToString(LocalContext.current, lesson.groupNames)
                 Text(
                     text = groupNames,
                     style = MaterialTheme.typography.bodySmall,
@@ -555,12 +558,14 @@ fun LessonCard(
     }
 }
 
-@Composable
-fun joinGroupsToString(groupNames: List<String>): String {
+fun joinGroupsToString(context: Context, groupNames: List<String>): String {
     val groupNamesStringBuilder = StringBuilder()
-    groupNamesStringBuilder.append(stringResource(R.string.groups))
+    groupNamesStringBuilder.append(context.getString(R.string.groups))
     groupNamesStringBuilder.append(": ")
-    groupNamesStringBuilder.append(groupNames.joinToString(separator = ", ") { it })
+    for (i in 0 until groupNames.size - 1) {
+        groupNamesStringBuilder.append("${groupNames[i]}, ")
+    }
+    groupNamesStringBuilder.append(groupNames.last())
     return groupNamesStringBuilder.toString()
 }
 
@@ -628,7 +633,7 @@ fun LessonItemPreview() {
                 groupNames = listOf("3530901/90202"),
                 lmsUrl = ""
             ),
-            previousLesson = null,
+            sameTime = false,
             isExpanded = false,
             expandLesson = {},
             hideLesson = {}
