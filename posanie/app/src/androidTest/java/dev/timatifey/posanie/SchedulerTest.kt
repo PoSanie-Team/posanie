@@ -9,6 +9,7 @@ import dev.timatifey.posanie.model.domain.AppColorScheme
 import dev.timatifey.posanie.model.domain.AppTheme
 import dev.timatifey.posanie.ui.scheduler.SchedulerScreen
 import dev.timatifey.posanie.ui.scheduler.SchedulerViewModel
+import dev.timatifey.posanie.ui.scheduler.WeekDay
 import dev.timatifey.posanie.ui.theme.PoSanieTheme
 import fakes.GroupsUseCaseMockFactory
 import fakes.LessonsUseCaseMockFactory
@@ -55,9 +56,9 @@ class SchedulerTest {
         composeTestRule.onNodeWithContentDescription(
             appContext.getString(R.string.lesson_teacher_text_description, lessonId)
         ).assertIsDisplayed()
-        composeTestRule.onAllNodesWithContentDescription(
+        composeTestRule.onNodeWithContentDescription(
             appContext.getString(R.string.expand_lesson_card_icon_description)
-        ).assertCountEquals(3)
+        ).assertIsDisplayed()
     }
 
     @Test
@@ -76,15 +77,32 @@ class SchedulerTest {
         ).assertIsDisplayed()
     }
 
-    private fun setContent(appContext: Context) {
+    @Test
+    fun checkDoubleLessonCard() {
+        val appContext = InstrumentationRegistry.getInstrumentation().targetContext.applicationContext
+        val viewModel = setContent(appContext)
+        viewModel.selectWeekDay(WeekDay.TUESDAY)
+        val lesson1Id = 2
+        val lesson2Id = 3
+
+        composeTestRule.onNodeWithContentDescription(
+            appContext.getString(R.string.lesson_time_description, lesson1Id)
+        ).assertIsDisplayed()
+        composeTestRule.onNodeWithContentDescription(
+            appContext.getString(R.string.lesson_time_description, lesson2Id)
+        ).assertDoesNotExist()
+    }
+
+    private fun setContent(appContext: Context): SchedulerViewModel {
+        val viewModel = createViewModel()
         composeTestRule.setContent {
-            val viewModel = createViewModel()
             val mondayDate = createMondayDate()
             viewModel.selectDate(mondayDate)
             PoSanieTheme(appTheme = AppTheme.DEFAULT, appColorScheme = AppColorScheme.DEFAULT) {
                 SchedulerScreen(context = appContext, schedulerViewModel = viewModel) { _, _ -> }
             }
         }
+        return viewModel
     }
 
     private fun createViewModel() = SchedulerViewModel(

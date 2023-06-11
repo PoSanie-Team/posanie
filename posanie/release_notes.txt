@@ -1,3 +1,4 @@
-## 23.2.1
+## 23.9.0
 
-- Redesign v2
+- Double lessons
+- Expanded lesson cards

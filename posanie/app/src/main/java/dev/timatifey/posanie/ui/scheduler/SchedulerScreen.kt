@@ -27,6 +27,7 @@ import androidx.compose.ui.draw.rotate
 import androidx.compose.ui.input.pointer.PointerInputScope
 import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.platform.LocalConfiguration
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.semantics.contentDescription
@@ -354,9 +355,14 @@ fun LessonsList(
 ) {
     LazyColumn(modifier = modifier) {
         items(lessons.size) { index ->
+            val lesson = lessons[index]
+            val previousLesson = if (index > 0) lessons[index - 1] else null
+            val sameStart = previousLesson?.start == lesson.start
+            val sameEnd = previousLesson?.end == lesson.end
             LessonItem(
                 lesson = lessons[index],
-                isExpanded = expandedLessons.contains(lessons[index]),
+                sameTime = sameStart && sameEnd,
+                isExpanded = expandedLessons.contains(lesson),
                 expandLesson = expandLesson,
                 hideLesson = hideLesson
             )
@@ -368,6 +374,7 @@ fun LessonsList(
 fun LessonItem(
     modifier: Modifier = Modifier,
     lesson: Lesson,
+    sameTime: Boolean,
     isExpanded: Boolean,
     expandLesson: (Lesson) -> Unit,
     hideLesson: (Lesson) -> Unit
@@ -378,7 +385,9 @@ fun LessonItem(
             .padding(top = 12.dp, start = 8.dp, end = 8.dp, bottom = 4.dp),
         verticalArrangement = Arrangement.Center
     ) {
-        LessonTime(modifier = modifier, lesson = lesson)
+        if (!sameTime) {
+            LessonTime(modifier = modifier, lesson = lesson)
+        }
         LessonCard(
             lesson = lesson,
             isExpanded = isExpanded,
@@ -390,11 +399,13 @@ fun LessonItem(
 
 @Composable
 fun LessonTime(modifier: Modifier = Modifier, lesson: Lesson) {
+    val lessonTimeDescription = stringResource(R.string.lesson_time_description, lesson.id)
     Row(
         modifier = modifier
             .padding(start = 8.dp, bottom = 8.dp)
             .height(IntrinsicSize.Min)
-            .fillMaxWidth(),
+            .fillMaxWidth()
+            .semantics { contentDescription = lessonTimeDescription },
         verticalAlignment = Alignment.CenterVertically
     ) {
         Text(
@@ -530,12 +541,9 @@ fun LessonCard(
                 enter = expandVertically(),
                 exit = shrinkVertically()
             ) {
-                val groupNamesStringBuilder = StringBuilder()
-                groupNamesStringBuilder.append(stringResource(R.string.groups))
-                groupNamesStringBuilder.append(": ")
-                groupNamesStringBuilder.append(lesson.groupNames.joinToString(separator = ", ") { it })
+                val groupNames = joinGroupsToString(LocalContext.current, lesson.groupNames)
                 Text(
-                    text = groupNamesStringBuilder.toString(),
+                    text = groupNames,
                     style = MaterialTheme.typography.bodySmall,
                     color = MaterialTheme.colorScheme.onSurfaceVariant,
                     fontWeight = FontWeight.Normal,
@@ -548,6 +556,17 @@ fun LessonCard(
             }
         }
     }
+}
+
+fun joinGroupsToString(context: Context, groupNames: List<String>): String {
+    val groupNamesStringBuilder = StringBuilder()
+    groupNamesStringBuilder.append(context.getString(R.string.groups))
+    groupNamesStringBuilder.append(": ")
+    for (i in 0 until groupNames.size - 1) {
+        groupNamesStringBuilder.append("${groupNames[i]}, ")
+    }
+    groupNamesStringBuilder.append(groupNames.last())
+    return groupNamesStringBuilder.toString()
 }
 
 @Composable
@@ -614,6 +633,7 @@ fun LessonItemPreview() {
                 groupNames = listOf("3530901/90202"),
                 lmsUrl = ""
             ),
+            sameTime = false,
             isExpanded = false,
             expandLesson = {},
             hideLesson = {}
