@@ -2,3 +2,5 @@
 
 - Double lessons
 - Expanded lesson cards
+- Android version update
+- Blue scheme

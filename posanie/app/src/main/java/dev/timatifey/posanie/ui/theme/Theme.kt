@@ -82,6 +82,24 @@ private val ContrastColorScheme = darkColorScheme(
     background = Black
 )
 
+private val LightBlueColorScheme = lightColorScheme(
+    primary = SkyBlue40,
+    secondary = BlueGrey40,
+    tertiary = Crimson40,
+    primaryContainer = SkyBlue90,
+    secondaryContainer = BlueGrey90,
+    surfaceVariant = DesaturatedBlueGrey95
+)
+
+private val DarkBlueColorScheme = darkColorScheme(
+    primary = SkyBlue80,
+    secondary = BlueGrey80,
+    tertiary = Crimson80,
+    primaryContainer = SkyBlue30,
+    secondaryContainer = BlueGrey30,
+    surfaceVariant = DesaturatedBlueGrey35
+)
+
 @Composable
 fun PoSanieTheme(
     appTheme: AppTheme,
@@ -100,6 +118,7 @@ fun PoSanieTheme(
     val pinkColorScheme = if (darkTheme) DarkPinkColorScheme else LightPinkColorScheme
     val greenColorScheme = if (darkTheme) DarkGreenColorScheme else LightGreenColorScheme
     val contrastColorScheme = if (darkTheme) ContrastColorScheme else LightGreenColorScheme
+    val blueColorScheme = if (darkTheme) DarkBlueColorScheme else LightBlueColorScheme
 
     val context = LocalContext.current
     val systemColorScheme = if (canUseDynamicColor) {
@@ -114,6 +133,7 @@ fun PoSanieTheme(
         AppColorScheme.PINK -> pinkColorScheme
         AppColorScheme.GREEN -> greenColorScheme
         AppColorScheme.CONTRAST -> contrastColorScheme
+        AppColorScheme.BLUE -> blueColorScheme
     }
 
     val view = LocalView.current
