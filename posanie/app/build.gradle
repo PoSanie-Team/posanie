@@ -3,6 +3,8 @@ plugins {
     id "org.jetbrains.kotlin.android"
     id "kotlin-kapt"
     id "dagger.hilt.android.plugin"
+    id "com.google.gms.google-services"
+    id "com.google.firebase.crashlytics"
 }
 
 android {
@@ -121,4 +123,8 @@ dependencies {
     debugImplementation "org.mockito.kotlin:mockito-kotlin:4.1.0"
     testImplementation "org.jetbrains.kotlinx:kotlinx-coroutines-test:1.6.4"
     androidTestImplementation "org.mockito:mockito-android:5.2.0"
+
+    // google analytics
+    implementation "com.google.firebase:firebase-analytics-ktx:21.3.0"
+    implementation("com.google.firebase:firebase-crashlytics-ktx:18.4.0")
 }
