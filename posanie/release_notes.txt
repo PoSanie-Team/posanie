@@ -1,6 +1,7 @@
-## 23.9.0
+## 23.10.0
 
 - Double lessons
 - Expanded lesson cards
 - Android version update
 - Blue scheme
+- Crashlytics
