@@ -35,7 +35,8 @@
     <string name="purple_scheme">Purple</string>
     <string name="pink_scheme">Pink</string>
     <string name="green_scheme">Green</string>
-    <string name="contrast_scheme">Contrast</string>
+    <string name="contrast_scheme">Contrast Green (only for dark theme)</string>
+    <string name="blue_scheme">Blue</string>
     <string name="language">Language</string>
 
     // Picker

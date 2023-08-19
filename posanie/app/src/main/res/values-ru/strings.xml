@@ -24,8 +24,9 @@
     <string name="system_scheme">Системная</string>
     <string name="purple_scheme">Фиолетовая</string>
     <string name="pink_scheme">Розовая</string>
-    <string name="green_scheme">Зеленая</string>
-    <string name="contrast_scheme">Контрастная</string>
+    <string name="green_scheme">Зелёная</string>
+    <string name="contrast_scheme">Контрастная Зелёная (только для тёмной темы)</string>
+    <string name="blue_scheme">Синяя</string>
     <string name="language">Язык</string>
 
     // Picker

@@ -52,3 +52,19 @@ val GreenGrey80 = Color(0xFFBBCBB1)
 val GreenGrey30 = Color(0xFF3D4B36)
 val DesaturatedGreenGrey35 = Color(0xFF43483F)
 val Blue80 = Color(0xFFA0CFD1)
+
+// Light blue
+val SkyBlue40 = Color(0xFF005FAF)
+val SkyBlue90 = Color(0xFFD4E3FF)
+val BlueGrey40 = Color(0xFF545F71)
+val BlueGrey90 = Color(0xFFD8E3F8)
+val DesaturatedBlueGrey95 = Color(0xFFE0E2EC)
+val Crimson40 = Color(0xFF6E5676)
+
+// Dark blue
+val SkyBlue80 = Color(0xFFA5C8FF)
+val SkyBlue30 = Color(0xFF004785)
+val BlueGrey80 = Color(0xFFBCC7DC)
+val BlueGrey30 = Color(0xFF3D4758)
+val DesaturatedBlueGrey35 = Color(0xFF43474E)
+val Crimson80 = Color(0xFFDABDE2)
