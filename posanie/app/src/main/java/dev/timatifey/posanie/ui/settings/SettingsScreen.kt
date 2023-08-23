@@ -1,6 +1,5 @@
 package dev.timatifey.posanie.ui.settings
 
-import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
@@ -81,13 +80,11 @@ fun ThemeSettings(
 
 @Composable
 fun ThemeOption(
-    modifier: Modifier = Modifier.padding(horizontal = 16.dp, vertical = 2.dp),
     theme: AppTheme,
     selected: Boolean,
     onClick: () -> Unit
 ) {
     SettingsOption(
-        modifier = modifier,
         optionDescription = {
             Text(text = stringResource(theme.nameId))
         },
@@ -102,7 +99,7 @@ fun ColorSchemeSettings(
     selectedColorScheme: AppColorScheme,
     onColorSchemeClick: (AppColorScheme) -> Unit
 ) {
-    Column(modifier = Modifier.fillMaxWidth()) {
+    Column {
         SettingsTitle(stringResource(R.string.color_scheme))
         for (colorScheme in AppColorScheme.values()) {
             ColorSchemeOption(
@@ -116,13 +113,11 @@ fun ColorSchemeSettings(
 
 @Composable
 fun ColorSchemeOption(
-    modifier: Modifier = Modifier.padding(horizontal = 16.dp, vertical = 2.dp),
     colorScheme: AppColorScheme,
     selected: Boolean,
     onClick: () -> Unit
 ) {
     SettingsOption(
-        modifier = modifier,
         optionDescription = {
             Text(text = stringResource(colorScheme.nameId))
         },
@@ -151,13 +146,11 @@ fun LanguageSettings(
 
 @Composable
 fun LanguageOption(
-    modifier: Modifier = Modifier.padding(horizontal = 16.dp, vertical = 2.dp),
     language: Language,
     selected: Boolean,
     onClick: () -> Unit
 ) {
     SettingsOption(
-        modifier = modifier,
         optionDescription = {
             Column {
                 Text(text = language.originName)
@@ -170,48 +163,19 @@ fun LanguageOption(
     )
 }
 
-
 @Composable
 fun SettingsOption(
-    modifier: Modifier = Modifier,
-    optionName: String,
-    selector: @Composable () -> Unit
-) {
-    SettingsOption(
-        modifier = modifier,
-        optionDescription = { Text(text = optionName) },
-        selector = selector
-    )
-}
-
-@Composable
-fun SettingsSwitchOption(
-    modifier: Modifier = Modifier.padding(horizontal = 4.dp, vertical = 2.dp),
-    optionName: String,
-    checked: Boolean = false,
-    onCheckChange: (Boolean) -> Unit
-) {
-    SettingsOption(modifier = modifier, optionName = optionName) {
-        Switch(
-            checked = checked,
-            onCheckedChange = {
-                onCheckChange(!checked)
-            })
-    }
-}
-
-@Composable
-fun SettingsOption(
-    modifier: Modifier = Modifier,
     optionDescription: @Composable () -> Unit,
     selector: @Composable () -> Unit
 ) {
     Row(
-        modifier = modifier.fillMaxWidth(),
-        horizontalArrangement = Arrangement.SpaceBetween,
-        verticalAlignment = Alignment.CenterVertically
+        modifier = Modifier.fillMaxWidth().padding(horizontal = 16.dp, vertical = 2.dp),
+        verticalAlignment = Alignment.CenterVertically,
+        horizontalArrangement = Arrangement.SpaceBetween
     ) {
-        optionDescription()
+        Box(modifier = Modifier.weight(1f)) {
+            optionDescription()
+        }
         selector()
     }
 }
