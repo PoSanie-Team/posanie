@@ -1,6 +1,6 @@
 package dev.timatifey.posanie.ui.picker
 
-import androidx.compose.foundation.background
+
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
@@ -231,7 +231,7 @@ fun ContentWithHint(
         ScheduleTypeTitle(text = contentName, paddingValues = PaddingValues(0.dp))
         if (needHint) {
             MessageText(
-                modifier = Modifier.fillMaxWidth().padding(vertical = 8.dp),
+                modifier = Modifier.fillMaxWidth().padding(horizontal = 8.dp, vertical = 8.dp),
                 text = hint
             )
         } else {
