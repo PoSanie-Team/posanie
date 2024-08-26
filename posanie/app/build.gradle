@@ -8,7 +8,7 @@ plugins {
 }
 
 android {
-    compileSdk 33
+    compileSdk 34
 
     defaultConfig {
         String versionFilePath = project.rootDir.toPath().resolve("version.txt")
@@ -17,7 +17,7 @@ android {
 
         applicationId "dev.timatifey.posanie"
         minSdk 21
-        targetSdk 33
+        targetSdk 34
         versionCode 19
         versionName version
 
